@@ -1,7 +1,11 @@
 #!/usr/bin/ruby
 
-require 'kgr/letter-classifier/neural'
-require 'kgr/data/image'
-
-classifier = KGR::LetterClassifier::Neural.load("letter-classifier.net")
-classifier.classify(KGR::Data::Image.load(ARGV[0]))
+if ARGV[0] == "-i" || ARGV[0] == "--interactive"
+	require 'kgr/gui/classify-letter'
+	KGR::GUI::ClassifyLetter.new.run
+else
+	require 'kgr/letter-classifier/neural'
+	require 'kgr/data/image'
+	classifier = KGR::LetterClassifier::Neural.load("letter-classifier.net")
+	classifier.classify(KGR::Data::Image.load(ARGV[0]))
+end

@@ -130,7 +130,9 @@ module KGR
 				# TODO assert same size
 				@fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: [ 128, 80, 60, allowed.size ], num_outputs: num_outputs)
 
-				@fann.init_weights(train_data)
+				# This tries some smart algorithm, but it seems to initialize nonsense.
+				# @fann.init_weights(train_data)
+
 				@fann.randomize_weights(-1.0, 1.0)
 				@fann.set_train_error_function(:linear)
 
