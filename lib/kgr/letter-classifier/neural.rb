@@ -136,38 +136,25 @@ module KGR
 
 				xs, ys = self.class.dataset_to_xys(data)
 
-			#	10.times {
-			#		xs, ys = self.class.shuffle_xys(xs, ys)
-			#		puts "..."
-			#		(0...xs.length).each { |i|
-			#			@fann.train(xs[i], ys[i])
+				30.times {
+					xs, ys = self.class.shuffle_xys(xs, ys)
+					puts "..."
+					(0...xs.length).each { |i|
+						@fann.train(xs[i], ys[i])
 
-			#			puts "    #{i} / #{xs.length}"
-			#			puts "=== YS = #{ys[i]}"
-			#			puts "=== RUBY TEST:"
-			#			result = classify_data(xs[i])
-			#			puts result
-			#			puts "=== END OF RUBY TEST"
+						puts "    #{i} / #{xs.length}"
+						puts "=== YS = #{ys[i]}"
+						puts "=== RUBY TEST:"
+						result = classify_data(xs[i])
+						puts result
+						puts "=== END OF RUBY TEST"
 
-			#			if result == ys[i].index(ys[i].max)
-			#				puts "----- OK"
-			#			else
-			#				puts "----- :("
-			#			end
-			#		}
-
-			#		good, total = 0, 0
-			#		(0...xs.length).each { |i|
-			#			puts "expect: #{ys[i]}"
-			#			good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
-			#			total += 1
-			#		}
-			#		puts "good: #{good}, total: #{total}"
-			#		log.puts "good: #{good}, total: #{total}"
-			#		sleep 2
-			#	}
-
-				@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
+						if result == ys[i].index(ys[i].max)
+							puts "----- OK"
+						else
+							puts "----- :("
+						end
+					}
 
 					good, total = 0, 0
 					(0...xs.length).each { |i|
@@ -178,7 +165,23 @@ module KGR
 					puts "good: #{good}, total: #{total}"
 					log.puts "good: #{good}, total: #{total}"
 					sleep 2
-				puts "Reached MSE: #{@fann.test_data(train_data)}"
+				}
+
+				#@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
+
+				# data, pocet epoch, kazdych X delej vypis, target error
+				#@fann.train_on_data(train_data, 100, 10, 0.05)
+
+				#	good, total = 0, 0
+				#	(0...xs.length).each { |i|
+				#		puts "expect: #{ys[i]}"
+				#		good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
+				#		total += 1
+				#	}
+				#	puts "good: #{good}, total: #{total}"
+				#	log.puts "good: #{good}, total: #{total}"
+				#	sleep 2
+				#puts "Reached MSE: #{@fann.test_data(train_data)}"
 			end
 
 			def report(xs, ys)
