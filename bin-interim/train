@@ -1,3 +1,5 @@
 #!/usr/bin/ruby -w
 
-puts "TODO: train KGR"
+require 'kgr/tasks/train'
+
+KGR::Tasks::Train.run(ARGV)
