@@ -63,7 +63,7 @@ module KGR
 
 			def self.load(filename, klass = KGR::Data::Image)
 				File.open(filename, "rb") do |file|
-					return self.read(file)
+					return self.read(file, klass)
 				end
 			end
 		end

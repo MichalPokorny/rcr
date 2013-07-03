@@ -45,11 +45,25 @@ module KGR
 			end
 
 			def to_raw_data
-				@image.to_rgba_stream
+				bytes = [ width, height ].pack("QQ")
+				# print "(#{width}, #{height})"
+				# puts " >>> #{bytes.inspect}"
+
+				bytes += @image.to_rgba_stream
+
+				# puts "to_raw_data gave #{bytes.size} B"
+
+				bytes
 			end
 
 			def self.from_raw_data(data)
-				self.class.new(ChunkyPNG::Image.from_rgba_stream(data))
+				# puts "from_raw_data got #{data.size} B"
+				bytes = data[0...16]
+				# print "<<< #{bytes.inspect}"	
+				width, height = bytes.unpack("QQ")
+				# puts " (#{width}, #{height})"
+				data = data[16...data.length]
+				self.new(ChunkyPNG::Image.from_rgba_stream(width, height, data))
 			end
 		end
 	end

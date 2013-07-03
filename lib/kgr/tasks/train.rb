@@ -1,3 +1,5 @@
+require 'kgr/letter-classifier/neural'
+
 module KGR
 	module Tasks
 		module Train
@@ -12,7 +14,7 @@ module KGR
 
 					case task.downcase
 					when "letter" then
-						LetterClassifier::Neural.train
+						LetterClassifier::Neural.new.train
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data"
