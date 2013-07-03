@@ -11,13 +11,9 @@ module KGR
 			def self.prepare_data
 				dir = "/home/prvak/rocnikac/kgr-data"
 
-				puts "TODO: prepare letter classifier data"
-
 				data_by_letter = {}
 
 				Dir["#{dir}/letter/*"].each do |sample_dir|
-					puts "TODO: prepare #{sample_dir} data"
-					
 					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
 
 					# Create list of letter codes contained in the file.
@@ -50,20 +46,19 @@ module KGR
 				[ indexes.map { |i| xs[i] }, indexes.map { |i| ys[i] } ]
 			end
 
-			def self.dataset_to_xys(dataset)
-				min, max = dataset.keys.min, dataset.keys.max
-
+			def dataset_to_xys(dataset)
 				inputs = []
 				outputs = []
 
 				dataset.keys.each { |x|
-					output_select = (0..(max-min)).to_a.map { |i| (i == x - min) ? 1 : 0 }
-					# puts "#{x} ==> #{output_select}"
+					output_select = @detected_letters.map { |l| (l == x) ? 1 : 0 }
+					puts "dl: #{@detected_letters.join ' '}"
+					puts "#{x} ==> #{output_select}"
 
 					dataset[x].each { |input|
 						inputs << input
 						outputs << output_select
-						puts "#{self.data_to_string(input)} => #{output_select}"
+						puts "#{self.class.data_to_string(input)} => #{output_select}"
 					}
 				}
 
@@ -74,21 +69,24 @@ module KGR
 
 			# Z formatu { klic => { vstupy neuronove site co maji dat tenhle vysledek
 			# } } do formatu [ vstupy neuronky ], [ vystupy neuronky ], ...
-			def self.dataset_to_train_data(dataset)
-				inputs, outputs = self.dataset_to_xys(dataset)
+			def dataset_to_train_data(dataset)
+				inputs, outputs = dataset_to_xys(dataset)
 				RubyFann::TrainData.new(inputs: inputs, desired_outputs: outputs)
 			end
 
 			def self.data_inputs_size(data)
 				p data.keys.first
-
 				inputs = data[data.keys.first]
-
 				puts "inputs first: #{inputs.first.inspect}"
-
 				size = inputs.first.size
-
 				size
+			end
+
+			def self.split_xys(xs, ys, split)
+				raise unless xs.length == ys.length
+				pt = (xs.length * split).floor
+
+				[ xs[0...pt], ys[0...pt], xs[pt...xs.length], ys[pt...ys.length] ]
 			end
 
 			def train
@@ -107,20 +105,22 @@ module KGR
 
 				# Restrict keys to A..Z
 				keys = data.keys
+				allowed = Set.new(('0'..'9').to_a + ('A'..'Z').to_a)
 				for k in keys
-					unless ('0'..'9').include?(k.chr)
+					unless allowed.include?(k.chr)
 						data.delete k
 					end
 				end
+
+				@detected_letters = allowed.map { |x| x.ord }.to_a
 
 				# TODO: move to NeuralNet
 
 				# TODO: resize all images to same size and so on
 
-				@min, @max = data.keys.min, data.keys.max
-				train_data = self.class.dataset_to_train_data(data)
+				train_data = dataset_to_train_data(data)
 				num_inputs = self.class.data_inputs_size(data)
-				num_outputs = @max - @min + 1
+				num_outputs = @detected_letters.size
 
 				train_data.save('letter.train')
 
@@ -128,95 +128,78 @@ module KGR
 				puts "num_outputs: #{num_outputs}"
 
 				# TODO assert same size
-				@fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: [ 256, 64, 26 ], num_outputs: num_outputs)
+				@fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: [ 128, 80, 60, allowed.size ], num_outputs: num_outputs)
 
 				@fann.init_weights(train_data)
 				@fann.randomize_weights(-1.0, 1.0)
 				@fann.set_train_error_function(:linear)
 
-				xs, ys = self.class.dataset_to_xys(data)
+				xs, ys = dataset_to_xys(data)
+				xs, ys = self.class.shuffle_xys(xs, ys)
 
-				30.times {
-					xs, ys = self.class.shuffle_xys(xs, ys)
-					puts "..."
-					(0...xs.length).each { |i|
-						@fann.train(xs[i], ys[i])
+				xs_train, ys_train, xs_test, ys_test = self.class.split_xys(xs, ys, 0.7)
 
-						puts "    #{i} / #{xs.length}"
-						puts "=== YS = #{ys[i]}"
-						puts "=== RUBY TEST:"
-						result = classify_data(xs[i])
-						puts result
-						puts "=== END OF RUBY TEST"
-
-						if result == ys[i].index(ys[i].max)
-							puts "----- OK"
-						else
-							puts "----- :("
-						end
+				100.times {
+					xs_train, ys_train = self.class.shuffle_xys(xs_train, ys_train)
+					(0...xs_train.length).each { |i|
+						@fann.train(xs_train[i], ys_train[i])
 					}
 
 					good, total = 0, 0
-					(0...xs.length).each { |i|
-						puts "expect: #{ys[i]}"
-						good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
+					(0...xs_test.length).each { |i|
+						# puts "expect: #{ys[i]}"
+						good += 1 if classify_data(xs_test[i]) == ys_test[i].index(ys_test[i].max)
 						total += 1
 					}
 					puts "good: #{good}, total: #{total}"
 					log.puts "good: #{good}, total: #{total}"
-					sleep 2
 				}
 
 				#@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
 
 				# data, pocet epoch, kazdych X delej vypis, target error
 				#@fann.train_on_data(train_data, 100, 10, 0.05)
-
-				#	good, total = 0, 0
-				#	(0...xs.length).each { |i|
-				#		puts "expect: #{ys[i]}"
-				#		good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
-				#		total += 1
-				#	}
-				#	puts "good: #{good}, total: #{total}"
-				#	log.puts "good: #{good}, total: #{total}"
-				#	sleep 2
-				#puts "Reached MSE: #{@fann.test_data(train_data)}"
 			end
 
-			def report(xs, ys)
+			def index_to_letter(index)
+				@detected_letters[index]
+			end
+
+			def letter_to_index(letter)
+				@detected_letters.index(letter)
 			end
 
 			def save(filename)
 				@fann.save(filename)
-				puts "saving min, max: #{@min} #{@max}"
 				File.open "#{filename}_mp", "w" do |file|
-					# TODO: rovnou cela funkce mezi kodem znaku a kodem v neuronce!!!!
-					file.puts @min
-					file.puts @max
+					file.puts @detected_letters.size
+					@detected_letters.each do |letter|
+						file.puts letter.ord
+					end
 				end
 			end
 
-			def initialize(fann = nil, min = nil, max = nil)
+			def initialize(fann = nil, detected_letters = nil)
 				@fann = fann
-				@min = min
-				@max = max
+				@detected_letters = detected_letters
 			end
 
 			def self.load(filename)
-				min = 0
-				max = 0
+				detected_letters = []
 				File.open "#{filename}_mp", "r" do |file|
 					lines = file.readlines
-					min = lines.shift.to_i
-					max = lines.shift.to_i
+					lines.shift.to_i.times do
+						detected_letters << lines.shift.to_i.chr
+					end
 				end
-				puts "loaded min, max: #{min} #{max}"
-				self.new(RubyFann::Standard.new(filename: filename), min, max)
+				self.new(RubyFann::Standard.new(filename: filename), detected_letters)
 			end
 
-			def classify(image) # Expectation: image is the same size as trainer inputs
-				classify_data(NeuralNet.image_to_data(image))
+			def classify(image)
+				index = classify_data(NeuralNet.image_to_data(image))
+
+				puts "Result: #{index_to_letter(index)}"
+				index
 			end
 
 			def self.data_to_string(data)
@@ -224,18 +207,8 @@ module KGR
 			end
 
 			def classify_data(data)
-				puts "classifying data: #{self.class.data_to_string(data)}"
-
-				#@fann.save "tmp.net"
-				#@fann = RubyFann::Standard.new(filename: "tmp.net")
-				#FileUtils.rm_f "tmp.net"
-
 				result = @fann.run(data)
-				
-				letter = result.index(result.max)
-
-				puts "seen as #{(letter + @min).chr}: #{result.map{|x| "%.2f" % x}.join(" ")}"
-				letter	
+				result.index(result.max)
 			end
 		end
 	end

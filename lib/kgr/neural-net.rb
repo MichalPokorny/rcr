@@ -4,14 +4,7 @@ module KGR
 
 		def self.image_to_data(image)
 			scaled = image.guillotine
-
-			#puts "AFTER GUILLOTINING"
-			#p scaled
-
 			scaled.scale!(16,16)
-
-			#puts "AFTER SCALING"
-			#p scaled
 			
 			data = []
 			(0...scaled.width).each { |x|
@@ -19,10 +12,8 @@ module KGR
 					r, g, b = scaled[x, y]
 					value = (r + g + b) / ((256 * 3) / QUANTUMS)
 					value /= QUANTUMS.to_f
-					# print value.to_s(16)
 					data << value
 				}
-				# puts
 			}
 
 			data
