@@ -3,11 +3,15 @@ module KGR
 		QUANTUMS = 10
 
 		def self.image_to_data(image)
-			scaled = image.scale(16,16)
-			scaled.guillotine!
+			scaled = image.guillotine
+
+			#puts "AFTER GUILLOTINING"
+			#p scaled
+
 			scaled.scale!(16,16)
 
-			p scaled
+			#puts "AFTER SCALING"
+			#p scaled
 			
 			data = []
 			(0...scaled.width).each { |x|
