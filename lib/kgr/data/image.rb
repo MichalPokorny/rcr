@@ -27,6 +27,10 @@ module KGR
 				@image.height
 			end
 
+			def [](x,y)
+				ChunkyPNG::Color.to_truecolor_bytes(@image.get_pixel(x,y))
+			end
+
 			# Crops the image by columns
 			def crop_by_columns(n_columns, cell_height = nil)
 				raise ArgumentError if n_columns <= 0

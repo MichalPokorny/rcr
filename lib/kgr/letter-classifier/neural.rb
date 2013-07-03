@@ -1,6 +1,7 @@
 require 'yaml'
 require 'kgr/data/image'
 require 'kgr/data/integer_raw_dataset'
+require 'kgr/neural-net'
 
 module KGR
 	module LetterClassifier
@@ -45,8 +46,14 @@ module KGR
 			def train
 				puts "Training neural net for letters"
 
+				data = {}
+				
 				dataset = Data::IntegerRawDataset.load("/home/prvak/rocnikac/kgr-prepared/letter.bin")
-				p dataset.keys
+				dataset.keys.each { |key|
+					data[key] = dataset[key].map { |item|
+						NeuralNet.image_to_data(item)
+					}
+				}
 			end
 		end
 	end
