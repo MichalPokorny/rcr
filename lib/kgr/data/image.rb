@@ -1,3 +1,5 @@
+require 'oily_png'
+
 module KGR
 	module Data
 		class Image
@@ -27,9 +29,10 @@ module KGR
 
 			# Crops the image by columns
 			def crop_by_columns(n_columns, cell_height = nil)
-				raise ArgumentError unless column_width > 0 and width % column_width
-
+				raise ArgumentError if n_columns <= 0
 				column_width = width / n_columns
+				raise ArgumentError unless width % column_width
+
 				cell_height ||= column_width
 
 				puts "Cropping image of size #{width}x#{height} by #{n_columns}, cell height #{cell_height}"

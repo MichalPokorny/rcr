@@ -1,5 +1,6 @@
 require 'yaml'
 require 'kgr/data/image'
+require 'kgr/data/key_value_dataset'
 
 module KGR
 	module LetterClassifier
@@ -8,6 +9,8 @@ module KGR
 				dir = "/home/prvak/rocnikac/kgr-data"
 
 				puts "TODO: prepare letter classifier data"
+
+				data_by_letter = {}
 
 				Dir["#{dir}/letter/*"].each do |sample_dir|
 					puts "TODO: prepare #{sample_dir} data"
@@ -24,10 +27,19 @@ module KGR
 
 					data = image.crop_by_columns(letters.count, desc["cell_height"])
 
+					# Make it so that the data is indexed by letter.
 					data.each_index do |index|
-						puts "#{data[index].count} samples of letter #{letters[index]}"
+						letter = letters[index]
+						unless data_by_letter.key?(letter)
+							data_by_letter[letter] = []
+						end
+
+						data_by_letter[letter] += data[index]
 					end
 				end
+
+				dataset = IntegerImageDataset.new(data_by_letter)
+				dataset.save("/home/prvak/rocnikac/kgr-prepared/letter.bin")
 			end
 		end
 	end
