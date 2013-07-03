@@ -1,0 +1,7 @@
+#!/usr/bin/ruby
+
+require 'kgr/letter-classifier/neural'
+require 'kgr/data/image'
+
+classifier = KGR::LetterClassifier::Neural.load("letter-classifier.net")
+classifier.classify(KGR::Data::Image.load(ARGV[0]))
