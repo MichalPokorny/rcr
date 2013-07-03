@@ -3,6 +3,7 @@ require 'kgr/data/image'
 require 'kgr/data/integer_raw_dataset'
 require 'kgr/neural-net'
 require 'ruby-fann'
+require 'fileutils'
 
 module KGR
 	module LetterClassifier
@@ -91,6 +92,7 @@ module KGR
 			end
 
 			def train
+				log = File.open "train_log", "w"
 				puts "Training neural net for letters"
 
 				data = {}
@@ -126,34 +128,60 @@ module KGR
 				puts "num_outputs: #{num_outputs}"
 
 				# TODO assert same size
-				@fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: [ 64, 26 ], num_outputs: num_outputs)
+				@fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: [ 256, 64, 26 ], num_outputs: num_outputs)
 
 				@fann.init_weights(train_data)
+				@fann.randomize_weights(-1.0, 1.0)
 				@fann.set_train_error_function(:linear)
 
 				xs, ys = self.class.dataset_to_xys(data)
 
-				10.times {
-					xs, ys = self.class.shuffle_xys(xs, ys)
-					100.times {
-						puts "..."
-						(0...xs.length).each { |i|
-							@fann.train(xs[i], ys[i])
-						}
-					}
+			#	10.times {
+			#		xs, ys = self.class.shuffle_xys(xs, ys)
+			#		puts "..."
+			#		(0...xs.length).each { |i|
+			#			@fann.train(xs[i], ys[i])
+
+			#			puts "    #{i} / #{xs.length}"
+			#			puts "=== YS = #{ys[i]}"
+			#			puts "=== RUBY TEST:"
+			#			result = classify_data(xs[i])
+			#			puts result
+			#			puts "=== END OF RUBY TEST"
+
+			#			if result == ys[i].index(ys[i].max)
+			#				puts "----- OK"
+			#			else
+			#				puts "----- :("
+			#			end
+			#		}
+
+			#		good, total = 0, 0
+			#		(0...xs.length).each { |i|
+			#			puts "expect: #{ys[i]}"
+			#			good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
+			#			total += 1
+			#		}
+			#		puts "good: #{good}, total: #{total}"
+			#		log.puts "good: #{good}, total: #{total}"
+			#		sleep 2
+			#	}
+
+				@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
 
 					good, total = 0, 0
-					data.keys.each { |key|
-						data[key].each { |item|
-							print "actually #{key.chr}: "
-							good += 1 if classify_data(item) == key
-							total += 1
-						}
+					(0...xs.length).each { |i|
+						puts "expect: #{ys[i]}"
+						good += 1 if classify_data(xs[i]) == ys[i].index(ys[i].max)
+						total += 1
 					}
-				}
+					puts "good: #{good}, total: #{total}"
+					log.puts "good: #{good}, total: #{total}"
+					sleep 2
+				puts "Reached MSE: #{@fann.test_data(train_data)}"
+			end
 
-				#@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
-				#puts "Reached MSE: #{@fann.test_data(train_data)}"
+			def report(xs, ys)
 			end
 
 			def save(filename)
@@ -193,7 +221,11 @@ module KGR
 			end
 
 			def classify_data(data)
-				puts self.class.data_to_string(data)
+				puts "classifying data: #{self.class.data_to_string(data)}"
+
+				#@fann.save "tmp.net"
+				#@fann = RubyFann::Standard.new(filename: "tmp.net")
+				#FileUtils.rm_f "tmp.net"
 
 				result = @fann.run(data)
 				

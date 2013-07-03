@@ -74,13 +74,17 @@ module KGR
 
 			def scale!(new_width, new_height)
 				raise unless new_width.is_a? Fixnum and new_height.is_a? Fixnum
-				raise unless @image.respond_to?(:resample_bilinear!)
+				#raise unless @image.respond_to?(:resample_bilinear!)
 
-				puts "Width: #{width.inspect}, height: #{height.inspect}"
+				rmagick_image = ChunkyPNG::RMagick.export(@image)
+				thumb = rmagick_image.scale(new_width, new_height)
+				@image = ChunkyPNG::RMagick.import(thumb)
 
-				puts "New width: #{new_width.inspect}, new height: #{new_height.inspect}"
+				#puts "Width: #{width.inspect}, height: #{height.inspect}"
 
-				@image.resample_bilinear!(new_width, new_height)
+				#puts "New width: #{new_width.inspect}, new height: #{new_height.inspect}"
+
+				#@image.resample_bilinear!(new_width, new_height)
 			end
 
 			def scale(width, height)
@@ -90,18 +94,32 @@ module KGR
 			def guillotine!
 				rmagick_image = ChunkyPNG::RMagick.export(@image)
 
-				w, h = width, height
+				# w, h = width, height
 
-				p w, h
+				# p w, h
 
 				box = rmagick_image.bounding_box
 				rmagick_image.crop! box.x, box.y, box.width, box.height
 
 				@image = ChunkyPNG::RMagick.import(rmagick_image)
 
-				p @image
+				# p @image
 
-				p w, h
+				# p w, h
+			end
+
+			def guillotine
+				rmagick_image = ChunkyPNG::RMagick.export(@image)
+
+				# w, h = width, height
+
+				# p w, h
+
+				box = rmagick_image.bounding_box
+				rmagick_image.crop! box.x, box.y, box.width, box.height
+
+				image = ChunkyPNG::RMagick.import(rmagick_image)
+				self.class.new(image)
 			end
 		end
 	end
