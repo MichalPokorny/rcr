@@ -41,6 +41,13 @@ module KGR
 				dataset = Data::IntegerRawDataset.new(data_by_letter)
 				dataset.save("/home/prvak/rocnikac/kgr-prepared/letter.bin")
 			end
+
+			def train
+				puts "Training neural net for letters"
+
+				dataset = Data::IntegerRawDataset.load("/home/prvak/rocnikac/kgr-prepared/letter.bin")
+				p dataset.keys
+			end
 		end
 	end
 end

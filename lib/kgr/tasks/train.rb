@@ -12,8 +12,7 @@ module KGR
 
 					case task.downcase
 					when "letter" then
-						# TODO
-						puts "TODO: train letter classifier"
+						LetterClassifier::Neural.train
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data"
