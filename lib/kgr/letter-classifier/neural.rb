@@ -48,6 +48,7 @@ module KGR
 
 				data = {}
 				
+				# TODO: bude jeste orezavani bile. A taky normalizace kontrastu. Fuj.
 				dataset = Data::IntegerRawDataset.load("/home/prvak/rocnikac/kgr-prepared/letter.bin")
 				dataset.keys.each { |key|
 					data[key] = dataset[key].map { |item|
