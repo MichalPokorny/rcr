@@ -43,6 +43,14 @@ module KGR
 					}
 				}
 			end
+
+			def to_raw_data
+				@image.to_rgba_stream
+			end
+
+			def self.from_raw_data(data)
+				self.class.new(ChunkyPNG::Image.from_rgba_stream(data))
+			end
 		end
 	end
 end

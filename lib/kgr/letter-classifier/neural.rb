@@ -1,6 +1,6 @@
 require 'yaml'
 require 'kgr/data/image'
-require 'kgr/data/key_value_dataset'
+require 'kgr/data/integer_raw_dataset'
 
 module KGR
 	module LetterClassifier
@@ -38,7 +38,7 @@ module KGR
 					end
 				end
 
-				dataset = IntegerImageDataset.new(data_by_letter)
+				dataset = Data::IntegerRawDataset.new(data_by_letter)
 				dataset.save("/home/prvak/rocnikac/kgr-prepared/letter.bin")
 			end
 		end
