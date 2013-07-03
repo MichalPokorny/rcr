@@ -1,4 +1,6 @@
 require 'oily_png'
+#require 'rmagick'
+require 'chunky_png/rmagick'
 
 module KGR
 	module Data
@@ -68,6 +70,38 @@ module KGR
 				# puts " (#{width}, #{height})"
 				data = data[16...data.length]
 				self.new(ChunkyPNG::Image.from_rgba_stream(width, height, data))
+			end
+
+			def scale!(new_width, new_height)
+				raise unless new_width.is_a? Fixnum and new_height.is_a? Fixnum
+				raise unless @image.respond_to?(:resample_bilinear!)
+
+				puts "Width: #{width.inspect}, height: #{height.inspect}"
+
+				puts "New width: #{new_width.inspect}, new height: #{new_height.inspect}"
+
+				@image.resample_bilinear!(new_width, new_height)
+			end
+
+			def scale(width, height)
+				self.class.new(@image.resample_bilinear(width, height))
+			end
+
+			def guillotine!
+				rmagick_image = ChunkyPNG::RMagick.export(@image)
+
+				w, h = width, height
+
+				p w, h
+
+				box = rmagick_image.bounding_box
+				rmagick_image.crop! box.x, box.y, box.width, box.height
+
+				@image = ChunkyPNG::RMagick.import(rmagick_image)
+
+				p @image
+
+				p w, h
 			end
 		end
 	end
