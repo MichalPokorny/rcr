@@ -1,15 +1,27 @@
 module KGR
 	class NeuralNet
+		QUANTUMS = 10
 
 		def self.image_to_data(image)
+			scaled = image.scale(16,16)
+			scaled.guillotine!
+			scaled.scale!(16,16)
+
+			p scaled
+			
 			data = []
-			(0...image.width).each { |x|
-				(0...image.height).each { |y|
-					r, g, b = image[x, y]
-					puts "#{r} #{g} #{b}"
-					data << (r + g + b) / (256 * 3)
+			(0...scaled.width).each { |x|
+				(0...scaled.height).each { |y|
+					r, g, b = scaled[x, y]
+					value = (r + g + b) / ((256 * 3) / QUANTUMS)
+					value /= QUANTUMS.to_f
+					# print value.to_s(16)
+					data << value
 				}
+				# puts
 			}
+
+			data
 		end
 	end
 end

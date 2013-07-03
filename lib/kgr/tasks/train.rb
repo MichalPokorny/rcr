@@ -14,7 +14,9 @@ module KGR
 
 					case task.downcase
 					when "letter" then
-						LetterClassifier::Neural.new.train
+						lc = LetterClassifier::Neural.new
+						lc.train
+						lc.save("letter-classifier.net")
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data"

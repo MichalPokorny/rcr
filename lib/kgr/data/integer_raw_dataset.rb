@@ -13,6 +13,10 @@ module KGR
 				@data.keys
 			end
 
+			def delete(*args)
+				@data.delete(*args)
+			end
+
 			def write(io)
 				@data.keys.each { |key|
 					raise ArgumentError, "Invalid key class: #{key.class}" unless key.is_a? Fixnum
