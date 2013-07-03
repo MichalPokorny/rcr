@@ -1,5 +1,5 @@
 require "kgr/version"
 
-module Kgr
+module KGR
   # Your code goes here...
 end

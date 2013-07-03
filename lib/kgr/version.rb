@@ -1,3 +1,3 @@
-module Kgr
+module KGR
   VERSION = "0.0.1"
 end
