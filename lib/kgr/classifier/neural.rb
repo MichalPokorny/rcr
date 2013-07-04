@@ -45,13 +45,13 @@ module KGR
 
 				dataset.keys.each { |x|
 					output_select = @classes.map { |l| (l == x) ? 1 : 0 }
-					puts "dl: #{@classes.join ' '}"
-					puts "#{x} ==> #{output_select}"
+					# puts "dl: #{@classes.join ' '}"
+					# puts "#{x} ==> #{output_select}"
 
 					dataset[x].each { |input|
 						inputs << input
 						outputs << output_select
-						puts "#{self.class.data_to_string(input)} => #{output_select}"
+						# puts "#{self.class.data_to_string(input)} => #{output_select}"
 					}
 				}
 

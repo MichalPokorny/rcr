@@ -63,7 +63,8 @@ module KGR
 
 				# Restrict keys to A..Z
 				keys = data.keys
-				allowed = Set.new(('0'..'9').to_a + ('A'..'Z').to_a)
+				#allowed = Set.new(('0'..'9').to_a + ('A'..'Z').to_a)
+				allowed = ('A'..'Z').to_a
 				for k in keys
 					unless allowed.include?(k.chr)
 						data.delete k
