@@ -12,9 +12,13 @@ module KGR
 				until argv.empty?
 					task = argv.shift
 
+					data_dir = "/home/prvak/rocnikac/kgr-data/input"
+					prepared_dir = "/home/prvak/rocnikac/kgr-data/prepared"
+
 					case task.downcase
 					when "letter" then
-						LetterClassifier::Neural.prepare_data
+						FileUtils.mkdir_p(prepared_dir)
+						LetterClassifier::Neural.prepare_data(File.join(data_dir, "letter"), File.join(prepared_dir, "letter.data"))
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data."
