@@ -24,9 +24,9 @@ module KGR
 						}
 					}
 
-					result = @classify_letter.classify(pixels)		
+					@letter = @classify_letter.classify(pixels)
 
-					puts "Result: #{result}"
+					@area.queue_draw_area 0, 0, *@pixmap.size
 				end
 
 				def clear_canvas
@@ -52,6 +52,13 @@ module KGR
 						@pixmap, 0, 0, 0, 0, w, h)
 
 					@area.window.draw_rectangle @area.style.black_gc, false, 0, 0, window_size, window_size
+
+					if @letter
+						layout = Pango::Layout.new Gdk::Pango.context
+						layout.font_description = Pango::FontDescription.new('Sans 14')
+						layout.text = "Detected: #@letter"
+						@area.window.draw_layout(@area.style.fg_gc(Gtk::STATE_NORMAL), 30, window_size + 20, layout)
+					end
 				end
 
 				def brush_size
