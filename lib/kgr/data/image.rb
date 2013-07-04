@@ -1,5 +1,4 @@
 require 'oily_png'
-#require 'rmagick'
 require 'chunky_png/rmagick'
 
 module KGR
@@ -7,6 +6,17 @@ module KGR
 		class Image
 			def self.load(path)
 				self.new(ChunkyPNG::Image.from_file(path))
+			end
+
+			# pixels: 2D array of R-G-B pixels (0..256)
+			def self.from_pixel_block(pixels)
+				image = ChunkyPNG::Image.new(pixels.size, pixels.first.size, ChunkyPNG::Color::TRANSPARENT)
+				pixels.each_with_index { |row, x|
+					row.each_with_index { |pixel, y|
+						image[x, y] = ChunkyPNG::Color.rgb(*pixel)
+					}
+				}
+				self.new(image)
 			end
 
 			def initialize(image)
@@ -91,35 +101,27 @@ module KGR
 				self.class.new(@image.resample_bilinear(width, height))
 			end
 
-			def guillotine!
+			private
+			def rmagick_guillotine
 				rmagick_image = ChunkyPNG::RMagick.export(@image)
 
-				# w, h = width, height
-
-				# p w, h
-
 				box = rmagick_image.bounding_box
-				rmagick_image.crop! box.x, box.y, box.width, box.height
+				unless box.width == 0 or box.height == 0
+					rmagick_image.crop! box.x, box.y, box.width, box.height
+				else
+					puts "Warning: empty image"
+				end
 
-				@image = ChunkyPNG::RMagick.import(rmagick_image)
+				ChunkyPNG::RMagick.import(rmagick_image)
+			end
 
-				# p @image
-
-				# p w, h
+			public
+			def guillotine!
+				@image = rmagick_guillotine
 			end
 
 			def guillotine
-				rmagick_image = ChunkyPNG::RMagick.export(@image)
-
-				# w, h = width, height
-
-				# p w, h
-
-				box = rmagick_image.bounding_box
-				rmagick_image.crop! box.x, box.y, box.width, box.height
-
-				image = ChunkyPNG::RMagick.import(rmagick_image)
-				self.class.new(image)
+				self.class.new(rmagick_guillotine)
 			end
 		end
 	end
