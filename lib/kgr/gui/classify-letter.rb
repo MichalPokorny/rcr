@@ -143,9 +143,8 @@ module KGR
 				end
 			end
 
-			def initialize
-				# TODO tfuj
-				@classifier = LetterClassifier::Neural.load("letter-classifier.net")
+			def initialize(classifier_path)
+				@classifier = LetterClassifier::Neural.load(classifier_path)
 			end
 
 			def run
@@ -158,7 +157,7 @@ module KGR
 			def classify(pixels)
 				img = Data::Image.from_pixel_block(pixels)
 
-				@classifier.index_to_letter(@classifier.classify(img))
+				@classifier.classify(img).chr
 			end
 		end
 	end

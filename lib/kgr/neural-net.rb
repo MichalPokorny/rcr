@@ -78,7 +78,7 @@ module KGR
 		end
 
 		def self.load(filename)
-			fann = RubyStandard::new(filename: filename + ".fann")
+			fann = RubyFann::Standard::new(filename: filename + ".fann")
 			params = YAML.load_file("#{filename}.net-params")
 
 			self.new(fann, params[:n_inputs], params[:n_outputs])
