@@ -66,9 +66,9 @@ module KGR
 			end
 
 			def self.data_inputs_size(data)
-				p data.keys.first
+				# p data.keys.first
 				inputs = data[data.keys.first]
-				puts "inputs first: #{inputs.first.inspect}"
+				# puts "inputs first: #{inputs.first.inspect}"
 				size = inputs.first.size
 				size
 			end

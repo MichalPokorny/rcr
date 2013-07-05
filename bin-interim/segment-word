@@ -1,0 +1,23 @@
+#!/usr/bin/ruby -w
+
+dir = "/home/prvak/rocnikac/kgr-data/trained"
+
+if ARGV[0] == "-i" || ARGV[0] == "--interactive"
+	require 'kgr/gui/segment-word'
+	gui = KGR::GUI::SegmentWord.new("#{dir}/word-segmenter")
+	gui.run
+else
+	require 'kgr/word-segmentator/default'
+	require 'kgr/data/image'
+	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
+	image = KGR::Data::Image.load(ARGV[0])
+	segmentation = segmentator.segment(image)
+
+	puts "Segmentation says: #{segmentation.text}"
+
+	filename = "segmented.png"
+	segmentation.draw_on_image!(image)
+	image.save(filename)
+
+	puts "Segmented image saved in #{filename}"
+end

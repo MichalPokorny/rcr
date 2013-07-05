@@ -150,6 +150,15 @@ module KGR
 			def mutate
 				self.class.new(rmagick_mutate)
 			end
+
+			RED = ChunkyPNG::Color.rgb(255, 0, 0)
+			GREEN = ChunkyPNG::Color.rgb(0, 255, 0)
+			BLUE = ChunkyPNG::Color.rgb(0, 0, 255)
+
+			def draw_rectangle!(x0, y0, x1, y1, stroke = ChunkyPNG::Color.rgb(0, 0, 0), fill = ChunkyPNG::Color::TRANSPARENT)
+				# puts "Drawing rect #{x0};#{y0} --- #{x1};#{y1}"
+				@image.rect(x0, y0, x1, y1, stroke, fill)
+			end
 		end
 	end
 end
