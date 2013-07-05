@@ -1,4 +1,5 @@
 require 'ruby-fann'
+require 'kgr/data/neural-net-input'
 
 #@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
 
@@ -9,7 +10,7 @@ module KGR
 	class NeuralNet
 		QUANTUMS = 10
 
-		def self.image_to_data(image)
+		def self.image_to_input(image)
 			scaled = image.guillotine
 			scaled.scale!(16,16)
 			
@@ -23,7 +24,7 @@ module KGR
 				}
 			}
 
-			data
+			Data::NeuralNetInput.new(data)
 		end
 
 		def self.shuffle_xys(xs, ys)	

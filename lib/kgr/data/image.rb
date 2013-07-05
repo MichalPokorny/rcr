@@ -1,5 +1,6 @@
 require 'oily_png'
 require 'chunky_png/rmagick'
+require 'RMagick'
 
 module KGR
 	module Data
@@ -122,6 +123,32 @@ module KGR
 
 			def guillotine
 				self.class.new(rmagick_guillotine)
+			end
+
+			private
+			def rmagick_mutate
+				rmagick_image = ChunkyPNG::RMagick.export(@image)
+				# scaling x, rotation x, y, scaling y, translate x, y
+				sx = 0.9 + (rand() * 0.2)
+				sy = 0.9 + (rand() * 0.2)
+				
+				max_rot = Math::PI / 8
+
+				rx = (max_rot / 2) - rand() * max_rot
+				ry = (max_rot / 2) - rand() * max_rot
+
+				tx, ty = 0, 0
+
+				matrix = Magick::AffineMatrix.new(sx, rx, ry, sy, tx, ty)
+
+				rmagick_image = rmagick_image.affine_transform(matrix)
+				ChunkyPNG::RMagick.import(rmagick_image)
+			end
+
+			public
+			# Applies a slight affine transform
+			def mutate
+				self.class.new(rmagick_mutate)
 			end
 		end
 	end
