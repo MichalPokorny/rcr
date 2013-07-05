@@ -1,0 +1,6 @@
+- segmentator radku
+- normalizace kontrastu
+- pridat k obrazkum term "aspect ratio"?
+- implicitni segmentace
+	- rozdelit na souvisle komponenty
+- vraceni jistoty klasifikace
