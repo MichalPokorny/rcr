@@ -1,4 +1,5 @@
 require 'kgr/neural-net'
+require 'kgr/data/neural-net-input'
 
 module KGR
 	module Classifier
@@ -49,7 +50,8 @@ module KGR
 					# puts "#{x} ==> #{output_select}"
 
 					dataset[x].each { |input|
-						inputs << input
+						raise unless input.is_a? Data::NeuralNetInput
+						inputs << input.data
 						outputs << output_select
 						# puts "#{self.class.data_to_string(input)} => #{output_select}"
 					}
@@ -62,13 +64,15 @@ module KGR
 
 			public
 			# Hash: class => [ inputs that have this class ]
-			def train(dataset)
+			def train(dataset, generations: 100, dataset_split: 0.8)
+				log = File.open "train.log", "w"
+
 				xs, ys = NeuralNet.shuffle_xys(*dataset_to_xys(dataset))
-				xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, 0.8)
+				xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, dataset_split)
 
 				puts "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
 
-				100.times { |round|
+				generations.times { |round|
 					@net.train_on_xys(xs_train, ys_train)
 
 					good, total = 0, 0
@@ -76,9 +80,12 @@ module KGR
 						good += 1 if classify(xs_test[i]) == @classes[ys_test[i].index(ys_test[i].max)]
 						total += 1
 					}
-					puts "After round #{round + 1}: good: #{good}, total: #{total}"
-					#log.puts "good: #{good}, total: #{total}"
+					puts "After round #{round + 1}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
+					log.puts "#{round + 1}\t#{good}\t#{total}\t#{good.to_f / total.to_f}"
+					log.flush
 				}
+
+				log.close
 			end
 		end
 	end

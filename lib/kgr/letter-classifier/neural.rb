@@ -25,6 +25,8 @@ module KGR
 
 					data = image.crop_by_columns(letters.count, desc["cell_height"])
 
+					# cell_index = 1
+
 					# Make it so that the data is indexed by letter.
 					data.each_index do |index|
 						letter = letters[index]
@@ -32,7 +34,30 @@ module KGR
 							data_by_letter[letter] = []
 						end
 
-						data_by_letter[letter] += data[index]
+						images = data[index]
+
+						# ci = cell_index
+						data_by_letter[letter] += images.map { |img|
+							cell_data = NeuralNet.image_to_input(img)
+							# img.save("pristine_#{ci}.png")
+							# ci += 1
+
+							cell_data
+						}
+
+						(1..2).each { |mutation|
+							# ci = cell_index
+							data_by_letter[letter] += images.map { |img|
+								mutated = img.mutate
+								cell_data = NeuralNet.image_to_input(mutated)
+								# mutated.save("mutated_#{ci}_#{mutation}.png")
+								# ci += 1
+
+								cell_data
+							}
+						}
+
+						# cell_index = ci
 					end
 				end
 
@@ -54,12 +79,7 @@ module KGR
 				data = {}
 				
 				# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
-				dataset = Data::IntegerRawDataset.load(dataset_file)
-				dataset.keys.each { |key|
-					data[key] = dataset[key].map { |item|
-						NeuralNet.image_to_data(item)
-					}
-				}
+				data = Data::IntegerRawDataset.load(dataset_file, KGR::Data::NeuralNetInput)
 
 				# Restrict keys to A..Z
 				keys = data.keys
@@ -73,8 +93,8 @@ module KGR
 
 				num_inputs = self.class.data_inputs_size(data)
 				puts "num_inputs: #{num_inputs}"
-				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 128, 80, 60 ], classes: allowed.to_a.map(&:ord))
-				@classifier.train(data)
+				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed.to_a.map(&:ord))
+				@classifier.train(data, generations: 1000)
 			end
 
 			def save(filename)
@@ -90,7 +110,7 @@ module KGR
 			end
 
 			def classify(image)
-				@classifier.classify(NeuralNet.image_to_data(image))
+				@classifier.classify(NeuralNet.image_to_input(image).data)
 			end
 		end
 	end
