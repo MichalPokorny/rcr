@@ -1,6 +1,13 @@
 - segmentator radku
 - normalizace kontrastu
-- pridat k obrazkum term "aspect ratio"?
+- pridat k obrazkum term "aspect ratio term" (volitelne)
 - implicitni segmentace
 	- rozdelit na souvisle komponenty
 - vraceni jistoty klasifikace
+- vytvorit confusion matrix
+
+- segmentace posuvnym okenkem?
+
+- vice korupci?
+
+

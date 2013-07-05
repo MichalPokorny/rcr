@@ -1,12 +1,15 @@
 #!/usr/bin/ruby
 
+dir = "/home/prvak/rocnikac/kgr-data/trained"
+
 if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	require 'kgr/gui/classify-letter'
-	gui = KGR::GUI::ClassifyLetter.new("/home/prvak/rocnikac/kgr-data/trained/letter-classifier")
+	gui = KGR::GUI::ClassifyLetter.new("#{dir}/letter-classifier")
 	gui.run
 else
 	require 'kgr/letter-classifier/neural'
 	require 'kgr/data/image'
-	classifier = KGR::LetterClassifier::Neural.load("/home/prvak/rocnikac/kgr-data/trained/letter-classifier")
-	classifier.classify(KGR::Data::Image.load(ARGV[0]))
+	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+	result = classifier.classify(KGR::Data::Image.load(ARGV[0]))
+	puts "Classifier result: #{result}"
 end

@@ -57,7 +57,7 @@ module KGR
 					}
 				}
 
-				p(inputs)
+				# p(inputs)
 
 				[ inputs, outputs ]
 			end
@@ -80,7 +80,7 @@ module KGR
 						good += 1 if classify(xs_test[i]) == @classes[ys_test[i].index(ys_test[i].max)]
 						total += 1
 					}
-					puts "After round #{round + 1}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
+					puts "After round #{round + 1} out of #{generations}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
 					log.puts "#{round + 1}\t#{good}\t#{total}\t#{good.to_f / total.to_f}"
 					log.flush
 				}
