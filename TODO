@@ -1,4 +1,16 @@
 - segmentator radku
+	- operace:
+		- spojit dva segmenty co jsou blizko sebe
+		- rozdelit segment v zajimavem bode
+	
+		- segment budu mit oznaceny podle toho jake pismeno v nem vidim
+			- jedna z operaci bude "zmen, jake pismeno si myslim, ze tenhle segment je"
+
+	- budu skorovat segmentace podle ruznych parametru
+		- jak pravdepodobne vypada to slovo co z toho ted vypada (Markovovy retezce?)
+		- jaka je distribuce sirek segmentu
+		- jaky je pomer stran segmentu
+
 - normalizace kontrastu
 - pridat k obrazkum term "aspect ratio term" (volitelne)
 - implicitni segmentace
@@ -9,5 +21,3 @@
 - segmentace posuvnym okenkem?
 
 - vice korupci?
-
-
