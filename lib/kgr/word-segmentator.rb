@@ -5,17 +5,17 @@ require 'kgr/data/segmentation-box'
 module KGR
 	module WordSegmentator
 		def self.pixel_active(r, g, b)
-			r + g + b < 400 # TODO
+			r < 127 && g < 127 && b < 127 && r + g + b < 400 # TODO
 		end
 
-		def self.segment_into_continuous_parts(image)
+		def self.segment_by(image, condition)
 			marks = (0...image.width).map { (0...image.height).map { false } }
 
 			boxes = []
 
 			(0...image.width).each { |start_x|
 				(0...image.height).each { |start_y|
-					next if !pixel_active(*image[start_x, start_y]) || marks[start_x][start_y]
+					next if !condition.call(start_x, start_y) || marks[start_x][start_y]
 
 					# First find the bounds of the continuous area.
 
@@ -38,7 +38,7 @@ module KGR
 						(x-1..x+1).each { |px|
 							(y-1..y+1).each { |py|
 								next if px < 0 or py < 0 or px >= image.width or py >= image.height
-								if !visited[px][py] and pixel_active(*image[px, py])
+								if !visited[px][py] and condition.call(px, py)
 									visited[px][py] = true
 									queue << [px, py]
 								end
@@ -48,7 +48,11 @@ module KGR
 
 					block = (x0...x1).map { |ix|
 						(y0...y1).map { |iy|
-							image[ix, iy]
+							if marks[ix][iy]
+								image[ix, iy]
+							else
+								[ 255, 255, 255 ]
+							end
 						}
 					}
 
@@ -62,6 +66,39 @@ module KGR
 			}
 
 			boxes
+		end
+
+		def self.load_segmentation_from_sample(image, image_corrections)
+			# Red (#ff0000) means "not actually connected"
+			# Green (#00ff00) means "actually connected"
+			
+			pixel_passable = lambda do |x, y|
+				pixel = image_corrections[x, y]
+
+				r, g, b = *pixel
+
+				if r == 0 && g > 127 && b == 0
+					# Green, force this pixel.
+					# puts "Green: #{x} #{y}"
+					return true
+				end
+
+				if r > 127 && g == 0 && b == 0
+					# Red, skip this pixel.
+					# puts "Red: #{x} #{y}"
+					return false
+				end
+				
+				pixel_active(*image[x, y])
+			end
+
+			segment_by(image, pixel_passable)
+		end
+
+		def self.segment_into_continuous_parts(image)
+			segment_by(image, lambda do |x, y|
+				pixel_active(*image[x, y])
+			end)
 		end
 	end
 end

@@ -94,7 +94,7 @@ module KGR
 				num_inputs = self.class.data_inputs_size(data)
 				puts "num_inputs: #{num_inputs}"
 				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed.to_a.map(&:ord))
-				@classifier.train(data, generations: 1000)
+				@classifier.train(data, generations: 100)
 			end
 
 			def save(filename)
