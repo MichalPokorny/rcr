@@ -1,4 +1,5 @@
 require 'kgr/letter-classifier/neural'
+require 'kgr/word-segmentator/default'
 
 module KGR
 	module Tasks
@@ -15,10 +16,13 @@ module KGR
 					data_dir = "/home/prvak/rocnikac/kgr-data/input"
 					prepared_dir = "/home/prvak/rocnikac/kgr-data/prepared"
 
+					FileUtils.mkdir_p(prepared_dir)
+
 					case task.downcase
 					when "letter" then
-						FileUtils.mkdir_p(prepared_dir)
 						LetterClassifier::Neural.prepare_data(File.join(data_dir, "letter"), File.join(prepared_dir, "letter.data"))
+					when "segment" then
+						WordSegmentator::Default.prepare_data(File.join(data_dir, "segment"), File.join(prepared_dir, "segment.data"))
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data."

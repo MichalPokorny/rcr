@@ -1,4 +1,5 @@
 require 'kgr/letter-classifier/neural'
+require 'kgr/word-segmentator/default'
 
 module KGR
 	module Tasks
@@ -20,6 +21,10 @@ module KGR
 						lc = LetterClassifier::Neural.new
 						lc.train(File.join(prepared_dir, "letter.data"))
 						lc.save(File.join(trained_dir, "letter-classifier"))
+					when "segment" then
+						ws = WordSegmentator::Default.new
+						ws.train(File.join(prepared_dir, "segment.data"))
+						ws.save(File.join(trained_dir, "word-segmentator"))
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data"
