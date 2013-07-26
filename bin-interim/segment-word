@@ -4,16 +4,20 @@ dir = "/home/prvak/rocnikac/kgr-data/trained"
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	require 'kgr/gui/segment-word'
-	gui = KGR::GUI::SegmentWord.new("#{dir}/word-segmenter")
+	gui = KGR::GUI::SegmentWord.new("#{dir}/word-segmenter", "#{dir}/letter-classifier")
 	gui.run
 else
 	require 'kgr/word-segmentator/default'
+	require 'kgr/letter-classifier/neural'
 	require 'kgr/data/image'
+
 	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-	image = KGR::Data::Image.load(ARGV[0])
+	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
 	segmentation = segmentator.segment(image)
 
-	puts "Segmentation says: #{segmentation.text}"
+	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+
+	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
 
 	filename = "segmented.png"
 	segmentation.draw_on_image!(image)

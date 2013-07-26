@@ -45,7 +45,7 @@ module KGR
 							cell_data
 						}
 
-						(1..2).each { |mutation|
+						0.times { |mutation|
 							# ci = cell_index
 							data_by_letter[letter] += images.map { |img|
 								mutated = img.mutate
@@ -110,7 +110,10 @@ module KGR
 			end
 
 			def classify(image)
-				@classifier.classify(NeuralNet.image_to_input(image).data)
+				result = @classifier.classify(NeuralNet.image_to_input(image).data)
+				# filename = "#{result.chr}-#{Time.now.to_i}.png"
+				# image.save(filename)
+				result
 			end
 		end
 	end

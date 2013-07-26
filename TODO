@@ -14,7 +14,6 @@
 - normalizace kontrastu
 - pridat k obrazkum term "aspect ratio term" (volitelne)
 - implicitni segmentace
-	- rozdelit na souvisle komponenty
 - vraceni jistoty klasifikace
 - vytvorit confusion matrix
 

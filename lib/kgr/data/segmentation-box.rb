@@ -37,6 +37,14 @@ module KGR
 			def x1; x + width; end
 			def y1; y + height; end
 
+			def absolute_pixel(x, y)
+				if maybe_covers_pixel?(x, y)
+					image[x - x0, y - y0]
+				else
+					[ 255, 255, 255 ] # pixel not present: white
+				end
+			end
+
 			def to_raw_data
 				[ x, y ].pack("QQ") + image.to_raw_data
 			end
@@ -45,9 +53,49 @@ module KGR
 				x, y = data[0...16].unpack("QQ")
 				data = data[16...data.size]
 
-				puts "loaded box at #{[x, y]}"
-
 				self.new(x, y, Data::Image.from_raw_data(data))
+			end
+
+			def self.merge(box1, box2)
+				x0 = [ box1.x0, box2.x0 ].min
+				x1 = [ box1.x1, box2.x1 ].max
+				y0 = [ box1.y0, box2.y0 ].min
+				y1 = [ box1.y1, box2.y1 ].max
+
+				width = x1 - x0
+				height = y1 - y0
+
+				pixels = (0...width).map { |x|
+					(0...height).map { |y|
+						p1 = box1.absolute_pixel(x, y)
+						p2 = box2.absolute_pixel(x, y)
+						(0...3).map { |i| [ p1[i], p2[i] ].min }
+					}
+				}
+
+				image = Data::Image.from_pixel_block(pixels)
+				self.new(x0, y0, image)
+			end
+
+			def split_along_relative_x(split_x)
+				pixels_left = (0...split_x).map { |x|
+					(0...height).map { |y|
+						image[x, y]
+					}
+				}
+				pixels_right = (split_x...width).map { |x|
+					(0...height).map { |y|
+						image[x, y]
+					}
+				}
+
+				image_left = Data::Image.from_pixel_block(pixels_left)
+				image_right = Data::Image.from_pixel_block(pixels_right)
+
+				a = self.class.new(x0, y0, image_left)
+				b = self.class.new(x0 + split_x, y0, image_right)
+
+				[ a, b ]
 			end
 		end
 	end
