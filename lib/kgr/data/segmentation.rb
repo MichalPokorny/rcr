@@ -9,8 +9,10 @@ module KGR
 				@boxes = boxes
 			end
 
-			def text
-				"TODO" # TODO
+			def detected_text(letter_classifier)
+				@boxes.sort_by(&:x0).map { |box|
+					letter_classifier.classify(box.image).chr
+				}.join
 			end
 
 			def draw_on_image!(image)
@@ -83,8 +85,6 @@ module KGR
 					data = data[ary.first...data.size]
 				end
 
-				puts "loaded #{boxes.size} boxes of segmentation"
-
 				image = Data::Image.from_raw_data(data)
 
 				self.new(image, boxes)
@@ -102,7 +102,23 @@ module KGR
 				pixels
 			end
 
-			def difference(other)
+			def difference_exact(other)
+				active = active_pixels
+				diff = 0
+
+				active.each_index do |i|
+					(0...i).each do |j|
+						p1, p2 = active[i], active[j]
+						if pixels_in_same_box?(p1, p2) ^ other.pixels_in_same_box?(p1, p2)
+							diff += 1
+						end
+					end
+				end
+
+				diff.to_f / (active.size ** 2)
+			end
+
+			def difference_approximate(other)
 				active = active_pixels
 				diff = 0
 
@@ -116,17 +132,30 @@ module KGR
 				end
 
 				diff
+			end
 
-				#active.each_index do |i|
-				#	(0...i).each do |j|
-				#		p1, p2 = active[i], active[j]
-				#		if pixels_in_same_box?(p1, p2) ^ other.pixels_in_same_box?(p1, p2)
-				#			diff += 1
-				#		end
-				#	end
-				#end
+			def difference(other)
+				difference_approximate(other)
+			end
 
-				#diff.to_f / (active.size ** 2)
+			# Returns a modified Segmentation
+			def merge_boxes(box1, box2)
+				raise ArgumentError unless @boxes.include?(box1) && @boxes.include?(box2)
+				raise if box1 == box2
+				boxes = @boxes.reject { |box| box == box1 || box == box2 } << SegmentationBox.merge(box1, box2)
+				raise unless boxes.count == @boxes.count - 1
+				self.class.new(@image, boxes)
+			end
+
+			def remove_box(box)
+				raise ArgumentError unless @boxes.include?(box)
+				self.class.new(@image, @boxes.reject { |b| b == box})
+			end
+
+			def split_box_along_relative_x(box, relative_x)
+				raise ArgumentError unless @boxes.include?(box)
+				self.class.new(@image, @boxes.reject { |b| b == box } +
+					box.split_along_relative_x(relative_x))
 			end
 		end
 	end
