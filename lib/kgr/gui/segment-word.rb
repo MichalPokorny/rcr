@@ -19,7 +19,9 @@ module KGR
 
 				def segment
 					image = KGR::Data::Image.from_pixmap(pixmap)
+					puts "Image loaded, segmenting."
 					@segmentation = @segmentator.segment(image)
+					puts "Segmented."
 					@area.queue_draw_area 0, 0, *@pixmap.size
 				end
 
