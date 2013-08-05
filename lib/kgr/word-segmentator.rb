@@ -46,6 +46,7 @@ module KGR
 						}
 					end
 
+					# TODO: this is slow. don't create this thing explicitly.
 					block = (x0...x1).map { |ix|
 						(y0...y1).map { |iy|
 							if marks[ix][iy]

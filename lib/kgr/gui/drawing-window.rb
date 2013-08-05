@@ -19,7 +19,11 @@ module KGR
 				@area.queue_draw_area 0, 0, w, h
 			end
 
-			def window_size
+			def window_width
+				256
+			end
+
+			def window_height
 				256
 			end
 
@@ -29,7 +33,7 @@ module KGR
 				@area.window.draw_drawable(@area.style.fg_gc(Gtk::STATE_NORMAL),
 					@pixmap, 0, 0, 0, 0, w, h)
 
-				@area.window.draw_rectangle @area.style.black_gc, false, 0, 0, window_size, window_size
+				@area.window.draw_rectangle @area.style.black_gc, false, 0, 0, window_width, window_height
 
 				draw_on_area(@area)
 			end
