@@ -4,6 +4,26 @@ require 'kgr/data/segmentation-box'
 
 module KGR
 	module WordSegmentator
+		class MaskedImagelike
+			def initialize(image, mask, x0, x1, y0, y1)
+				@image, @mask = image, mask
+				@x0, @x1, @y0, @y1 = x0, x1, y0, y1
+			end
+
+			def [](x, y)
+				ix, iy = x + @x0, y + @y0
+				raise if ix >= @x1 || iy >= @y1
+				if @mask[ix][iy]
+					@image[ix, iy]
+				else
+					[ 255, 255, 255 ]
+				end
+			end
+
+			def width; @x1 - @x0; end
+			def height; @y1 - @y0; end
+		end
+
 		def self.pixel_active(r, g, b)
 			r < 127 && g < 127 && b < 127 && r + g + b < 400 # TODO
 		end
@@ -46,20 +66,9 @@ module KGR
 						}
 					end
 
-					# TODO: this is slow. don't create this thing explicitly.
-					block = (x0...x1).map { |ix|
-						(y0...y1).map { |iy|
-							if marks[ix][iy]
-								image[ix, iy]
-							else
-								[ 255, 255, 255 ]
-							end
-						}
-					}
+					next if x0 == x1 || y0 == y1 # zero-size blocks are skipped
 
-					next if block.size == 0 # zero-size blocks are skipped
-
-					block = Data::Image.from_pixel_block(block)
+					block = Data::Image.from_imagelike(MaskedImagelike.new(image, marks, x0, x1, y0, y1))
 					box = Data::SegmentationBox.new(x0, y0, block)
 					
 					boxes << box
