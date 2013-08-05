@@ -20,6 +20,30 @@ module KGR
 				self.new(image)
 			end
 
+			def self.from_imagelike(imagelike)
+				image = ChunkyPNG::Image.new(imagelike.width, imagelike.height, ChunkyPNG::Color::TRANSPARENT)
+				(0...imagelike.width).map { |x|
+					(0...imagelike.height).map { |y|
+						image[x, y] = ChunkyPNG::Color.rgb(*imagelike[x, y])
+					}
+				}
+				self.new(image)
+			end
+
+			def self.from_pixmap(pixmap)
+				image = pixmap.get_image 0, 0, pixmap.width, pixmap.height 
+				class << image
+					def [](x, y)
+						pixel = pixmap.image.get_pixel(x, y)
+						b = pixel & 0xFF; pixel >>= 8
+						g = pixel & 0xFF; pixel >>= 8
+						r = pixel & 0xFF
+						[r, g, b]
+					end
+				end
+				from_imagelike(image)
+			end
+
 			def initialize(image)
 				@image = image
 			end
