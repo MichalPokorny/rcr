@@ -77,6 +77,11 @@ module KGR
 
 				segmentations.each do |segmentation|
 					mine = segment(segmentation.image)
+#					approx = mine.difference_approximate(segmentation)
+#					exact = mine.difference_exact(segmentation)
+
+#					puts "approx: %.3f, exact: %.3f" % [ approx, exact ]
+
 					total_delta += mine.difference(segmentation)
 				end
 				puts "total delta = #{total_delta}"
