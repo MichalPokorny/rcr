@@ -12,11 +12,13 @@ else
 	require 'kgr/letter-classifier/neural'
 	require 'kgr/data/image'
 	require 'kgr/heuristic-oversegmenter/stupid'
+	require 'kgr/markov-chain-model'
 
 	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
 
 #	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier)
+	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
+	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier, model)
 	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
 	segmentation = segmentator.segment(image)
 

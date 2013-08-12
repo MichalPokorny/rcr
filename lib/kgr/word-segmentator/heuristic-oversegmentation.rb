@@ -4,6 +4,9 @@ require 'kgr/data/segmentation-box'
 
 # TODO: make oversegmenter settable
 
+# TODO: alternative edges -- pick the one that hungrily fits the Markov chain * the score the best?
+# TODO: Markov chain modeling is probably horribly wrong!
+
 module KGR
 	module WordSegmentator
 		class HeuristicOversegmentation
@@ -16,19 +19,36 @@ module KGR
 				self.new
 			end
 
-			def initialize(oversegmenter, letter_classifier)
+			def initialize(oversegmenter, letter_classifier, language_model)
 				@oversegmenter = oversegmenter # HeuristicOversegmenter::Stupid.new
 				@letter_classifier = letter_classifier
+				@language_model = language_model
 			end
 
-			def calculate_score(image, x0, x1)
+			def calculate_score(context, image, x0, x1)
 				img = image.crop(x0, 0, x1 - x0, image.height)
 				# TODO: what about other tips?
 				result, score = @letter_classifier.classify_with_score(img) # first returned value: result
 
-				puts sprintf("#{x0}..#{x1}: score=%.2f result=#{result.chr}", score)
+				result = result.chr
 
-				score
+				lm_score =
+					if @language_model
+						@language_model.score(context, result)
+					else
+						1
+					end
+
+				lm_msg =
+					if @language_model
+						sprintf(" lms=%.2f context=#{context.join ''}", lm_score)
+					else
+						""
+					end
+
+				puts sprintf("#{x0}..#{x1}: score=%.2f result=#{result}#{lm_msg}", score)
+
+				[ result, score * lm_score ]
 			end
 
 			def segment(image)
@@ -39,14 +59,19 @@ module KGR
 				scores[0] = 1
 				path = {}
 
+				context = {}
+				context[0] = []
+
 				puts "xs: #{oversegmentation.xs}"
 				puts "graph: #{oversegmentation.graph}"
 
 				oversegmentation.xs.each_index do |i|
 					for j in oversegmentation.graph[i]
-						score = scores[i] * calculate_score(image, oversegmentation.xs[i], oversegmentation.xs[j])
+						result, edge_score = calculate_score(context[i], image, oversegmentation.xs[i], oversegmentation.xs[j])
+						score = scores[i] * edge_score
 						if scores[j].nil? || scores[j] < score
 							scores[j], path[j] = score, i 
+							context[j] = context[i] + [ result ]
 						end
 					end
 				end
