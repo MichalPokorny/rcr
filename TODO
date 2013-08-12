@@ -14,7 +14,6 @@
 - normalizace kontrastu
 - pridat k obrazkum term "aspect ratio term" (volitelne)
 - implicitni segmentace
-- vraceni jistoty klasifikace
 - vytvorit confusion matrix
 
 - segmentace posuvnym okenkem?
@@ -22,3 +21,7 @@
 - vice korupci?
 
 - vzdyt muzu prece vytvorit furu dat ze svych poznamek!
+
+- heuristic oversegmentation: nekde je neco blbe...
+
+- mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
