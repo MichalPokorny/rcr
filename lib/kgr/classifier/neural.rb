@@ -34,6 +34,19 @@ module KGR
 				@classes[result.index(result.max)]
 			end
 
+			def classify_with_score(x)
+				result = @net.run(x)
+				max = result.max
+				sum = result.inject(&:+)
+				score = if sum == 0 # TODO: isn't that too much?
+					0.00001
+				else
+					max / sum
+				end
+				
+				[ @classes[result.index(max)], score ]
+			end
+
 			# TODO: this is a hack that expect data between 0 and 1!
 			def self.data_to_string(data)
 				data.map { |x| (x * 15).to_i.to_s(16) }.join
