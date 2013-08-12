@@ -8,14 +8,17 @@ if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	gui.run
 else
 	require 'kgr/word-segmentator/default'
+	require 'kgr/word-segmentator/heuristic-oversegmentation'
 	require 'kgr/letter-classifier/neural'
 	require 'kgr/data/image'
-
-	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
-	segmentation = segmentator.segment(image)
+	require 'kgr/heuristic-oversegmenter/stupid'
 
 	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+
+#	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
+	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier)
+	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
+	segmentation = segmentator.segment(image)
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
 

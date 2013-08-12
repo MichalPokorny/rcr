@@ -9,6 +9,42 @@ require 'fileutils'
 module KGR
 	module LetterClassifier
 		class Neural
+			def self.convert_data_for_eblearn(source_dir, target_dir)
+				indexes = {}
+
+				Dir["#{source_dir}/*"].each do |sample_dir|
+					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
+
+					# Create list of letter codes contained in the file.
+					letters = []
+					desc["segments"].each do |segment|
+						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
+					end
+
+					image = Data::Image.load(File.join(sample_dir, "data.png"))
+
+					data = image.crop_by_columns(letters.count, desc["cell_height"])
+
+					# cell_index = 1
+
+					# Make it so that the data is indexed by letter.
+					data.each_index do |index|
+						letter = letters[index].chr
+
+						images = data[index]
+
+						images.each do |img|
+							indexes[letter] ||= 0
+							FileUtils.mkdir_p(File.join(target_dir, letter))
+							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
+							indexes[letter] += 1
+
+							img.save(path)
+						end
+					end
+				end
+			end
+
 			def self.prepare_data(source_dir, target_file)
 				data_by_letter = {}
 
@@ -111,6 +147,13 @@ module KGR
 
 			def classify(image)
 				result = @classifier.classify(NeuralNet.image_to_input(image).data)
+				# filename = "#{result.chr}-#{Time.now.to_i}.png"
+				# image.save(filename)
+				result
+			end
+
+			def classify_with_score(image)
+				result = @classifier.classify_with_score(NeuralNet.image_to_input(image).data)
 				# filename = "#{result.chr}-#{Time.now.to_i}.png"
 				# image.save(filename)
 				result
