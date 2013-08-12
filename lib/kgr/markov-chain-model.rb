@@ -16,12 +16,19 @@ module KGR
 			}
 		end
 
-		def score(continuation)
+		def score(context, continuation)
 			@depth.downto(0) do |depth|
+				next if context.length < depth
 				score = @chains[depth].score(context, continuation)
 				return score unless score.nil?
 			end
 			nil
+		end
+
+		def self.load_from_corpus(depth, path)
+			model = self.new(depth)
+			model.load(File.read(path).each_char.select { |c| c =~ /[a-zA-Z0-9]/ }) # TODO: bad position.
+			model
 		end
 	end
 end
