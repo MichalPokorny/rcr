@@ -15,7 +15,7 @@ module KGR
 				return [] if parts.empty?
 
 				xs = parts.map(&:x0) + parts.map(&:x1)
-				#x0, x1 = xs.min, xs.max
+				x0, x1 = xs.min, xs.max
 				y0, y1 = parts.map(&:y0).min, parts.map(&:y1).max
 
 				ink_amounts = (0...image.width).map { |x|
@@ -44,6 +44,7 @@ module KGR
 					end
 				}
 
+				good_minima << x0 << x1
 				good_minima.sort!
 				
 				xs = good_minima
@@ -59,7 +60,7 @@ module KGR
 					end
 				end
 
-				Oversegmentation.new(good_minima, graph)
+				Oversegmentation.new(image, good_minima, graph)
 			end
 		end
 	end

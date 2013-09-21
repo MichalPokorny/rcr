@@ -1,5 +1,10 @@
 - prave je rozdelana heuristic oversegmentation.
 
+- v heuristic oversegmentation pridat alternativni nody: klasifikator necht nevrati jenom maximum, ale vsechny
+  svoje odhady.
+
+  - TODO: "find best path for result" - 'najdi nejlepsi sojku'
+
 - segmentator radku
 	- operace:
 		- spojit dva segmenty co jsou blizko sebe

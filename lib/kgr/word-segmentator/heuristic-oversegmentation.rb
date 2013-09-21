@@ -2,8 +2,6 @@ require 'kgr/heuristic-oversegmenter/stupid'
 require 'kgr/data/segmentation'
 require 'kgr/data/segmentation-box'
 
-# TODO: make oversegmenter settable
-
 # TODO: alternative edges -- pick the one that hungrily fits the Markov chain * the score the best?
 # TODO: Markov chain modeling is probably horribly wrong!
 
@@ -61,39 +59,7 @@ module KGR
 
 			def segment(image)
 				oversegmentation = @oversegmenter.oversegment(image)
-
-				# Viterbi algorithm
-				scores = {}
-				scores[0] = 1
-				path = {}
-
-				context = {}
-				context[0] = []
-
-				puts "oversegmentation xs: #{oversegmentation.xs}"
-				puts "graph: #{oversegmentation.graph}"
-
-				oversegmentation.xs.each_index do |i|
-					for j in oversegmentation.graph[i]
-						result, edge_score = calculate_score(context[i], image, oversegmentation.xs[i], oversegmentation.xs[j])
-						score = scores[i] * edge_score
-						if scores[j].nil? || scores[j] < score
-							scores[j], path[j] = score, i 
-							context[j] = context[i] + [ result ]
-						end
-					end
-				end
-				
-				# TODO: mayhaps don't oversegment whole?
-				best_path = []
-				point = oversegmentation.xs.length - 1
-				until point.nil?
-					best_path << point
-					point = path[point]
-				end
-
-				best_path = best_path.map { |i| oversegmentation.xs[i] }.sort
-
+				best_path = oversegmentation.best_path(self)
 				puts "best path found: #{best_path}"
 
 				boxes = []

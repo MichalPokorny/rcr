@@ -37,13 +37,21 @@ module KGR
 			def classify_with_score(x)
 				result = @net.run(x)
 				max = result.max
-				sum = result.inject(&:+)
-				score = if sum == 0 # TODO: isn't that too much?
-					0.00001
-				else
-					max / sum
-				end
-				
+
+				# Former variant (not resistant to guessing):
+				#
+				# This is probably broken. Just because a neural network fires in
+				# only one node doesn't mean that it's sure of the result.
+				#
+				#sum = result.inject(&:+)
+				#score = if sum == 0 # TODO: isn't that too much?
+				#	0.00001
+				#else
+				#	max / sum
+				#end
+
+				score = max
+
 				[ @classes[result.index(max)], score ]
 			end
 
