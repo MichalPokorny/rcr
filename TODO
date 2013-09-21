@@ -1,3 +1,5 @@
+- prave je rozdelana heuristic oversegmentation.
+
 - segmentator radku
 	- operace:
 		- spojit dva segmenty co jsou blizko sebe
@@ -25,3 +27,5 @@
 - heuristic oversegmentation: nekde je neco blbe...
 
 - mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
+
+- implementovat spravne heuristic oversegmentation
