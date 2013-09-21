@@ -51,6 +51,14 @@ module KGR
 				[ result, score * lm_score ]
 			end
 
+			def show_oversegmentation(image)
+				oversegmentation = @oversegmenter.oversegment(image)
+				xs = oversegmentation.xs
+				oversegmentation.xs.each_index do |i|
+					image.draw_rectangle!(xs[i], 0, xs[i], image.height, ChunkyPNG::Color.rgb(100, 100, 100))
+				end
+			end
+
 			def segment(image)
 				oversegmentation = @oversegmenter.oversegment(image)
 
@@ -62,7 +70,7 @@ module KGR
 				context = {}
 				context[0] = []
 
-				puts "xs: #{oversegmentation.xs}"
+				puts "oversegmentation xs: #{oversegmentation.xs}"
 				puts "graph: #{oversegmentation.graph}"
 
 				oversegmentation.xs.each_index do |i|

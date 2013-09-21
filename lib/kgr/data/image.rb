@@ -5,6 +5,7 @@ require 'RMagick'
 module KGR
 	module Data
 		class Image
+			class EmptyImage < StandardError; end
 			def self.load(path)
 				self.new(ChunkyPNG::Image.from_file(path))
 			end
@@ -57,7 +58,9 @@ module KGR
 			end
 
 			def crop(x, y, width, height)
-				self.class.new(@image.crop(x, y, width, height))
+				raise ArgumentError, "negative cropped part size" if width < 0 or height < 0
+				img = @image.crop(x, y, width, height) or raise EmptyImage
+				self.class.new(img)
 			end
 
 			def save(file)

@@ -5,9 +5,6 @@ module KGR
 	module HeuristicOversegmenter
 		# Oversegments by X coordinates of continuous blocks and by a regular
 		# interval.
-		#
-		# More heuristics: local minimum of ink height, local minimum in vertical
-		# projection
 		class Stupid
 			def initialize
 			end
@@ -29,7 +26,7 @@ module KGR
 				graph = {}
 				xs.each_index do |i|
 					graph[i] = []
-					# Stupid. Stupid. Stupid. Stupid.
+					# TODO: Stupid. Stupid. Stupid. Stupid.
 					for j in (i+1)...xs.length
 						if xs[j] - xs[i] < (y1 - y0) * 2
 							graph[i] << j

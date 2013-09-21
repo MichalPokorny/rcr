@@ -11,20 +11,23 @@ else
 	require 'kgr/word-segmentator/heuristic-oversegmentation'
 	require 'kgr/letter-classifier/neural'
 	require 'kgr/data/image'
-	require 'kgr/heuristic-oversegmenter/stupid'
+	#require 'kgr/heuristic-oversegmenter/stupid'
+	require 'kgr/heuristic-oversegmenter/local-minima'
 	require 'kgr/markov-chain-model'
 
 	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
 
 #	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
 	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
-	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier, model)
+#	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier, model)
+	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
 	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
 	segmentation = segmentator.segment(image)
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
 
 	filename = "segmented.png"
+	segmentator.show_oversegmentation(image) # Must be here.
 	segmentation.draw_on_image!(image)
 	image.save(filename)
 
