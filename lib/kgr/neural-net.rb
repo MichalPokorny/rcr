@@ -10,14 +10,23 @@ module KGR
 	class NeuralNet
 		QUANTUMS = 10
 
-		def self.image_to_input(image)
-			scaled = image.guillotine
-			scaled.scale!(16,16)
+		# TODO: contrast normalization
+		def self.image_to_input(image, guillotine: true, rescale: true)
+			if guillotine
+				image = image.guillotine
+			end
+
+			if rescale
+				# Rescale the image, forget its aspect ratio
+				image.scale!(16,16)
+			else
+				image.border_to_and_resize_to_fit!(16, 16)
+			end
 			
 			data = []
-			(0...scaled.width).each { |x|
-				(0...scaled.height).each { |y|
-					r, g, b = scaled[x, y]
+			(0...image.width).each { |x|
+				(0...image.height).each { |y|
+					r, g, b = image[x, y]
 					value = (r + g + b) / ((256 * 3) / QUANTUMS)
 					value /= QUANTUMS.to_f
 					data << value

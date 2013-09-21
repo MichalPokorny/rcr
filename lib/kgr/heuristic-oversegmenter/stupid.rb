@@ -34,7 +34,7 @@ module KGR
 					end
 				end
 
-				Oversegmentation.new(xs, graph)
+				Oversegmentation.new(image, xs, graph)
 			end
 		end
 	end

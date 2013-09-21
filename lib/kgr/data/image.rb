@@ -110,18 +110,12 @@ module KGR
 			end
 
 			def scale!(new_width, new_height)
-				raise unless new_width.is_a? Fixnum and new_height.is_a? Fixnum
-				#raise unless @image.respond_to?(:resample_bilinear!)
+				new_width, new_height = [new_width, new_height].map(&:to_i)
+				raise ArgumentError unless new_width.is_a? Fixnum and new_height.is_a? Fixnum
 
 				rmagick_image = ChunkyPNG::RMagick.export(@image)
-				thumb = rmagick_image.scale(new_width, new_height)
-				@image = ChunkyPNG::RMagick.import(thumb)
-
-				#puts "Width: #{width.inspect}, height: #{height.inspect}"
-
-				#puts "New width: #{new_width.inspect}, new height: #{new_height.inspect}"
-
-				#@image.resample_bilinear!(new_width, new_height)
+				rmagick_image.scale!(new_width, new_height)
+				@image = ChunkyPNG::RMagick.import(rmagick_image)
 			end
 
 			def scale(width, height)
@@ -149,6 +143,71 @@ module KGR
 
 			def guillotine
 				self.class.new(rmagick_guillotine)
+			end
+
+#			private
+#			def rmagick_border_to(new_w, new_h)
+#				raise ArgumentError, "Image already bigger than #{[new_w,new_h]} (#{[width,height]})" if new_w < width || new_h < height
+#
+#				border_x = (width - new_w) / 2
+#				border_y = (height - new_h) / 2
+#
+#				img = ChunkyPNG::RMagick.export(@image)
+#
+#				img.border!(border_x, border_y, '#FFFFFF')
+#				if img.width != new_w || img.height != new_h
+#					puts "Warning: bordered to #{[new_w,new_h]}, but got #{[img.width,img.height]}, resizing."
+#					img.resize!(new_w, new_h)
+#				end
+#
+#				ChunkyPNG::RMagick.import(img)
+#			end
+#			
+#			public
+#			def border_to!(new_w, new_h)
+#				@image = rmagick_border_to(new_w, new_h)
+#			end
+#
+#			private
+#			def rmagick_resize_to_fit(new_w, new_h)
+#				img = ChunkyPNG::RMagick.export(@image)
+#				img.resize_to_fit!(new_w, new_h)
+#				ChunkyPNG::RMagick.import(img)
+#			end
+#
+#			public
+#			def resize_to_fit!(new_w, new_h)
+#				@image = rmagick_resize_to_fit(new_w, new_h)
+#			end
+			def rmagick_border_to_and_resize_to_fit(new_w, new_h)
+				img = ChunkyPNG::RMagick.export(@image)
+				# puts "#{img.columns}x#{img.rows}"
+				img.resize_to_fit!(new_w, new_h)
+				# puts "=> #{img.columns}x#{img.rows}"
+
+				#raise "Image already bigger than #{[new_w,new_h]} (#{[img.width,img.height]})" if new_w < img.width || new_h < img.height
+
+				border_x = (new_w - img.columns) / 2
+				border_y = (new_h - img.rows) / 2
+
+				raise if border_x < 0 or border_y < 0
+
+				# puts "border: #{border_x}x#{border_y}"
+
+				# ImageMagick zrejme neimplementuje #width a #height. WTF?!
+
+				img.border!(border_x, border_y, '#FFFFFF')
+				if img.columns != new_w || img.rows != new_h
+					# puts "Warning: bordered to #{[new_w,new_h]}, but got #{[img.columns,img.rows]}, resizing."
+					img.resize!(new_w, new_h)
+				end
+
+				ChunkyPNG::RMagick.import(img)
+			end
+			
+			public
+			def border_to_and_resize_to_fit!(new_w, new_h)
+				@image = rmagick_border_to_and_resize_to_fit(new_w, new_h)
 			end
 
 			private

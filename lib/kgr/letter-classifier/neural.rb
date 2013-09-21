@@ -45,6 +45,10 @@ module KGR
 				end
 			end
 
+			def self.image_to_net_input(image)
+				NeuralNet.image_to_input(image, guillotine: true, rescale: false)
+			end
+
 			def self.prepare_data(source_dir, target_file)
 				data_by_letter = {}
 
@@ -74,7 +78,7 @@ module KGR
 
 						# ci = cell_index
 						data_by_letter[letter] += images.map { |img|
-							cell_data = NeuralNet.image_to_input(img)
+							cell_data = image_to_net_input(img)
 							# img.save("pristine_#{ci}.png")
 							# ci += 1
 
@@ -85,7 +89,7 @@ module KGR
 							# ci = cell_index
 							data_by_letter[letter] += images.map { |img|
 								mutated = img.mutate
-								cell_data = NeuralNet.image_to_input(mutated)
+								cell_data = image_to_net_input(mutated)
 								# mutated.save("mutated_#{ci}_#{mutation}.png")
 								# ci += 1
 
@@ -146,14 +150,14 @@ module KGR
 			end
 
 			def classify(image)
-				result = @classifier.classify(NeuralNet.image_to_input(image).data)
+				result = @classifier.classify(self.class.image_to_net_input(image).data)
 				# filename = "#{result.chr}-#{Time.now.to_i}.png"
 				# image.save(filename)
 				result
 			end
 
 			def classify_with_score(image)
-				result = @classifier.classify_with_score(NeuralNet.image_to_input(image).data)
+				result = @classifier.classify_with_score(self.class.image_to_net_input(image).data)
 				# filename = "#{result.chr}-#{Time.now.to_i}.png"
 				# image.save(filename)
 				result

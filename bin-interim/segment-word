@@ -18,7 +18,8 @@ else
 	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
 
 #	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
+#	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
+	model = nil
 #	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier, model)
 	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
 	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
