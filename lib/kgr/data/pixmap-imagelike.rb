@@ -9,7 +9,7 @@ module KGR
 
 			protected
 			def image
-				@image ||= @pixmap.get_image 0, 0, *pixmap.size
+				@image ||= @pixmap.get_image 0, 0, *@pixmap.size
 			end
 
 			public

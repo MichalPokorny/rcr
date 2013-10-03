@@ -20,7 +20,7 @@ module KGR
 
 				def classify
 					log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
-					@letter = @classifier.classify(PixmapImagelike.new(@pixmap)).chr
+					@letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap)).chr
 					log "finished"
 					@area.queue_draw_area 0, 0, *@pixmap.size
 				end
