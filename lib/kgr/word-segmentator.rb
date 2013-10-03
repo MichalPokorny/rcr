@@ -68,7 +68,7 @@ module KGR
 
 					next if x0 == x1 || y0 == y1 # zero-size blocks are skipped
 
-					block = Data::Image.from_imagelike(MaskedImagelike.new(image, marks, x0, x1, y0, y1))
+					block = MaskedImagelike.new(image, marks, x0, x1, y0, y1)
 					box = Data::SegmentationBox.new(x0, y0, block)
 					
 					boxes << box
