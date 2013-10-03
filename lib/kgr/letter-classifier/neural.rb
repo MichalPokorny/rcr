@@ -6,9 +6,13 @@ require 'kgr/data/image'
 require 'kgr/data/integer_raw_dataset'
 require 'fileutils'
 
+require 'kgr/logging'
+
 module KGR
 	module LetterClassifier
 		class Neural
+			include Logging
+
 			def self.convert_data_for_eblearn(source_dir, target_dir)
 				indexes = {}
 
@@ -106,35 +110,32 @@ module KGR
 			end
 
 			def self.data_inputs_size(data)
-				# p data.keys.first
+				raise "Data entirely empty" if data.keys.empty?
 				inputs = data[data.keys.first]
 				# puts "inputs first: #{inputs.first.inspect}"
 				size = inputs.first.size
 				size
 			end
 
-			def train(dataset_file)
-				puts "Training neural net for letters"
+			def train(dataset_file, allowed_chars: ('A'..'Z'), generations: 100)
+				log "Training neural net for letters (#{allowed_chars.size} classes, #{generations} generations)"
 
 				data = {}
 				
 				# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
 				data = Data::IntegerRawDataset.load(dataset_file, KGR::Data::NeuralNetInput)
 
-				# Restrict keys to A..Z
-				keys = data.keys
-				#allowed = Set.new(('0'..'9').to_a + ('A'..'Z').to_a)
-				allowed = ('A'..'Z').to_a
-				for k in keys
-					unless allowed.include?(k.chr)
+				# Restrict keys to allowed characters
+				for k in data.keys
+					unless allowed_chars.include?(k.chr)
 						data.delete k
 					end
 				end
 
 				num_inputs = self.class.data_inputs_size(data)
-				puts "num_inputs: #{num_inputs}"
-				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed.to_a.map(&:ord))
-				@classifier.train(data, generations: 100)
+				log "num_inputs: #{num_inputs}"
+				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed_chars.to_a.map(&:ord))
+				@classifier.train(data, generations: generations)
 			end
 
 			def save(filename)

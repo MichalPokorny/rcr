@@ -1,9 +1,12 @@
 require 'kgr/neural-net'
 require 'kgr/data/neural-net-input'
+require 'kgr/logging'
 
 module KGR
 	module Classifier
 		class Neural
+			include Logging
+			
 			def initialize(net = nil, classes = nil)
 				@net = net
 				@classes = classes
@@ -107,12 +110,12 @@ module KGR
 			public
 			# Hash: class => [ inputs that have this class ]
 			def train(dataset, generations: 100, dataset_split: 0.8)
-				log = File.open "train.log", "w"
+				train_log = File.open "train.log", "w"
 
 				xs, ys = NeuralNet.shuffle_xys(*dataset_to_xys(dataset))
 				xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, dataset_split)
 
-				puts "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
+				log "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
 
 				generations.times { |round|
 					@net.train_on_xys(xs_train, ys_train)
@@ -122,12 +125,12 @@ module KGR
 						good += 1 if classify(xs_test[i]) == @classes[ys_test[i].index(ys_test[i].max)]
 						total += 1
 					}
-					puts "After round #{round + 1} out of #{generations}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
-					log.puts "#{round + 1}\t#{good}\t#{total}\t#{good.to_f / total.to_f}"
-					log.flush
+					log "After round #{round + 1} out of #{generations}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
+					train_log.puts "#{round + 1}\t#{good}\t#{total}\t#{good.to_f / total.to_f}"
+					train_log.flush
 				}
 
-				log.close
+				train_log.close
 			end
 		end
 	end
