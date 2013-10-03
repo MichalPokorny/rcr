@@ -1,3 +1,4 @@
+require 'kgr/logging'
 require 'kgr/data/image'
 require 'kgr/heuristic-oversegmenter/oversegmentation'
 
@@ -5,12 +6,11 @@ module KGR
 	module HeuristicOversegmenter
 		# Oversegments by ink height local minima.
 		class LocalMinima
-			def initialize
-			end
+			include Logging
 
 			# Returns list of X coordinates to oversegment the image at.
 			# Segments by ink amount.
-			def oversegment(image)
+			def oversegment(image, letter_classifier)
 				parts = WordSegmentator.segment_into_continuous_parts(image)
 				return [] if parts.empty?
 
@@ -47,20 +47,9 @@ module KGR
 				good_minima << x0 << x1
 				good_minima.sort!
 				
-				xs = good_minima
+				log "building from good minima: #{good_minima}"
 
-				graph = {}
-				xs.each_index do |i|
-					graph[i] = []
-					# TODO: Stupid. Stupid. Stupid. Stupid.
-					for j in (i+1)...xs.length
-						if xs[j] - xs[i] < (y1 - y0) * 2
-							graph[i] << j
-						end
-					end
-				end
-
-				Oversegmentation.new(image, good_minima, graph)
+				Oversegmentation.build_from_xs(image, letter_classifier, good_minima, y0, y1)
 			end
 		end
 	end

@@ -43,16 +43,37 @@ module KGR
 				# This is probably broken. Just because a neural network fires in
 				# only one node doesn't mean that it's sure of the result.
 				#
-				#sum = result.inject(&:+)
-				#score = if sum == 0 # TODO: isn't that too much?
-				#	0.00001
-				#else
-				#	max / sum
-				#end
+				sum = result.inject(&:+)
+				score = if sum == 0 # TODO: isn't that too much?
+					0.00001
+				else
+					max / sum
+				end
 
-				score = max
+				#score = max / sum
 
 				[ @classes[result.index(max)], score ]
+			end
+
+			# Returns hash { class => score }
+			# TODO: perhaps another scoring mechanism?
+			def classify_with_alternatives(x)
+				result = @net.run(x)
+				alts = {}
+				sum = result.inject(&:+)
+				@classes.each_index do |i|
+					alts[@classes[i]] = if sum == 0
+						0.00001
+					else
+						# Stupid smoothing.
+						if result[i] > 0
+							result[i] / sum
+						else
+							0.00001
+						end
+					end
+				end
+				alts
 			end
 
 			# TODO: this is a hack that expect data between 0 and 1!

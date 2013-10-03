@@ -1,9 +1,5 @@
-- prave je rozdelana heuristic oversegmentation.
-
-- v heuristic oversegmentation pridat alternativni nody: klasifikator necht nevrati jenom maximum, ale vsechny
-  svoje odhady.
-
-  - TODO: "find best path for result" - 'najdi nejlepsi sojku'
+- necht klasifikator pismen dostava vic nez jenom ostry vyrez.
+  to to mozna hodne zhorsuje.
 
 - segmentator radku
 	- operace:
@@ -32,5 +28,3 @@
 - heuristic oversegmentation: nekde je neco blbe...
 
 - mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
-
-- implementovat spravne heuristic oversegmentation

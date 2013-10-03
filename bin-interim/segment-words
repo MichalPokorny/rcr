@@ -1,0 +1,50 @@
+#!/usr/bin/ruby -w
+
+dir = "/home/prvak/rocnikac/kgr-data/trained"
+
+require 'kgr/word-segmentator/default'
+require 'kgr/word-segmentator/heuristic-oversegmentation'
+require 'kgr/letter-classifier/neural'
+require 'kgr/data/image'
+#require 'kgr/heuristic-oversegmenter/stupid'
+require 'kgr/heuristic-oversegmenter/local-minima'
+require 'kgr/markov-chain-model'
+
+require 'rubyfish'
+
+classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+
+#	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
+#	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
+model = nil
+# Old: Stupid instead of LocalMinima
+segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
+
+Dir["../kgr-data/input/segment/*"].each do |input_dir|
+	image = KGR::Data::Image.load(File.join(input_dir, "data.png"))
+	segmentation = segmentator.segment(image)
+
+	expect = File.read(File.join(input_dir, "expect.txt")).strip
+
+	text = segmentation.detected_text(classifier)
+	distance = RubyFish::Levenshtein.distance(text, expect)
+	puts "Segmentation says: #{text}, expected: #{expect}. LSD = #{distance}"
+	word_segmentation = segmentator.segment_for_word(image, expect)
+
+	#filename = "segmented.png"
+	segmentator.show_oversegmentation(image) # Must be here.
+
+	if word_segmentation
+		with_best_found = image.dup
+		word_segmentation.draw_on_image!(with_best_found)
+		with_best_found.save("segmented_#{expect}.png")
+	else
+		puts "Best segmentation for #{expect} not found."
+	end
+
+	#segmentation.draw_on_image!(image)
+	#image.save(filename)
+
+	#puts "Segmented image saved in #{filename}"
+end
+

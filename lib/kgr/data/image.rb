@@ -6,6 +6,7 @@ module KGR
 	module Data
 		class Image
 			class EmptyImage < StandardError; end
+
 			def self.load(path)
 				self.new(ChunkyPNG::Image.from_file(path))
 			end
@@ -19,38 +20,6 @@ module KGR
 					}
 				}
 				self.new(image)
-			end
-
-			def self.from_imagelike(imagelike)
-				image = ChunkyPNG::Image.new(imagelike.width, imagelike.height, ChunkyPNG::Color::TRANSPARENT)
-				(0...imagelike.width).map { |x|
-					(0...imagelike.height).map { |y|
-						image[x, y] = ChunkyPNG::Color.rgb(*imagelike[x, y])
-					}
-				}
-				self.new(image)
-			end
-
-			class PixmapImagelike
-				def initialize(pixmap)
-					@pixmap = pixmap
-					@image = pixmap.get_image 0, 0, *pixmap.size
-				end
-
-				def [](x, y)
-					pixel = @image.get_pixel(x, y)
-					b = pixel & 0xFF; pixel >>= 8
-					g = pixel & 0xFF; pixel >>= 8
-					r = pixel & 0xFF
-					[r, g, b]
-				end
-
-				def width; @image.width; end
-				def height; @image.height; end
-			end
-
-			def self.from_pixmap(pixmap)
-				from_imagelike(PixmapImagelike.new(pixmap))
 			end
 
 			def initialize(image)

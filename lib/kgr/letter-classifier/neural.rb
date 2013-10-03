@@ -150,17 +150,15 @@ module KGR
 			end
 
 			def classify(image)
-				result = @classifier.classify(self.class.image_to_net_input(image).data)
-				# filename = "#{result.chr}-#{Time.now.to_i}.png"
-				# image.save(filename)
-				result
+				@classifier.classify(self.class.image_to_net_input(image).data)
 			end
 
 			def classify_with_score(image)
-				result = @classifier.classify_with_score(self.class.image_to_net_input(image).data)
-				# filename = "#{result.chr}-#{Time.now.to_i}.png"
-				# image.save(filename)
-				result
+				@classifier.classify_with_score(self.class.image_to_net_input(image).data)
+			end
+
+			def classify_with_alternatives(image)
+				@classifier.classify_with_alternatives(self.class.image_to_net_input(image).data)
 			end
 		end
 	end
