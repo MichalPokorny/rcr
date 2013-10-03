@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
 	spec.add_runtime_dependency "ruby-fann"
 	spec.add_runtime_dependency "rmagick"
 	spec.add_runtime_dependency "gtk2"
+	spec.add_runtime_dependency "rubyfish"
 
 	spec.required_ruby_version = ">= 2"
 end

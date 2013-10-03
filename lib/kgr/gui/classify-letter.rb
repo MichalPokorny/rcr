@@ -1,4 +1,6 @@
+require 'kgr/logging'
 require 'kgr/data/image'
+require 'kgr/data/pixmap-imagelike'
 require 'kgr/letter-classifier/neural'
 require 'kgr/gui/drawing-window'
 
@@ -8,13 +10,18 @@ module KGR
 	module GUI
 		class ClassifyLetter
 			class Window < KGR::GUI::DrawingWindow
-				def initialize(classify_letter)
+				include Logging
+
+				def initialize(classifier)
 					super()
-					@classify_letter = classify_letter
+					@classifier = classifier
+					@letter = nil
 				end
 
 				def classify
-					@letter = @classifier.classify(KGR::Data::Image.from_pixmap(pixmap)).chr
+					log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
+					@letter = @classifier.classify(PixmapImagelike.new(@pixmap)).chr
+					log "finished"
 					@area.queue_draw_area 0, 0, *@pixmap.size
 				end
 
@@ -41,13 +48,14 @@ module KGR
 				end
 			end
 
-			def initialize(classifier_path)
-				@classifier = LetterClassifier::Neural.load(classifier_path)
+			def initialize(classifier)
+				@classifier = classifier
 			end
 
 			def run
 				Gtk.init
-				KGR::GUI::ClassifyLetter::Window.new(self)
+				window = KGR::GUI::ClassifyLetter::Window.new(@classifier)
+				window.enable_logging = true
 				Gtk.main
 			end
 		end

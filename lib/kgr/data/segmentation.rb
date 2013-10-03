@@ -1,9 +1,12 @@
+require 'kgr/logging'
 require 'kgr/data/image'
 require 'chunky_png'
 
 module KGR
 	module Data
 		class Segmentation
+			include Logging
+
 			def initialize(image, boxes)
 				@image = image
 				@boxes = boxes
@@ -20,7 +23,7 @@ module KGR
 				color_index = 0
 
 				@boxes.each do |box|
-					puts "Drawing box: #{box}"
+					log "Drawing box: #{box}"
 					image.draw_rectangle!(box.x0, box.y0, box.x1, box.y1, colors[color_index])
 					color_index = (color_index + 1) % colors.length
 				end

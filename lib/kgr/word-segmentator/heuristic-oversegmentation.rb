@@ -1,13 +1,16 @@
+require 'kgr/logging'
 require 'kgr/heuristic-oversegmenter/stupid'
 require 'kgr/data/segmentation'
 require 'kgr/data/segmentation-box'
+require 'kgr/data/cropped-imagelike'
 
-# TODO: alternative edges -- pick the one that hungrily fits the Markov chain * the score the best?
 # TODO: Markov chain modeling is probably horribly wrong!
 
 module KGR
 	module WordSegmentator
 		class HeuristicOversegmentation
+			include Logging
+
 			def save(filename)
 				# stub
 			end
@@ -24,7 +27,7 @@ module KGR
 			end
 
 			def calculate_score(context, image, x0, x1)
-				img = image.crop(x0, 0, x1 - x0, image.height)
+				img = KGR::Data::CroppedImagelike.new(image, x0, x1, 0, image.height)
 				# TODO: what about other tips?
 				result, score = @letter_classifier.classify_with_score(img) # first returned value: result
 
@@ -44,32 +47,46 @@ module KGR
 						""
 					end
 
-				puts sprintf("#{x0}..#{x1}: score=%.2f result=#{result}#{lm_msg}", score)
+				log sprintf("#{x0}..#{x1}: score=%.2f result=#{result}#{lm_msg}", score)
 
 				[ result, score * lm_score ]
 			end
 
 			def show_oversegmentation(image)
-				oversegmentation = @oversegmenter.oversegment(image)
+				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
 				xs = oversegmentation.xs
 				oversegmentation.xs.each_index do |i|
 					image.draw_rectangle!(xs[i], 0, xs[i], image.height, ChunkyPNG::Color.rgb(100, 100, 100))
 				end
 			end
 
-			def segment(image)
-				oversegmentation = @oversegmenter.oversegment(image)
-				best_path = oversegmentation.best_path(self)
-				puts "best path found: #{best_path}"
+			def find_best_path_of_word(image, word)
+				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
+				oversegmentation.best_path_of_word(word)
+			end
 
+			def path_to_oversegmentation(image, path)
 				boxes = []
-				(1...best_path.length).each do |i|
-					x0, x1 = best_path[i - 1], best_path[i]
+				path.each do |edge|
+					x0, x1 = edge.x0, edge.x1
 					img = image.crop(x0, 0, x1 - x0, image.height)
 					boxes << KGR::Data::SegmentationBox.new(x0, 0, img)
 				end
 				
 				KGR::Data::Segmentation.new(image, boxes)
+			end
+
+			def segment_for_word(image, word)
+				best_path = find_best_path_of_word(image, word)
+				log "best path for #{word} found: #{best_path.inspect}"
+				if best_path
+					path_to_oversegmentation(image, best_path)
+				end
+			end
+
+			def segment(image)
+				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
+				path_to_oversegmentation(image, oversegmentation.best_path)
 			end
 		end
 	end

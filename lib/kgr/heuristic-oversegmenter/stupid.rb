@@ -10,7 +10,7 @@ module KGR
 			end
 
 			# Returns list of X coordinates to oversegment the image at.
-			def oversegment(image)
+			def oversegment(image, letter_classifier)
 				# TODO: mayhaps move the method somewhere else?
 				parts = WordSegmentator.segment_into_continuous_parts(image)
 				return [] if parts.empty?
@@ -23,18 +23,9 @@ module KGR
 				xs += (x0..x1).step(step).to_a
 				xs.sort!.uniq!
 
-				graph = {}
-				xs.each_index do |i|
-					graph[i] = []
-					# TODO: Stupid. Stupid. Stupid. Stupid.
-					for j in (i+1)...xs.length
-						if xs[j] - xs[i] < (y1 - y0) * 2
-							graph[i] << j
-						end
-					end
-				end
+				puts "building stupidly: #{xs}"
 
-				Oversegmentation.new(image, xs, graph)
+				Oversegmentation.build_from_xs(image, letter_classifier, xs)
 			end
 		end
 	end

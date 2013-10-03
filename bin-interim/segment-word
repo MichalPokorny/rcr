@@ -20,15 +20,34 @@ else
 #	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
 #	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
 	model = nil
-#	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::Stupid.new, classifier, model)
+	# Old: Stupid instead of LocalMinima
 	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
-	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/10/data.png")
+
+	i = 6
+
+	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/#{i}/data.png")
 	segmentation = segmentator.segment(image)
+
+	word_file = "../kgr-data/input/segment/#{i}/expect.txt"
+	word = if File.exist?(word_file) then File.read(word_file).strip end
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
 
+	word_segmentation = if word then segmentator.segment_for_word(image, word) end
+
 	filename = "segmented.png"
 	segmentator.show_oversegmentation(image) # Must be here.
+
+	if word
+		if word_segmentation
+			with_best_found = image.dup
+			word_segmentation.draw_on_image!(with_best_found)
+			with_best_found.save("segmented_#{word}.png")
+		else
+			puts "Best segmentation for #{word} not found."
+		end
+	end
+
 	segmentation.draw_on_image!(image)
 	image.save(filename)
 
