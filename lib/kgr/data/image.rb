@@ -1,10 +1,13 @@
 require 'oily_png'
 require 'chunky_png/rmagick'
 require 'RMagick'
+require 'kgr/logging'
 
 module KGR
 	module Data
 		class Image
+			include Logging
+
 			class EmptyImage < StandardError; end
 
 			def self.load(path)
@@ -56,7 +59,7 @@ module KGR
 
 				cell_height ||= column_width
 
-				puts "Cropping image of size #{width}x#{height} by #{n_columns}, cell height #{cell_height}"
+				log "Cropping image of size #{width}x#{height} by #{n_columns}, cell height #{cell_height}"
 
 				(0...n_columns).map { |column|
 					(0...height).step(cell_height).map { |y_start|

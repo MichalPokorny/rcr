@@ -1,6 +1,10 @@
+require 'kgr/logging'
+
 module KGR
 	module Data
 		class IntegerRawDataset
+			include Logging
+
 			def initialize(data = nil)
 				@data = data
 			end
@@ -48,7 +52,7 @@ module KGR
 				until io.eof?	
 					bytes = io.read(16)
 					key, item_count = bytes.unpack("qq")
-					puts "Key #{key}, #{item_count} items"
+					log "Key #{key}, #{item_count} items"
 
 					raise if data.key?(key)
 					data[key] = []
