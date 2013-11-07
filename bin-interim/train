@@ -1,5 +1,5 @@
 #!/usr/bin/ruby -w
 
-require 'kgr/tasks/train'
+require 'rcr/tasks/train'
 
-KGR::Tasks::Train.run(ARGV)
+RCR::Tasks::Train.run(ARGV)

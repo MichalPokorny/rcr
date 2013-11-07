@@ -1,16 +1,16 @@
 #!/usr/bin/ruby -w
 
-dir = "/home/prvak/rocnikac/kgr-data/trained"
+dir = "/home/prvak/rocnikac/rcr-data/trained"
 
-require 'kgr/letter-classifier/neural'
-classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+require 'rcr/letter-classifier/neural'
+classifier = RCR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
-	require 'kgr/gui/classify-letter'
-	gui = KGR::GUI::ClassifyLetter.new(classifier)
+	require 'rcr/gui/classify-letter'
+	gui = RCR::GUI::ClassifyLetter.new(classifier)
 	gui.run
 else
-	require 'kgr/data/image'
-	result = classifier.classify(KGR::Data::Image.load(ARGV[0]))
+	require 'rcr/data/image'
+	result = classifier.classify(RCR::Data::Image.load(ARGV[0]))
 	puts "Classifier result: #{result}"
 end

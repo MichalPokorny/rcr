@@ -1,34 +1,34 @@
 #!/usr/bin/ruby -w
 
-dir = "/home/prvak/rocnikac/kgr-data/trained"
+dir = "/home/prvak/rocnikac/rcr-data/trained"
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive"
-	require 'kgr/gui/segment-word'
-	gui = KGR::GUI::SegmentWord.new("#{dir}/word-segmenter", "#{dir}/letter-classifier")
+	require 'rcr/gui/segment-word'
+	gui = RCR::GUI::SegmentWord.new("#{dir}/word-segmenter", "#{dir}/letter-classifier")
 	gui.run
 else
-	require 'kgr/word-segmentator/default'
-	require 'kgr/word-segmentator/heuristic-oversegmentation'
-	require 'kgr/letter-classifier/neural'
-	require 'kgr/data/image'
-	#require 'kgr/heuristic-oversegmenter/stupid'
-	require 'kgr/heuristic-oversegmenter/local-minima'
-	require 'kgr/markov-chain-model'
+	require 'rcr/word-segmentator/default'
+	require 'rcr/word-segmentator/heuristic-oversegmentation'
+	require 'rcr/letter-classifier/neural'
+	require 'rcr/data/image'
+	#require 'rcr/heuristic-oversegmenter/stupid'
+	require 'rcr/heuristic-oversegmenter/local-minima'
+	require 'rcr/markov-chain-model'
 
-	classifier = KGR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+	classifier = RCR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
 
-#	segmentator = KGR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-#	model = KGR::MarkovChainModel.load_from_corpus(1, '../kgr-data/prepared/corpus')
+#	segmentator = RCR::WordSegmentator::Default.load("#{dir}/word-segmenter")
+#	model = RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
 	model = nil
 	# Old: Stupid instead of LocalMinima
-	segmentator = KGR::WordSegmentator::HeuristicOversegmentation.new(KGR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
+	segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(RCR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
 
 	i = 6
 
-	image = KGR::Data::Image.load(ARGV[0] || "../kgr-data/input/segment/#{i}/data.png")
+	image = RCR::Data::Image.load(ARGV[0] || "../rcr-data/input/segment/#{i}/data.png")
 	segmentation = segmentator.segment(image)
 
-	word_file = "../kgr-data/input/segment/#{i}/expect.txt"
+	word_file = "../rcr-data/input/segment/#{i}/expect.txt"
 	word = if File.exist?(word_file) then File.read(word_file).strip end
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"

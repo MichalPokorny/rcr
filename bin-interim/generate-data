@@ -1,5 +1,5 @@
 #!/usr/bin/ruby -w
 
-require 'kgr/tasks/generate-data'
+require 'rcr/tasks/generate-data'
 
-KGR::Tasks::GenerateData.run(ARGV)
+RCR::Tasks::GenerateData.run(ARGV)

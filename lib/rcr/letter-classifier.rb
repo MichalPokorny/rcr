@@ -1,0 +1,2 @@
+module RCR::LetterClassifier
+end

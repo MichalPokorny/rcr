@@ -1,8 +1,8 @@
 #!/usr/bin/ruby -w
 
-require 'kgr/word-segmentator'
-require 'kgr/data/image'
-require 'kgr/data/segmentation'
+require 'rcr/word-segmentator'
+require 'rcr/data/image'
+require 'rcr/data/segmentation'
 
 raise unless (1..2).include? ARGV.length
 
@@ -15,9 +15,9 @@ elsif ARGV.length == 1
 	inp, inp_adjust = File.join(ARGV.first, "data.png"), File.join(ARGV.first, "divided.png")
 end
 
-image = KGR::Data::Image.load(inp)
-image_adjust = KGR::Data::Image.load(inp_adjust)
+image = RCR::Data::Image.load(inp)
+image_adjust = RCR::Data::Image.load(inp_adjust)
 
-segm = KGR::Data::Segmentation.new(image, KGR::WordSegmentator.load_segmentation_from_sample(image, image_adjust))
+segm = RCR::Data::Segmentation.new(image, RCR::WordSegmentator.load_segmentation_from_sample(image, image_adjust))
 segm.draw_on_image!(image)
 image.save("check_me.png")
