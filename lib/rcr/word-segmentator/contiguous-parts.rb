@@ -71,7 +71,7 @@ module RCR
 					segmentations << dataset[key].first
 				end
 
-				puts "loaded #{segmentations.count} segmentations for training"
+				log "loaded #{segmentations.count} segmentations for training"
 
 				total_delta = 0
 
@@ -80,11 +80,11 @@ module RCR
 #					approx = mine.difference_approximate(segmentation)
 #					exact = mine.difference_exact(segmentation)
 
-#					puts "approx: %.3f, exact: %.3f" % [ approx, exact ]
+#					log "approx: %.3f, exact: %.3f" % [ approx, exact ]
 
 					total_delta += mine.difference(segmentation)
 				end
-				puts "total delta = #{total_delta}"
+				log "total delta = #{total_delta}"
 			end
 		end
 	end

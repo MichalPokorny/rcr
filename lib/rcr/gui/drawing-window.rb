@@ -1,8 +1,11 @@
 require 'gtk2'
+require 'rcr/logging'
 
 module RCR
 	module GUI
 		class DrawingWindow < Gtk::Window
+			include Logging
+
 			protected
 			attr_reader :pixmap
 
@@ -10,7 +13,7 @@ module RCR
 			def clear_canvas
 				width, height = @area.allocation.width, @area.allocation.height
 
-				puts "width #{width} height #{height}"
+				logging "clearing canvas: width #{width} height #{height}"
 
 				@pixmap = Gdk::Pixmap.new(@area.window, width, height, -1)
 				@pixmap.draw_rectangle(@area.style.white_gc, true, 0, 0, width, height)
