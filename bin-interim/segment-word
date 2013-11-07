@@ -7,7 +7,7 @@ if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	gui = RCR::GUI::SegmentWord.new(RCR::Config.word_segmenter_path, RCR::Config.letter_classifier_path)
 	gui.run
 else
-	require 'rcr/word-segmentator/default'
+	require 'rcr/word-segmentator/default' # TODO: changed...
 	require 'rcr/word-segmentator/heuristic-oversegmentation'
 	require 'rcr/letter-classifier/neural'
 	require 'rcr/data/image'
