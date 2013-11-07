@@ -1,5 +1,5 @@
 #!/usr/bin/ruby -w
 
-require 'kgr/tasks/prepare-data'
+require 'rcr/tasks/prepare-data'
 
-KGR::Tasks::PrepareData.run(ARGV)
+RCR::Tasks::PrepareData.run(ARGV)
