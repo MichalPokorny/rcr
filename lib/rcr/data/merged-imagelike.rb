@@ -1,6 +1,6 @@
 require 'rcr/data/imagelike'
 
-class RCR::Data::MergedImagelike < Imagelike
+class RCR::Data::MergedImagelike < RCR::Data::Imagelike
 	def initialize(box1, box2)
 		@box1, @box2 = box1, box2
 
