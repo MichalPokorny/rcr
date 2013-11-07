@@ -3,12 +3,20 @@ require 'yaml'
 
 module RCR
 	class Config
+		class InvalidConfiguration < StandardError; end
+
 		def self.instance
-			@instance ||= self.load
+			@instance ||= self.load_from_file(Pathname.new("~/.rcr-config.yml").expand_path)
 		end
 
-		def self.load
-			path = Pathname.new("~/.rcr-config.yml").expand_path
+		def self.load_from_file(path)
+			settings = 
+				if File.exist?(path)
+					YAML.load_file(path)
+				else
+					puts "Loading default configuration."
+				end
+
 			settings = File.exist?(path) ? YAML.load_file(path) : {}
 			self.new(settings)
 		end
@@ -28,7 +36,7 @@ module RCR
 
 		public
 		def data_path
-			raise InvalidConfiguration, "No data directory defined." unless @settings.key?("data_directory")
+			raise InvalidConfiguration, "No data directory defined." unless @settings.key?("data_path")
 			expand @settings["data_path"]
 		end
 
@@ -58,6 +66,10 @@ module RCR
 		
 		def letter_classifier_path
 			File.join(trained_path, "letter-classifier")
+		end
+
+		def logging_enabled
+			@settings["debug"] || true # TODO
 		end
 	end
 end
