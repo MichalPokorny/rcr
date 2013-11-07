@@ -35,3 +35,5 @@
 - mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
 
 - odstranit reference na 'prvak'
+
+- letter classifier a takove veci by mely jit samy od sebe deserializovat! tedka mam skoro vsude implicitni predpoklad ze se pouziva jeden klasifikator!

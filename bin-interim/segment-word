@@ -1,10 +1,10 @@
 #!/usr/bin/ruby -w
 
-dir = "/home/prvak/rocnikac/rcr-data/trained"
+require 'rcr/config'
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	require 'rcr/gui/segment-word'
-	gui = RCR::GUI::SegmentWord.new("#{dir}/word-segmenter", "#{dir}/letter-classifier")
+	gui = RCR::GUI::SegmentWord.new(RCR::Config.word_segmenter_path, RCR::Config.letter_classifier_path)
 	gui.run
 else
 	require 'rcr/word-segmentator/default'
@@ -15,9 +15,9 @@ else
 	require 'rcr/heuristic-oversegmenter/local-minima'
 	require 'rcr/markov-chain-model'
 
-	classifier = RCR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+	classifier = RCR::LetterClassifier::Neural.load(RCR::Config.letter_classifier_path)
 
-#	segmentator = RCR::WordSegmentator::Default.load("#{dir}/word-segmenter")
+#	segmentator =	RCR::WordSegmentator::Default.load(RCR::Config.word_segmenter_path)
 #	model = RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
 	model = nil
 	# Old: Stupid instead of LocalMinima
@@ -25,10 +25,10 @@ else
 
 	i = 6
 
-	image = RCR::Data::Image.load(ARGV[0] || "../rcr-data/input/segment/#{i}/data.png")
+	image = RCR::Data::Image.load(ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i, "data.png"))
 	segmentation = segmentator.segment(image)
 
-	word_file = "../rcr-data/input/segment/#{i}/expect.txt"
+	word_file = File.join(RCR::Config.segmentation_inputs_path, i, "expect.txt")
 	word = if File.exist?(word_file) then File.read(word_file).strip end
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
