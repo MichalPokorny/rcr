@@ -1,9 +1,9 @@
 #!/usr/bin/ruby -w
 
-dir = "/home/prvak/rocnikac/rcr-data/trained"
+require 'rcr/config'
 
 require 'rcr/letter-classifier/neural'
-classifier = RCR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+classifier = RCR::LetterClassifier::Neural.load(RCR::Config.letter_classifier_path)
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
 	require 'rcr/gui/classify-letter'

@@ -44,8 +44,20 @@ module RCR
 			@settings["prepared_path"] ? expand(@settings["prepared_path"]) : File.join(data_path, "prepared")
 		end
 
+		def letter_inputs_path
+			File.join(input_path, "letter")
+		end
+
 		def segmentation_inputs_path
-			input_path.join("segment")
+			File.join(input_path, "segment")
+		end
+
+		def word_segmenter_path
+			File.join(trained_path, "word-segmenter")
+		end
+		
+		def letter_classifier_path
+			File.join(trained_path, "letter-classifier")
 		end
 	end
 end

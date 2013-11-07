@@ -1,2 +1,3 @@
 Konfigurak v ~/.rcr-config.yml:
-	data_path, volitelne trained_path, input_path
+	data_path, volitelne trained_path, input_path, prepared_path
+
