@@ -9,12 +9,18 @@ module RCR
 			CLASSIFIER = File.join(TEST_DATA_PATH, "tmp", "letter-classifier")
 			TEST_INPUT = File.join(TEST_DATA_PATH, "letter", "letter.png")
 
-			def setup
-				FileUtils.mkdir_p(File.join(TEST_DATA_PATH, "tmp"))
-				@classifier = Neural.new
+			def self.prepare_classifier
+				classifier = Neural.new
 				Neural.prepare_data(INPUTS, PREPARED)
-				assert File.exist? PREPARED
-				@classifier.train PREPARED, allowed_chars: ('0'..'9'), generations: 5
+				unless File.exist? PREPARED
+					raise "Didn't properly prepare the data!"
+				end
+				classifier.train PREPARED, allowed_chars: ('0'..'9'), generations: 5
+				classifier
+			end
+
+			def setup
+				@classifier = self.class.prepare_classifier
 				@classifier.save CLASSIFIER
 			end
 
