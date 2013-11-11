@@ -7,21 +7,10 @@ if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	gui = RCR::GUI::SegmentWord.new(RCR::Config.word_segmenter_path, RCR::Config.letter_classifier_path)
 	gui.run
 else
-	require 'rcr/word-segmentator/default' # TODO: changed...
-	require 'rcr/word-segmentator/heuristic-oversegmentation'
-	require 'rcr/letter-classifier/neural'
 	require 'rcr/data/image'
-	#require 'rcr/heuristic-oversegmenter/stupid'
-	require 'rcr/heuristic-oversegmenter/local-minima'
-	require 'rcr/markov-chain-model'
 
-	classifier = RCR::LetterClassifier::Neural.load(RCR::Config.letter_classifier_path)
-
-#	segmentator =	RCR::WordSegmentator::Default.load(RCR::Config.word_segmenter_path)
-#	model = RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
-	model = nil
-	# Old: Stupid instead of LocalMinima
-	segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(RCR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
+	classifier = RCR.build_letter_classifier
+	segmentator = RCR.build_word_segmentator
 
 	i = 6
 
