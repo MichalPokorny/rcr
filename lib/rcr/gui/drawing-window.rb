@@ -13,7 +13,7 @@ module RCR
 			def clear_canvas
 				width, height = @area.allocation.width, @area.allocation.height
 
-				logging "clearing canvas: width #{width} height #{height}"
+				log "clearing canvas: width #{width} height #{height}"
 
 				@pixmap = Gdk::Pixmap.new(@area.window, width, height, -1)
 				@pixmap.draw_rectangle(@area.style.white_gc, true, 0, 0, width, height)

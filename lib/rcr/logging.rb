@@ -1,11 +1,12 @@
 require 'rcr'
 require 'rcr/config'
+require 'pp'
 
 module RCR::Logging
 	ENABLED_BY_DEFAULT = RCR::Config.logging_enabled
 
-	def self.log_line(*args)
-		puts "[log] #{args.join}"
+	def self.log_line(source, args)
+		puts "[#{source}] #{args.join}"
 	end
 
 	def self.included(klass)
@@ -19,7 +20,7 @@ module RCR::Logging
 			end
 
 			define_method :log do |*args|
-			  RCR::Logging.log_line(*args) if logging_enabled?
+			  RCR::Logging.log_line(self.class, args) if logging_enabled?
 			end
 
 			attr_accessor :enable_logging
@@ -35,7 +36,7 @@ module RCR::Logging
 			end
 
 			define_method :log do |*args|
-				RCR::Logging.log_line(*args) if logging_enabled?
+				RCR::Logging.log_line(self, args) if logging_enabled?
 			end
 		end
 	end

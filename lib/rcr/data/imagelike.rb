@@ -1,8 +1,11 @@
 require 'rcr/data/image'
+require 'rcr/logging'
 
 module RCR
 	module Data
 		class Imagelike
+			include Logging
+
 			def to_image
 				log "Converting imagelike of size #{width}x#{height} to image"
 				image = ChunkyPNG::Image.new(width, height, ChunkyPNG::Color::TRANSPARENT)
