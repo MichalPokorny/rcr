@@ -14,6 +14,7 @@ module RCR
 						image[x, y] = ChunkyPNG::Color.rgb(*self[x, y])
 					}
 				}
+				log "Converted image filled."
 				Image.new(image)
 			end
 

@@ -11,15 +11,14 @@ module RCR
 
 			public
 			def clear_canvas
-				width, height = @area.allocation.width, @area.allocation.height
+				width, height = window_width, window_height
 
 				log "clearing canvas: width #{width} height #{height}"
 
 				@pixmap = Gdk::Pixmap.new(@area.window, width, height, -1)
-				@pixmap.draw_rectangle(@area.style.white_gc, true, 0, 0, width, height)
-				w, h = @pixmap.size
+				@pixmap.draw_rectangle(@area.style.white_gc, true, 0, 0, window_width, window_height)
 
-				@area.queue_draw_area 0, 0, w, h
+				@area.queue_draw_area 0, 0, *@pixmap.size
 			end
 
 			def window_width
@@ -31,12 +30,11 @@ module RCR
 			end
 
 			def canvas_expose_event
-				w, h = @pixmap.size
-
-				@area.window.draw_drawable(@area.style.fg_gc(Gtk::STATE_NORMAL),
-					@pixmap, 0, 0, 0, 0, w, h)
-
-				@area.window.draw_rectangle @area.style.black_gc, false, 0, 0, window_width, window_height
+				w, h = window_width, window_height
+				
+				@area.window.draw_rectangle(@area.style.white_gc, true, 0, 0, w, h)
+				@area.window.draw_drawable(@area.style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)
+				@area.window.draw_rectangle(@area.style.black_gc, false, 0, 0, w, h)
 
 				draw_on_area(@area)
 			end
@@ -50,6 +48,7 @@ module RCR
 			end
 
 			def draw_brush(x, y)
+				raise unless x >= 0 && y >= 0 && x < window_width && y < window_height
 				b = brush_size / 2
 				rect = [(x-b).floor, (y-b).floor, b*2, b*2]
 				@pixmap.draw_rectangle(@area.style.black_gc, true, *rect)
@@ -93,7 +92,7 @@ module RCR
 				end
 
 				@area.signal_connect "configure_event" do
-					clear_canvas
+					clear_canvas if !@pixmap
 				end
 
 				@area.signal_connect "motion_notify_event" do |widget, event|

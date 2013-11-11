@@ -21,8 +21,8 @@ module RCR
 				def classify
 					log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
 					@letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap)).chr
-					log "classification finished"
-					@area.queue_draw_area 0, 0, *@pixmap.size
+					log "classification finished: #@letter"
+					@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 				end
 
 				def add_box_controls(box)
