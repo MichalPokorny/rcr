@@ -2,11 +2,14 @@
 
 require 'rcr/config'
 
+# Zajimave a dlouhe: 18, 19, 20, 21, 22
+
 if ARGV[0] == "-i" || ARGV[0] == "--interactive"
 	require 'rcr/gui/segment-word'
 	gui = RCR::GUI::SegmentWord.new(RCR::Config.word_segmenter_path, RCR::Config.letter_classifier_path)
 	gui.run
 else
+	require 'rcr/easy'
 	require 'rcr/data/image'
 
 	classifier = RCR.build_letter_classifier
