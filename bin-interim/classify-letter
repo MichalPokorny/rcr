@@ -1,9 +1,8 @@
 #!/usr/bin/ruby -w
 
-require 'rcr/config'
+require 'rcr/easy'
 
-require 'rcr/letter-classifier/neural'
-classifier = RCR::LetterClassifier::Neural.load(RCR::Config.letter_classifier_path)
+classifier = RCR.build_letter_classifier
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
 	require 'rcr/gui/classify-letter'
