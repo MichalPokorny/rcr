@@ -2,7 +2,7 @@ require 'rcr/config'
 require 'rcr/letter-classifier/neural'
 
 module RCR
-	def build_letter_classifier(opts = {})
+	def self.build_letter_classifier(opts = {})
 		config =
 			if opts.key?(:config)
 				opts[:config]
@@ -17,7 +17,7 @@ module RCR
 		RCR::LetterClassifier::Neural.load(config.letter_classifier_path)
 	end
 
-	def build_language_model(opts = {})
+	def self.build_language_model(opts = {})
 		# TODO: load the language model we should actually load!
 	
 		# require 'rcr/markov-chain-model'
@@ -26,7 +26,7 @@ module RCR
 		nil
 	end
 
-	def build_word_segmentator(opts = {})
+	def self.build_word_segmentator(opts = {})
 		require 'rcr/word-segmentator/heuristic-oversegmentation'
 		require 'rcr/heuristic-oversegmenter/local-minima'
 		# TODO: load the segmentator we should actually load!

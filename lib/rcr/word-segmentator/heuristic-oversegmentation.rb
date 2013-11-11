@@ -1,5 +1,4 @@
 require 'rcr/logging'
-require 'rcr/heuristic-oversegmenter/stupid'
 require 'rcr/data/segmentation'
 require 'rcr/data/segmentation-box'
 require 'rcr/data/cropped-imagelike'
@@ -21,7 +20,7 @@ module RCR
 			end
 
 			def initialize(oversegmenter, letter_classifier, language_model)
-				@oversegmenter = oversegmenter # HeuristicOversegmenter::Stupid.new
+				@oversegmenter = oversegmenter
 				@letter_classifier = letter_classifier
 				@language_model = language_model
 			end
