@@ -15,12 +15,12 @@ else
 	classifier = RCR.build_letter_classifier
 	segmentator = RCR.build_word_segmentator
 
-	i = 6
+	i = 22
 
-	image = RCR::Data::Image.load(ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i, "data.png"))
+	image = RCR::Data::Image.load(ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i.to_s, "data.png"))
 	segmentation = segmentator.segment(image)
 
-	word_file = File.join(RCR::Config.segmentation_inputs_path, i, "expect.txt")
+	word_file = File.join(RCR::Config.segmentation_inputs_path, i.to_s, "expect.txt")
 	word = if File.exist?(word_file) then File.read(word_file).strip end
 
 	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
