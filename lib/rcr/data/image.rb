@@ -48,7 +48,9 @@ module RCR
 			end
 
 			def [](x,y)
-				ChunkyPNG::Color.to_truecolor_bytes(@image.get_pixel(x,y))
+				raise ArgumentError, "pixel out of range (x=#{x},y=#{y}, width=#{width},height=#{height})" unless x >= 0 && y >= 0 && x < width && y < height
+				pixel = @image.get_pixel(x,y) or raise "Pixel empty: #{x}-#{y}"
+				ChunkyPNG::Color.to_truecolor_bytes(pixel)
 			end
 
 			# Crops the image by columns

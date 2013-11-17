@@ -117,13 +117,15 @@ module RCR
 				size
 			end
 
-			def train(dataset_file, allowed_chars: ('A'..'Z'), generations: 100)
+			def train(dataset, allowed_chars: ('A'..'Z'), generations: 100)
 				log "Training neural net for letters (#{allowed_chars.size} classes, #{generations} generations)"
 
-				data = {}
+				data = dataset
 				
 				# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
-				data = Data::IntegerRawDataset.load(dataset_file, RCR::Data::NeuralNetInput)
+				if dataset.is_a? String
+					data = Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
+				end
 
 				# Restrict keys to allowed characters
 				for k in data.keys

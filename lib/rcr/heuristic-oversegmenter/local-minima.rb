@@ -1,6 +1,7 @@
 require 'rcr/logging'
 require 'rcr/data/image'
 require 'rcr/heuristic-oversegmenter/oversegmentation'
+require 'rcr/word-segmentator'
 
 module RCR
 	module HeuristicOversegmenter
