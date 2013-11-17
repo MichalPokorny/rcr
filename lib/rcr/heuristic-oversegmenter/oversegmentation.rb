@@ -26,6 +26,10 @@ module RCR
 			end
 
 			def best_path
+				best_path_with_score[0]
+			end
+
+			def best_path_with_score
 				# Viterbi algorithm
 				scores = {}
 				scores[xs[0]] = 1
@@ -50,10 +54,10 @@ module RCR
 				end
 				
 				# TODO: mayhaps don't require oversegmenting the whole image?
-				path[xs.last] # .map { |edge| edge.letter }.join('')
+				[ path[xs.last], scores[xs.last] ] # .map { |edge| edge.letter }.join('')
 			end
 
-			def best_path_of_word(word)
+			def best_path_of_word_with_score(word)
 				# TODO: suboptimal
 				
 				log "searching for best path of #{word}, xs=#{xs}"
@@ -104,7 +108,7 @@ module RCR
 				end
 
 				log "best path of word: #{paths[xs.last].inspect}"
-				paths[xs.last]	
+				[ paths[xs.last], scores[xs.last] ]
 			end
 
 			# TODO: this shouldn't ever be used anywhere!

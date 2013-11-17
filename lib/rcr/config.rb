@@ -68,6 +68,10 @@ module RCR
 			File.join(trained_path, "letter-classifier")
 		end
 
+		def prepared_letter_data_path
+			File.join(prepared_path, "letter.data")
+		end
+
 		def logging_enabled
 			@settings["debug"]
 		end

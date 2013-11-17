@@ -2,11 +2,11 @@ module RCR
 	module Data
 		class NeuralNetInput
 			def initialize(data)
-				raise unless data.is_a? Array
+				raise "Trying to construct neural net input from something other than an array" unless data.is_a? Array
 				@data = data
 
 				data.each { |item|
-					raise unless item.is_a? Float
+					raise "Neural net inputs must all be floats" unless item.is_a? Float
 				}
 			end
 

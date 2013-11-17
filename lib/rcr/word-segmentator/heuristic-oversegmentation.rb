@@ -51,20 +51,20 @@ module RCR
 				[ result, score * lm_score ]
 			end
 
-			def show_oversegmentation(image)
+			def show_oversegmentation(image, color: ChunkyPNG::Color.rgb(200, 200, 200))
 				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
 				xs = oversegmentation.xs
 				oversegmentation.xs.each_index do |i|
-					image.draw_rectangle!(xs[i], 0, xs[i], image.height, ChunkyPNG::Color.rgb(100, 100, 100))
+					image.draw_rectangle!(xs[i], 0, xs[i], image.height, color)
 				end
 			end
 
-			def find_best_path_of_word(image, word)
+			def find_best_path_of_word_with_score(image, word)
 				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
-				oversegmentation.best_path_of_word(word)
+				oversegmentation.best_path_of_word_with_score(word)
 			end
 
-			def path_to_oversegmentation(image, path)
+			def path_to_segmentation(image, path)
 				boxes = []
 				path.each do |edge|
 					x0, x1 = edge.x0, edge.x1
@@ -76,16 +76,25 @@ module RCR
 			end
 
 			def segment_for_word(image, word)
-				best_path = find_best_path_of_word(image, word)
+				segment_for_word_with_score(image, word).first
+			end
+
+			def segment_for_word_with_score(image, word)
+				best_path, score = *find_best_path_of_word_with_score(image, word)
 				log "best path for #{word} found: #{best_path.inspect}"
 				if best_path
-					path_to_oversegmentation(image, best_path)
+					[ path_to_segmentation(image, best_path), score ]
 				end
 			end
 
 			def segment(image)
+				segment_with_score(image)[0]
+			end
+
+			def segment_with_score(image)
 				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
-				path_to_oversegmentation(image, oversegmentation.best_path)
+				path, score = *oversegmentation.best_path_with_score
+				[ path_to_segmentation(image, path), score ]
 			end
 		end
 	end

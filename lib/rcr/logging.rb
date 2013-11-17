@@ -6,7 +6,7 @@ module RCR::Logging
 	ENABLED_BY_DEFAULT = RCR::Config.logging_enabled
 
 	def self.log_line(source, args)
-		puts "[#{source}] #{args.join}"
+		puts "[#{source}] #{args.map(&:to_s).join}"
 	end
 
 	def self.included(klass)
@@ -21,6 +21,17 @@ module RCR::Logging
 
 			define_method :log do |*args|
 			  RCR::Logging.log_line(self.class, args) if logging_enabled?
+			end
+			
+			define_method :warn do |*args|
+				puts "[#{self.class}] WARN: #{args.map(&:to_s).join}"
+			end
+
+			define_method :with_logging_set do |value, &block|
+				old_value = defined?(@enable_logging) ? @enable_logging : nil
+				@enable_logging = value
+				block.call
+				@enable_logging = old_value
 			end
 
 			attr_accessor :enable_logging

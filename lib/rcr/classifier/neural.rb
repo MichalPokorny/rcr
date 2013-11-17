@@ -48,7 +48,8 @@ module RCR
 				#
 				sum = result.inject(&:+)
 				score = if sum == 0 # TODO: isn't that too much?
-					0.00001
+					log "No outputs fired, classifying with score epsilon."
+					0.00000001
 				else
 					max / sum
 				end
@@ -64,17 +65,18 @@ module RCR
 				result = @net.run(x)
 				alts = {}
 				sum = result.inject(&:+)
+				
+				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
+
+				if sum == 0
+					log "No outputs fired, returning empty distribution."
+					{}
+				end
+
 				@classes.each_index do |i|
-					alts[@classes[i]] = if sum == 0
-						0.00001
-					else
+					alts[@classes[i]] = 
 						# Stupid smoothing.
-						if result[i] > 0
-							result[i] / sum
-						else
-							0.00001
-						end
-					end
+						(min_nonzero + result[i]) / (sum + min_nonzero * result.size)
 				end
 				alts
 			end
@@ -90,47 +92,78 @@ module RCR
 				outputs = []
 
 				dataset.keys.each { |x|
-					output_select = @classes.map { |l| (l == x) ? 1 : 0 }
-					# puts "dl: #{@classes.join ' '}"
-					# puts "#{x} ==> #{output_select}"
-
 					dataset[x].each { |input|
-						raise unless input.is_a? Data::NeuralNetInput
+						raise "Dataset isn't made of entries of type Data::NeuralNetInput" unless input.is_a? Data::NeuralNetInput
 						inputs << input.data
-						outputs << output_select
-						# puts "#{self.class.data_to_string(input)} => #{output_select}"
+						outputs << output_select(x)
 					}
 				}
-
-				# p(inputs)
 
 				[ inputs, outputs ]
 			end
 
+			# Pass nil to get zeroes.
+			def output_select(x)
+				@classes.map { |l| (l == x) ? 1 : 0 }
+			end
+
 			public
-			# Hash: class => [ inputs that have this class ]
-			def train(dataset, generations: 100, dataset_split: 0.8)
-				train_log = File.open "train.log", "w"
-
-				xs, ys = NeuralNet.shuffle_xys(*dataset_to_xys(dataset))
-				xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, dataset_split)
-
-				log "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
-
-				generations.times { |round|
-					@net.train_on_xys(xs_train, ys_train)
-
-					good, total = 0, 0
-					(0...xs_test.length).each { |i|
-						good += 1 if classify(xs_test[i]) == @classes[ys_test[i].index(ys_test[i].max)]
-						total += 1
+			def untrain(inputs, generations: 100, logging: false)
+				xs, ys = inputs.map(&:data), inputs.map { output_select(nil) }
+				with_logging_set(logging) {
+					log "Untraining neural classifier."
+					generations.times { |round|
+						log "Round #{round}."
+						@net.train_on_xys(xs, ys)
 					}
-					log "After round #{round + 1} out of #{generations}: good: #{good}, total: #{total} (%.2f%%)" % [ (good.to_f / total.to_f) * 100 ]
-					train_log.puts "#{round + 1}\t#{good}\t#{total}\t#{good.to_f / total.to_f}"
-					train_log.flush
 				}
+			end
 
-				train_log.close
+			private
+			def evaluate_on_xys(xs, ys)
+				raise "Incompatible sizes of xs and ys to evaluate" if xs.size != ys.size
+				good, total = 0, 0
+				(0...xs.length).each { |i|
+					if classify(xs[i]) == @classes[ys[i].index(ys[i].max)]
+						good += 1
+					else
+						# puts "f: got:#{classify(xs[i])} != expect:#{@classes[ys[i].index(ys[i].max)]}"
+					end
+					total += 1
+				}
+				#puts
+				good.to_f * 100 / total
+			end
+
+			public
+			def evaluate(dataset)
+				xs, ys = *dataset_to_xys(dataset)
+				evaluate_on_xys(xs, ys)
+			end
+
+			# Hash: class => [ inputs that have this class ]
+			def train(dataset, generations: 100, dataset_split: 0.8, logging: false)
+				with_logging_set(logging) {
+					train_log = File.open "train.log", "w"
+
+					xs, ys = NeuralNet.shuffle_xys(*dataset_to_xys(dataset))
+					xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, dataset_split)
+
+					log "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
+
+					generations.times { |round|
+						@net.train_on_xys(xs_train, ys_train)
+
+						e = evaluate_on_xys(xs_test, ys_test)
+						log "After round #{round + 1}/#{generations}: %.2f%% (%.2f%% on all inputs)" % [ e, evaluate_on_xys(xs, ys) ]
+						train_log.puts "#{round + 1}\t%.2f" % [ e ]
+						train_log.flush
+					}
+
+					train_log.close
+
+					log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
+				}
 			end
 		end
 	end

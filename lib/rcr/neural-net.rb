@@ -49,7 +49,11 @@ module RCR
 		end
 
 		def self.create(num_inputs: nil, hidden_neurons: [], num_outputs: nil)
-			raise ArgumentError if num_inputs.nil? || hidden_neurons.empty? || num_outputs.nil?
+			raise ArgumentError if num_inputs.nil? || hidden_neurons.empty? ||
+				num_outputs.nil? || num_outputs < 1 || hidden_neurons.any? { |n| n <= 0 } ||
+				num_inputs < 1
+
+			puts "Num inputs: #{num_inputs}, neurons: #{hidden_neurons.inspect}, outputs: #{num_outputs.inspect}"
 
 			fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: num_outputs)	
 
@@ -67,17 +71,26 @@ module RCR
 			@n_outputs = n_outputs
 		end
 
+		attr_reader :n_inputs
+
 		def train_on_xys(xs, ys)
 			raise unless xs.length == ys.length
 
 			xs, ys = self.class.shuffle_xys(xs, ys)
 
 			(0...xs.length).each do |i|
+				raise "Input size doesn't match" if xs[i].size != @n_inputs
+				raise "Output size doesn't match" if ys[i].size != @n_outputs
 				@fann.train(xs[i], ys[i])
 			end
 		end
 
 		def save(filename)
+			puts "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
+
+			# pp @fann.get_neurons
+			# @fann.print_connections
+
 			@fann.save(filename + ".fann")
 			File.open "#{filename}.net-params", "w" do |file|
 				YAML.dump({
@@ -88,8 +101,20 @@ module RCR
 		end
 
 		def self.load(filename)
-			fann = RubyFann::Standard::new(filename: filename + ".fann")
-			params = YAML.load_file("#{filename}.net-params")
+			fann_file = filename + ".fann"
+			puts "FANN file: #{fann_file}"
+			raise ArgumentError, "FANN file doesn't exist: #{fann_file}" unless File.exist?(fann_file)
+			fann = RubyFann::Standard::new(filename: fann_file)
+
+			yaml_file = "#{filename}.net-params"
+			puts "YAML file: #{yaml_file}"
+			raise ArgumentError, "YAML file doesn't exist: #{yaml_file}" unless File.exist?(yaml_file)
+			params = YAML.load_file(yaml_file)
+
+			puts "Loaded neural net with #{params[:n_inputs]} inputs and #{params[:n_outputs]} outputs"
+
+			# pp fann.get_neurons
+			# fann.print_connections
 
 			self.new(fann, params[:n_inputs], params[:n_outputs])
 		end

@@ -19,8 +19,13 @@ module RCR
 					when "letter" then
 						require 'rcr/letter-classifier/neural'
 						lc = LetterClassifier::Neural.new
-						lc.train(File.join(prepared_dir, "letter.data"))
-						lc.save(File.join(trained_dir, "letter-classifier"))
+						dataset = Config.prepared_letter_data_path
+						lc.start_anew(dataset)
+						lc.train(dataset, logging: true)
+						lc.save(Config.letter_classifier_path)
+
+						lc = LetterClassifier::Neural.load(Config.letter_classifier_path)
+						pp lc.evaluate(dataset)
 					when "segment" then
 						# TODO: doesn't work!
 						require 'rcr/word-segmentator/default'
