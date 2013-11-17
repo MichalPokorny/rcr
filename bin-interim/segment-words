@@ -7,37 +7,39 @@ require 'rcr/easy'
 
 require 'rubyfish'
 
-5.times do
+require 'fileutils'
+Dir["segmented_*.png"].each { |f| FileUtils.rm(f) }
+
+BATCH_SIZE = 5
+GENERATIONS = 30
+
+5.times do |generation|
 	classifier = RCR.build_letter_classifier
 	segmentator = RCR.build_word_segmentator
+
+	puts "== Classifier evaluation: %.2f" % classifier.evaluate(Config.prepared_letter_data_path)
 
 	bootstrap_dataset = {}
 	('A'..'Z').each do |l| bootstrap_dataset[l] = [] end
 
 	diff_sum = 0
-
-	Dir[File.join(RCR::Config.segmentation_inputs_path, "*")].each do |input_dir|
-		# FUJ
+	
+	batch = Dir[File.join(RCR::Config.segmentation_inputs_path, "*")].shuffle.take(BATCH_SIZE)
+	batch.each.with_index do |input_dir, i|
 		raise unless input_dir =~ /\/(\d+)(\/|\Z)/
-		# if $1.to_i < 5 || $1.to_i > 15
-			# puts "skip #$1"
-		#	next
-		# end
 
-		next if $1 == "4" || $1 == "6" || $1 == "11"
-		# /FUJ
-		puts "running #$1"
+		puts "running #$1 (#{i+1}/#{batch.size})"
 
 		image = RCR::Data::Image.load(File.join(input_dir, "data.png"))
-		segmentation = segmentator.segment(image)
+		segmentation, score = *segmentator.segment_with_score(image)
 
 		expect = File.read(File.join(input_dir, "expect.txt")).strip
 
 		text = segmentation.detected_text(classifier)
 		distance = RubyFish::Levenshtein.distance(text, expect)
-		puts "Segmentation says: #{text}, expected: #{expect}. LSD = #{distance}"
+		puts "Segmentation says: #{text}, expected: #{expect}, score: #{score}. LSD = #{distance}"
 		diff_sum += distance
-		word_segmentation = segmentator.segment_for_word(image, expect)
+		word_segmentation, score = *segmentator.segment_for_word_with_score(image, expect)
 
 		#filename = "segmented.png"
 		segmentator.show_oversegmentation(image) # Must be here.
@@ -45,7 +47,7 @@ require 'rubyfish'
 		if word_segmentation
 			with_best_found = image.dup
 			word_segmentation.draw_on_image!(with_best_found)
-			with_best_found.save("segmented_#{expect}.png")
+			with_best_found.save("segmented_#{expect}_gen#{generation}.png")
 
 			word_segmentation.boxes.each.with_index do |box, j|
 				crop = box.to_image
@@ -55,6 +57,7 @@ require 'rubyfish'
 
 				bootstrap_dataset[letter] << input
 			end
+			puts "Best segmentation for #{expect} score: #{score}"
 		else
 			puts "Best segmentation for #{expect} not found."
 		end
@@ -65,9 +68,13 @@ require 'rubyfish'
 		#puts "Segmented image saved in #{filename}"
 	end
 
-	classifier.train(bootstrap_dataset)
-	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier"))
-
-	puts "Training finished."
 	puts "Total distance before: #{diff_sum}"
+	puts "Will train in 10 seconds."
+
+	sleep 10 
+
+	classifier.train(bootstrap_dataset, generations: GENERATIONS, logging: true)
+	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier"))
+	puts "-----------"
+	puts "Training finished."
 end

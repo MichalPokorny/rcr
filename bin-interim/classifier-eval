@@ -1,0 +1,4 @@
+#!/usr/bin/ruby -w
+require 'rcr/easy'
+classifier = RCR.build_letter_classifier
+puts "Classifier evaluation: %.2f" % classifier.evaluate(RCR::Config.prepared_letter_data_path)

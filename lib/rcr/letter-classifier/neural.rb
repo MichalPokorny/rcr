@@ -29,8 +29,6 @@ module RCR
 
 					data = image.crop_by_columns(letters.count, desc["cell_height"])
 
-					# cell_index = 1
-
 					# Make it so that the data is indexed by letter.
 					data.each_index do |index|
 						letter = letters[index].chr
@@ -69,8 +67,6 @@ module RCR
 
 					data = image.crop_by_columns(letters.count, desc["cell_height"])
 
-					# cell_index = 1
-
 					# Make it so that the data is indexed by letter.
 					data.each_index do |index|
 						letter = letters[index]
@@ -80,28 +76,15 @@ module RCR
 
 						images = data[index]
 
-						# ci = cell_index
 						data_by_letter[letter] += images.map { |img|
-							cell_data = image_to_net_input(img)
-							# img.save("pristine_#{ci}.png")
-							# ci += 1
-
-							cell_data
+							image_to_net_input(img)
 						}
 
 						0.times { |mutation|
-							# ci = cell_index
 							data_by_letter[letter] += images.map { |img|
-								mutated = img.mutate
-								cell_data = image_to_net_input(mutated)
-								# mutated.save("mutated_#{ci}_#{mutation}.png")
-								# ci += 1
-
-								cell_data
+								image_to_net_input(img.mutate)
 							}
 						}
-
-						# cell_index = ci
 					end
 				end
 
@@ -117,15 +100,40 @@ module RCR
 				size
 			end
 
-			def train(dataset, allowed_chars: ('A'..'Z'), generations: 100)
+			def untrain(inputs, generations: 100, logging: false)
+				log "Untraining neural classifier."
+
+				raise "unimplemented"
+			end
+
+			private
+			def find_dataset(dataset)
+				if dataset.is_a? String
+					Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
+				else
+					dataset
+				end
+			end
+
+			public
+			def start_anew(dataset, allowed_chars: ('A'..'Z'))
+				log "Starting new neural net for letter classifier (#{allowed_chars.size} classes)"
+				data = find_dataset(dataset)
+				num_inputs = self.class.data_inputs_size(data)
+				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed_chars.to_a.map(&:ord))
+			end
+
+			def evaluate(dataset)
+				@classifier.evaluate(find_dataset(dataset))
+			end
+
+			def train(dataset, allowed_chars: ('A'..'Z'), generations: 50, logging: false)
+				raise "Internal classifier not prepared." unless @classifier
 				log "Training neural net for letters (#{allowed_chars.size} classes, #{generations} generations)"
 
-				data = dataset
+				data = find_dataset(dataset)
 				
 				# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
-				if dataset.is_a? String
-					data = Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
-				end
 
 				# Restrict keys to allowed characters
 				for k in data.keys
@@ -136,8 +144,7 @@ module RCR
 
 				num_inputs = self.class.data_inputs_size(data)
 				log "num_inputs: #{num_inputs}"
-				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed_chars.to_a.map(&:ord))
-				@classifier.train(data, generations: generations)
+				@classifier.train(data, generations: generations, logging: logging)
 			end
 
 			def save(filename)

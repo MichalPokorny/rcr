@@ -21,7 +21,7 @@ module RCR
 
 					case task.downcase
 					when "letter" then
-						LetterClassifier::Neural.prepare_data(File.join(data_dir, "letter"), File.join(prepared_dir, "letter.data"))
+						LetterClassifier::Neural.prepare_data(Config.letter_inputs_path, Config.prepared_letter_data_path)
 					when "segment" then
 						WordSegmentator::Default.prepare_data(File.join(data_dir, "segment"), File.join(prepared_dir, "segment.data"))
 					# TODO: more

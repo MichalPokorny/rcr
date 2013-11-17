@@ -48,7 +48,11 @@ module RCR
 			end
 
 			def draw_brush(x, y)
-				raise unless x >= 0 && y >= 0 && x < window_width && y < window_height
+				unless x >= 0 && y >= 0 && x < window_width && y < window_height
+					log "Brush outside bounds (#{x}x#{y} outside #{window_width}x#{window_height})."
+					return
+				end
+
 				b = brush_size / 2
 				rect = [(x-b).floor, (y-b).floor, b*2, b*2]
 				@pixmap.draw_rectangle(@area.style.black_gc, true, *rect)

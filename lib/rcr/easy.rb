@@ -12,7 +12,6 @@ module RCR
 				RCR::Config.instance
 			end
 
-		require 'rcr/letter-classifier/neural'
 		# TODO: load the classifier we should actually load!
 		RCR::LetterClassifier::Neural.load(config.letter_classifier_path)
 	end
