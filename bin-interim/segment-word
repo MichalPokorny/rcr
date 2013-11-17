@@ -15,7 +15,7 @@ else
 	classifier = RCR.build_letter_classifier
 	segmentator = RCR.build_word_segmentator
 
-	i = 22
+	i = 18
 
 	image = RCR::Data::Image.load(ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i.to_s, "data.png"))
 	segmentation = segmentator.segment(image)
@@ -34,6 +34,21 @@ else
 		if word_segmentation
 			with_best_found = image.dup
 			word_segmentation.draw_on_image!(with_best_found)
+		
+			dataset = {}
+			('A'..'Z').each do |l| dataset[l] = [] end
+			word_segmentation.boxes.each.with_index do |box, j|
+				crop = box.to_image
+				# TODO FUJ
+				letter = word[j]
+				input = RCR::LetterClassifier::Neural.image_to_net_input(crop)
+
+				dataset[letter] << input
+			end
+
+			classifier.train(dataset)
+			puts "Training finished."
+
 			with_best_found.save("segmented_#{word}.png")
 		else
 			puts "Best segmentation for #{word} not found."

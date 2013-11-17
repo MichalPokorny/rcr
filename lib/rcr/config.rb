@@ -69,7 +69,7 @@ module RCR
 		end
 
 		def logging_enabled
-			@settings["debug"] || true # TODO
+			@settings["debug"]
 		end
 	end
 end

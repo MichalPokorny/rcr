@@ -8,8 +8,8 @@ module RCR
 			end
 
 			def [](x, y)
-				raise if x + @x0 >= @x1 || y + @y0 >= y1
-				@image[x + @x0, y + @y0]
+				raise if x + @x0 >= @x1 || y + @y0 >= @y1
+				@image[x + @x0, y + @y0] or raise "Unreachable image pixel: #{x+@x0}-#{y+@y0}"
 			end
 
 			def width; @x1 - @x0; end

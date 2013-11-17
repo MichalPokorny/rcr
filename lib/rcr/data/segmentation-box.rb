@@ -73,6 +73,10 @@ module RCR
 
 				[ a, b ]
 			end
+
+			def to_image
+				image
+			end
 		end
 	end
 end

@@ -1,51 +1,73 @@
 #!/usr/bin/ruby -w
 
 require 'rcr/config'
-dir = RCR::Config.trained_path
-
-require 'rcr/word-segmentator/default'
-require 'rcr/word-segmentator/heuristic-oversegmentation'
 require 'rcr/letter-classifier/neural'
 require 'rcr/data/image'
-#require 'rcr/heuristic-oversegmenter/stupid'
-require 'rcr/heuristic-oversegmenter/local-minima'
-require 'rcr/markov-chain-model'
+require 'rcr/easy'
 
 require 'rubyfish'
 
-classifier = RCR::LetterClassifier::Neural.load("#{dir}/letter-classifier")
+5.times do
+	classifier = RCR.build_letter_classifier
+	segmentator = RCR.build_word_segmentator
 
-#	segmentator = RCR::WordSegmentator::Default.load("#{dir}/word-segmenter")
-#	model = RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
-model = nil
-# Old: Stupid instead of LocalMinima
-segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(RCR::HeuristicOversegmenter::LocalMinima.new, classifier, model)
+	bootstrap_dataset = {}
+	('A'..'Z').each do |l| bootstrap_dataset[l] = [] end
 
-Dir[File.join(Config.segmentation_inputs_path, "*")].each do |input_dir|
-	image = RCR::Data::Image.load(File.join(input_dir, "data.png"))
-	segmentation = segmentator.segment(image)
+	diff_sum = 0
 
-	expect = File.read(File.join(input_dir, "expect.txt")).strip
+	Dir[File.join(RCR::Config.segmentation_inputs_path, "*")].each do |input_dir|
+		# FUJ
+		raise unless input_dir =~ /\/(\d+)(\/|\Z)/
+		# if $1.to_i < 5 || $1.to_i > 15
+			# puts "skip #$1"
+		#	next
+		# end
 
-	text = segmentation.detected_text(classifier)
-	distance = RubyFish::Levenshtein.distance(text, expect)
-	puts "Segmentation says: #{text}, expected: #{expect}. LSD = #{distance}"
-	word_segmentation = segmentator.segment_for_word(image, expect)
+		next if $1 == "4" || $1 == "6" || $1 == "11"
+		# /FUJ
+		puts "running #$1"
 
-	#filename = "segmented.png"
-	segmentator.show_oversegmentation(image) # Must be here.
+		image = RCR::Data::Image.load(File.join(input_dir, "data.png"))
+		segmentation = segmentator.segment(image)
 
-	if word_segmentation
-		with_best_found = image.dup
-		word_segmentation.draw_on_image!(with_best_found)
-		with_best_found.save("segmented_#{expect}.png")
-	else
-		puts "Best segmentation for #{expect} not found."
+		expect = File.read(File.join(input_dir, "expect.txt")).strip
+
+		text = segmentation.detected_text(classifier)
+		distance = RubyFish::Levenshtein.distance(text, expect)
+		puts "Segmentation says: #{text}, expected: #{expect}. LSD = #{distance}"
+		diff_sum += distance
+		word_segmentation = segmentator.segment_for_word(image, expect)
+
+		#filename = "segmented.png"
+		segmentator.show_oversegmentation(image) # Must be here.
+
+		if word_segmentation
+			with_best_found = image.dup
+			word_segmentation.draw_on_image!(with_best_found)
+			with_best_found.save("segmented_#{expect}.png")
+
+			word_segmentation.boxes.each.with_index do |box, j|
+				crop = box.to_image
+				# TODO FUJ
+				letter = expect[j]
+				input = RCR::LetterClassifier::Neural.image_to_net_input(crop)
+
+				bootstrap_dataset[letter] << input
+			end
+		else
+			puts "Best segmentation for #{expect} not found."
+		end
+
+		#segmentation.draw_on_image!(image)
+		#image.save(filename)
+
+		#puts "Segmented image saved in #{filename}"
 	end
 
-	#segmentation.draw_on_image!(image)
-	#image.save(filename)
+	classifier.train(bootstrap_dataset)
+	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier"))
 
-	#puts "Segmented image saved in #{filename}"
+	puts "Training finished."
+	puts "Total distance before: #{diff_sum}"
 end
-
