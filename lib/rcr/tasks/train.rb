@@ -14,18 +14,19 @@ module RCR
 
 					prepared_dir = RCR::Config.prepared_path
 					trained_dir = RCR::Config.trained_path
-					
+
 					case task.downcase
 					when "letter" then
 						require 'rcr/letter-classifier/neural'
 						lc = LetterClassifier::Neural.new
-						dataset = Config.prepared_letter_data_path
-						lc.start_anew(dataset)
+						dataset = LetterClassifier::Neural.load_dataset(Config.prepared_letter_data_path)
+						chars = ('A'..'Z')
+						dataset = dataset.restrict_keys(chars.map(&:ord))
+						lc.start_anew(dataset, allowed_chars: chars)
 						lc.train(dataset, logging: true)
+						puts "eval before save: #{lc.evaluate(dataset)}"
 						lc.save(Config.letter_classifier_path)
-
-						lc = LetterClassifier::Neural.load(Config.letter_classifier_path)
-						pp lc.evaluate(dataset)
+						puts "eval after save: #{lc.evaluate(dataset)}"
 					when "segment" then
 						# TODO: doesn't work!
 						require 'rcr/word-segmentator/default'

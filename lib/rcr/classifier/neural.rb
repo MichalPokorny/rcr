@@ -6,7 +6,7 @@ module RCR
 	module Classifier
 		class Neural
 			include Logging
-			
+
 			def initialize(net = nil, classes = nil)
 				@net = net
 				@classes = classes
@@ -65,7 +65,7 @@ module RCR
 				result = @net.run(x)
 				alts = {}
 				sum = result.inject(&:+)
-				
+
 				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
 
 				if sum == 0
@@ -74,7 +74,7 @@ module RCR
 				end
 
 				@classes.each_index do |i|
-					alts[@classes[i]] = 
+					alts[@classes[i]] =
 						# Stupid smoothing.
 						(min_nonzero + result[i]) / (sum + min_nonzero * result.size)
 				end
@@ -102,14 +102,18 @@ module RCR
 				[ inputs, outputs ]
 			end
 
-			# Pass nil to get zeroes.
 			def output_select(x)
+				raise "#{x} is not a class (classes: #{@classes.inspect})" unless @classes.include?(x)
 				@classes.map { |l| (l == x) ? 1 : 0 }
+			end
+
+			def output_select_empty
+				@classes.map { 0 }
 			end
 
 			public
 			def untrain(inputs, generations: 100, logging: false)
-				xs, ys = inputs.map(&:data), inputs.map { output_select(nil) }
+				xs, ys = inputs.map(&:data), inputs.map { output_select_empty }
 				with_logging_set(logging) {
 					log "Untraining neural classifier."
 					generations.times { |round|

@@ -27,26 +27,40 @@ module RCR
 			def setup
 			end
 
-			def assert_dataset_same(a, b)
-				assert a.keys == b.keys
-				a.keys.each do |x|
-					assert a[x] == b[x]
-				end
-			end
-
 			def test_idempotency
 				io = StringIO.new
-				data = {
-					123 => (1..10).map { |i| MockDataString.new("data_#{i}_123") },
-					456 => (1..20).map { |i| MockDataString.new("data_#{i}_456") },
-				}
+				data = make_data
 				dataset = IntegerRawDataset.new(data)
 				dataset.write(io)
 
 				io_in = StringIO.new(io.string)
 				dataset2 = IntegerRawDataset.read(io_in, MockDataString)
 
-				assert_dataset_same dataset, dataset2
+				assert dataset.keys == dataset2.keys, "dataset keys not equal"
+				assert dataset == dataset2, "datasets not equal"
+			end
+
+			private
+			def make_data
+				rnd = Random.new(1234)
+				Hash[(0..10).map {
+					[rnd.rand(10000), (1..rnd.rand(10)).map { |i| MockDataString.new("data_#{i}_#{rnd.rand(100)}") }]
+				}]
+			end
+
+			public
+			def test_double_loading_gives_same_result
+				path = File.join(TEST_DATA_PATH, "dataset_double_load")
+
+				data = make_data
+				dataset = IntegerRawDataset.new(data)
+				dataset.save(path)
+
+				dataset2 = Data::IntegerRawDataset.load(path, MockDataString)
+				dataset3 = Data::IntegerRawDataset.load(path, MockDataString)
+
+				assert dataset == dataset2
+				assert dataset2 == dataset3
 			end
 		end
 	end

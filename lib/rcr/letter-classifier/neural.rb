@@ -92,8 +92,9 @@ module RCR
 				dataset.save(target_file)
 			end
 
+			# TODO: move to 'integer_raw_dataset'?
 			def self.data_inputs_size(data)
-				raise "Data entirely empty" if data.keys.empty?
+				raise "Dataset has no keys, can't detect input size" if data.keys.empty?
 				inputs = data[data.keys.first]
 				# puts "inputs first: #{inputs.first.inspect}"
 				size = inputs.first.size
@@ -107,47 +108,53 @@ module RCR
 			end
 
 			private
-			def find_dataset(dataset)
-				if dataset.is_a? String
-					Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
-				else
-					dataset
-				end
-			end
+#			puts "LOADING DATASET"
+#			Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
 
 			public
-			def start_anew(dataset, allowed_chars: ('A'..'Z'))
+			def self.load_dataset(path, logging: false)
+				Data::IntegerRawDataset.load(path, RCR::Data::NeuralNetInput, logging: logging)
+			end
+
+			def start_anew(dataset, allowed_chars: nil)
+				raise unless allowed_chars
+				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
+
 				log "Starting new neural net for letter classifier (#{allowed_chars.size} classes)"
-				data = find_dataset(dataset)
-				num_inputs = self.class.data_inputs_size(data)
+				num_inputs = self.class.data_inputs_size(dataset)
 				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed_chars.to_a.map(&:ord))
 			end
 
 			def evaluate(dataset)
-				@classifier.evaluate(find_dataset(dataset))
+				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
+
+				@classifier.evaluate(dataset)
 			end
 
-			def train(dataset, allowed_chars: ('A'..'Z'), generations: 50, logging: false)
-				raise "Internal classifier not prepared." unless @classifier
-				log "Training neural net for letters (#{allowed_chars.size} classes, #{generations} generations)"
+			def train(dataset, generations: 20, logging: false)
+				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
 
-				data = find_dataset(dataset)
-				
-				# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
+				with_logging_set(logging) do
+					raise "Internal classifier not prepared." unless @classifier
+					log "Training neural net for letters (#{generations} generations)"
 
-				# Restrict keys to allowed characters
-				for k in data.keys
-					unless allowed_chars.include?(k.chr)
-						data.delete k
-					end
+					# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
+
+					# Restrict keys to allowed characters
+					#for k in dataset.keys
+					#	unless allowed_chars.include?(k.chr)
+					#		dataset.delete k
+					#	end
+					#end
+
+					num_inputs = self.class.data_inputs_size(dataset)
+					log "Training neural classifier of #{num_inputs} inputs"
+					@classifier.train(dataset, generations: generations, logging: logging)
 				end
-
-				num_inputs = self.class.data_inputs_size(data)
-				log "num_inputs: #{num_inputs}"
-				@classifier.train(data, generations: generations, logging: logging)
 			end
 
 			def save(filename)
+				log "Saving neural letter classifier to #{filename}"
 				@classifier.save(filename)
 			end
 
@@ -156,7 +163,8 @@ module RCR
 			end
 
 			def self.load(filename)
-				self.new(Classifier::Neural.load(filename))		
+				log "Loading neural letter classifier from #{filename}"
+				self.new(Classifier::Neural.load(filename))
 			end
 
 			def classify(image)
