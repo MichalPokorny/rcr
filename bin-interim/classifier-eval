@@ -1,4 +1,8 @@
 #!/usr/bin/ruby -w
 require 'rcr/easy'
+require 'rcr/letter-classifier/neural'
+
 classifier = RCR.build_letter_classifier
-puts "Classifier evaluation: %.2f" % classifier.evaluate(RCR::Config.prepared_letter_data_path)
+dataset = RCR::LetterClassifier::Neural.load_dataset(RCR::Config.prepared_letter_data_path)
+dataset = dataset.restrict_keys(('A'..'Z').map(&:ord))
+puts "Classifier evaluation: %.2f" % classifier.evaluate(dataset)

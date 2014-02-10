@@ -18,7 +18,7 @@ module RCR
 
 	def self.build_language_model(opts = {})
 		# TODO: load the language model we should actually load!
-	
+
 		# require 'rcr/markov-chain-model'
 		# RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
 

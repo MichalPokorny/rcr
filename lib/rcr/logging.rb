@@ -27,6 +27,14 @@ module RCR::Logging
 				puts "[#{self.class}] WARN: #{args.map(&:to_s).join}"
 			end
 
+			define_method :with_logging do |&block|
+				with_logging_set(true, &block)
+			end
+
+			define_method :without_logging do |&block|
+				with_logging_set(false, &block)
+			end
+
 			define_method :with_logging_set do |value, &block|
 				old_value = defined?(@enable_logging) ? @enable_logging : nil
 				@enable_logging = value
@@ -48,6 +56,26 @@ module RCR::Logging
 
 			define_method :log do |*args|
 				RCR::Logging.log_line(self, args) if logging_enabled?
+			end
+
+			define_method :warn do |*args|
+				puts "[#{self.class}] WARN: #{args.map(&:to_s).join}"
+			end
+
+			define_method :with_logging do |&block|
+				with_logging_set(true, &block)
+			end
+
+			define_method :without_logging do |&block|
+				with_logging_set(false, &block)
+			end
+
+			define_method :with_logging_set do |value, &block|
+				old_value = defined?(@enable_logging) ? @enable_logging : nil
+				@enable_logging = value
+				result = block.call
+				@enable_logging = old_value
+				result
 			end
 		end
 	end

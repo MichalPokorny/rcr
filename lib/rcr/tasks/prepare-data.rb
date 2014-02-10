@@ -1,6 +1,5 @@
 require 'rcr/config'
 require 'rcr/letter-classifier/neural'
-require 'rcr/word-segmentator/default'
 
 module RCR
 	module Tasks
@@ -14,7 +13,6 @@ module RCR
 				until argv.empty?
 					task = argv.shift
 
-					data_dir = Config.input_path
 					prepared_dir = Config.prepared_path
 
 					FileUtils.mkdir_p(prepared_dir)
@@ -23,7 +21,9 @@ module RCR
 					when "letter" then
 						LetterClassifier::Neural.prepare_data(Config.letter_inputs_path, Config.prepared_letter_data_path)
 					when "segment" then
-						WordSegmentator::Default.prepare_data(File.join(data_dir, "segment"), File.join(prepared_dir, "segment.data"))
+						raise "Not implemented"
+						# require 'rcr/word-segmentator/default'
+						# WordSegmentator::Default.prepare_data(File.join(data_dir, "segment"), File.join(prepared_dir, "segment.data"))
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data."

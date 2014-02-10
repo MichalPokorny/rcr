@@ -10,7 +10,7 @@
 	- operace:
 		- spojit dva segmenty co jsou blizko sebe
 		- rozdelit segment v zajimavem bode
-	
+
 		- segment budu mit oznaceny podle toho jake pismeno v nem vidim
 			- jedna z operaci bude "zmen, jake pismeno si myslim, ze tenhle segment je"
 
@@ -39,3 +39,5 @@
 - napsat aplikacku ktera bude rozpoznavat pismena psana na tabletu
 
 - pri bootstrapovem uceni bych mel i ODTRENOVAVAT SPATNE MATCHE!
+
+- dat logger jako property pro tridu, takze pak bude funovat dependency injection

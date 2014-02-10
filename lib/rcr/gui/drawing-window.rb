@@ -31,7 +31,7 @@ module RCR
 
 			def canvas_expose_event
 				w, h = window_width, window_height
-				
+
 				@area.window.draw_rectangle(@area.style.white_gc, true, 0, 0, w, h)
 				@area.window.draw_drawable(@area.style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)
 				@area.window.draw_rectangle(@area.style.black_gc, false, 0, 0, w, h)
@@ -67,8 +67,8 @@ module RCR
 				"(title not set)"
 			end
 
-			def initialize()
-				super()
+			def initialize
+				super
 
 				set_title title
 				signal_connect "destroy" do
@@ -115,7 +115,7 @@ module RCR
 						draw_brush(event.x, event.y)
 					end
 				end
-			
+
 				@area.events = Gdk::Event::EXPOSURE_MASK |
 					Gdk::Event::LEAVE_NOTIFY_MASK |
 					Gdk::Event::BUTTON_PRESS_MASK |
@@ -125,7 +125,7 @@ module RCR
 				@area.show
 
 				add @box
-				
+
 				@box.show
 				show
 			end

@@ -10,20 +10,24 @@ require 'rubyfish'
 require 'fileutils'
 Dir["segmented_*.png"].each { |f| FileUtils.rm(f) }
 
-BATCH_SIZE = 5
+OUTPUT_DIR = "output-segmented-words"
+FileUtils.mkdir_p(OUTPUT_DIR)
+
+BATCH_SIZE = 10
 GENERATIONS = 30
 
-5.times do |generation|
+30.times do |generation|
 	classifier = RCR.build_letter_classifier
 	segmentator = RCR.build_word_segmentator
 
-	puts "== Classifier evaluation: %.2f" % classifier.evaluate(Config.prepared_letter_data_path)
+	# Evaluation won't work!
+	# puts "== Classifier evaluation: %.2f" % classifier.evaluate(RCR::Config.prepared_letter_data_path)
 
 	bootstrap_dataset = {}
 	('A'..'Z').each do |l| bootstrap_dataset[l] = [] end
 
 	diff_sum = 0
-	
+
 	batch = Dir[File.join(RCR::Config.segmentation_inputs_path, "*")].shuffle.take(BATCH_SIZE)
 	batch.each.with_index do |input_dir, i|
 		raise unless input_dir =~ /\/(\d+)(\/|\Z)/
@@ -47,7 +51,7 @@ GENERATIONS = 30
 		if word_segmentation
 			with_best_found = image.dup
 			word_segmentation.draw_on_image!(with_best_found)
-			with_best_found.save("segmented_#{expect}_gen#{generation}.png")
+			with_best_found.save(File.join(OUTPUT_DIR, "segmented_#{expect}_gen#{generation}.png"))
 
 			word_segmentation.boxes.each.with_index do |box, j|
 				crop = box.to_image
@@ -69,10 +73,8 @@ GENERATIONS = 30
 	end
 
 	puts "Total distance before: #{diff_sum}"
-	puts "Will train in 10 seconds."
 
-	sleep 10 
-
+	bootstrap_dataset = RCR::Data::IntegerRawDataset.new(Hash[bootstrap_dataset.map { |k, v| [k.ord, v] }])
 	classifier.train(bootstrap_dataset, generations: GENERATIONS, logging: true)
 	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier"))
 	puts "-----------"

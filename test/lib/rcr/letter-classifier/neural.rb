@@ -3,12 +3,32 @@ require 'fileutils'
 
 module RCR
 	module LetterClassifier
-		class NeuralFunctionalTest < Test::Unit::TestCase
-			INPUTS = File.join(TEST_DATA_PATH, "letter", "train")
-			PREPARED = File.join(TEST_DATA_PATH, "tmp", "letter.data")
-			CLASSIFIER = File.join(TEST_DATA_PATH, "tmp", "letter-classifier")
-			TEST_INPUT = File.join(TEST_DATA_PATH, "letter", "letter.png")
+		INPUTS = File.join(TEST_DATA_PATH, "letter", "train")
+		PREPARED = File.join(TEST_DATA_PATH, "tmp", "letter.data")
+		CLASSIFIER = File.join(TEST_DATA_PATH, "tmp", "letter-classifier")
+		TEST_INPUT = File.join(TEST_DATA_PATH, "letter", "letter.png")
 
+		class NeuralTest < Test::Unit::TestCase
+			PREPARED = File.join(TEST_DATA_PATH, "tmp", "letter.data")
+
+			def setup
+				Neural.prepare_data(INPUTS, PREPARED)
+			end
+
+			def teardown
+				FileUtils.rm_f(PREPARED)
+				FileUtils.rm_f(CLASSIFIER)
+			end
+
+			def test_double_loading_gives_same_inputs
+				dataset1 = Neural.load_dataset(PREPARED)
+				dataset2 = Neural.load_dataset(PREPARED)
+
+				assert dataset1 == dataset2
+			end
+		end
+
+		class NeuralFunctionalTest < Test::Unit::TestCase
 			RANGE = ('0'..'9')
 
 			def self.prepare_classifier
@@ -17,8 +37,9 @@ module RCR
 				unless File.exist? PREPARED
 					raise "Didn't properly prepare the data!"
 				end
-				classifier.start_anew(PREPARED, allowed_chars: RANGE)
-				classifier.train PREPARED, allowed_chars: RANGE, generations: 5
+				dataset = Neural.load_dataset(PREPARED)
+				classifier.start_anew(dataset, allowed_chars: RANGE)
+				classifier.train(dataset, allowed_chars: RANGE, generations: 5)
 				classifier
 			end
 
