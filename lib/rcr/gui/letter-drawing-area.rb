@@ -11,6 +11,10 @@ module RCR
 
 			public
 			def initialize
+				super
+
+				@pixmap = nil
+
 				signal_connect :expose_event do
 					expose_event
 				end
@@ -19,11 +23,8 @@ module RCR
 					clear if !@pixmap
 				end
 
-				signal_connect :motion_nofify_event do |widget, event|
+				signal_connect :motion_notify_event do |widget, event|
 					x, y, state = event.x, event.y, event.state
-					if event.hint?
-						_, x, y, state = event.window.pointer
-					end
 
 					if state.button1_mask? && @pixmap
 						draw_brush(x, y)
@@ -36,7 +37,7 @@ module RCR
 					end
 				end
 
-				events = Gdk::Event::EXPOSURE_MASK |
+				self.events = Gdk::Event::EXPOSURE_MASK |
 					Gdk::Event::LEAVE_NOTIFY_MASK |
 					Gdk::Event::BUTTON_PRESS_MASK |
 					Gdk::Event::POINTER_MOTION_MASK |
@@ -45,6 +46,7 @@ module RCR
 
 			def clear
 				width, height = allocation.width, allocation.height
+				@pixmap_width, @pixmap_height = width, height
 				log "clearing letter drawing area: width #{width}, height #{height}"
 
 				@pixmap = Gdk::Pixmap.new(window, width, height, -1)
@@ -54,7 +56,7 @@ module RCR
 			end
 
 			def brush_size
-				[allocation.width, allocation.height].min.to_f / 6.0
+				[allocation.width, allocation.height].min.to_f / 12.0
 			end
 
 			def draw_brush(x, y)
@@ -71,7 +73,12 @@ module RCR
 			end
 
 			def expose_event
-				w, h = window_width, window_height
+				w, h = allocation.width, allocation.height
+
+				if !@pixmap || [w, h] != [@pixmap_width, @pixmap_height]
+					log "letter drawing area size changed, clearing"
+					clear
+				end
 
 				window.draw_rectangle(style.white_gc, true, 0, 0, w, h)
 				window.draw_drawable(style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)

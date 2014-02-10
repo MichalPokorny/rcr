@@ -91,15 +91,15 @@ module RCR
 
 				@area = Gtk::DrawingArea.new
 				@area.set_size_request 200, 200
-				@area.signal_connect "expose_event" do
+				@area.signal_connect :expose_event do
 					canvas_expose_event
 				end
 
-				@area.signal_connect "configure_event" do
+				@area.signal_connect :configure_event do
 					clear_canvas if !@pixmap
 				end
 
-				@area.signal_connect "motion_notify_event" do |widget, event|
+				@area.signal_connect :motion_notify_event do |widget, event|
 					x, y, state = event.x, event.y, event.state
 					if event.hint?
 						_, x, y, state = event.window.pointer
