@@ -23,6 +23,10 @@ module RCR
 						chars = ('A'..'Z')
 						dataset = dataset.restrict_keys(chars.map(&:ord))
 						lc.start_anew(dataset, allowed_chars: chars)
+
+						# chars = dataset.keys.map(&:chr)
+						# puts "chars: #{chars.inspect}"
+						# lc.start_anew(dataset, allowed_chars: chars)
 						lc.train(dataset, logging: true)
 						puts "eval before save: #{lc.evaluate(dataset)}"
 						lc.save(Config.letter_classifier_path)

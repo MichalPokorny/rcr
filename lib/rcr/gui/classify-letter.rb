@@ -27,7 +27,7 @@ module RCR
 
 				def add_box_controls(box)
 					button = Gtk::Button.new("Classify")
-					button.signal_connect "clicked" do
+					button.signal_connect :clicked do
 						classify
 					end
 					box.pack_end(button, false, false)

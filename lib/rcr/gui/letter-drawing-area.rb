@@ -1,5 +1,6 @@
 require 'gtk2'
 require 'rcr/logging'
+require 'rcr/data/pixmap-imagelike'
 
 module RCR
 	module GUI
@@ -10,8 +11,10 @@ module RCR
 			attr_reader :pixmap
 
 			public
-			def initialize
-				super
+			def initialize(classifier)
+				super()
+
+				@classifier = classifier
 
 				@pixmap = nil
 
@@ -42,6 +45,14 @@ module RCR
 					Gdk::Event::BUTTON_PRESS_MASK |
 					Gdk::Event::POINTER_MOTION_MASK |
 					Gdk::Event::POINTER_MOTION_HINT_MASK
+			end
+
+			def drawn_letter
+				log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
+				letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap)).chr
+				log "classification finished: #{letter}"
+				# @area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
+				letter
 			end
 
 			def clear
