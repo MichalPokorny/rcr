@@ -131,7 +131,7 @@ module RCR
 				@classifier.evaluate(dataset)
 			end
 
-			def train(dataset, generations: 20, logging: false)
+			def train(dataset, generations: 100, logging: false)
 				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
 
 				with_logging_set(logging) do
