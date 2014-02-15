@@ -25,7 +25,6 @@ module RCR::Marshal
 
 		yaml = YAML.load_file "#{filename}.type"
 		type = yaml[:type] or raise "Unexpected format of type file"
-		pp @@known_classes
 		klass = @@known_classes[type] or raise "Unknown marshaled type: #{type}"
 
 		klass.load_internal(filename)

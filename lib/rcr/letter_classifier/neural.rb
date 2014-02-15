@@ -144,13 +144,6 @@ module RCR
 
 					# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
 
-					# Restrict keys to allowed characters
-					#for k in dataset.keys
-					#	unless allowed_chars.include?(k.chr)
-					#		dataset.delete k
-					#	end
-					#end
-
 					num_inputs = self.class.data_inputs_size(dataset)
 					log "Training neural classifier of #{num_inputs} inputs"
 					@classifier.train(dataset, generations: generations, logging: logging)
@@ -168,20 +161,24 @@ module RCR
 
 			def self.load_internal(filename)
 				log "Loading neural letter classifier from #{filename}"
-				puts "Loading neural letter classifier from #{filename}"
 				self.new(Classifier::Neural.load(filename))
 			end
 
 			def classify(image)
-				@classifier.classify(self.class.image_to_net_input(image).data)
+				@classifier.classify(self.class.image_to_net_input(image).data).chr
 			end
 
 			def classify_with_score(image)
-				@classifier.classify_with_score(self.class.image_to_net_input(image).data)
+				letter, score = @classifier.classify_with_score(self.class.image_to_net_input(image).data)
+				[letter.chr, score]
 			end
 
 			def classify_with_alternatives(image)
-				@classifier.classify_with_alternatives(self.class.image_to_net_input(image).data)
+				Hash[
+					@classifier.classify_with_alternatives(self.class.image_to_net_input(image).data).map { |letter, score|
+						[letter.chr, score]
+					}
+				]
 			end
 		end
 	end

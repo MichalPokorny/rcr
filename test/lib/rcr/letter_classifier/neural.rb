@@ -69,14 +69,13 @@ module RCR
 			def test_can_classify_loaded_image
 				image = Data::Image.load(TEST_INPUT)
 				result = @classifier.classify(image)
-				pp result
-				assert result
+				assert result && result.is_a?(String)
 			end
 
 			def test_can_classify_with_alternatives
 				image = Data::Image.load(TEST_INPUT)
 				result = @classifier.classify_with_alternatives(image)
-				assert result && result.is_a?(Hash) && result.values.all? { |k| k.is_a?(Float) }
+				assert result && result.is_a?(Hash) && result.values.all? { |k| k.is_a?(Float) } && result.keys.all? { |k| k.is_a?(String) }
 			end
 		end
 	end

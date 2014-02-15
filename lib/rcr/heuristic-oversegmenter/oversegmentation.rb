@@ -128,9 +128,9 @@ module RCR
 
 							# TODO: settable. this takes top 5 candidates.
 							candidates = result.keys.sort { |a,b| result[b] <=> result[a] } #.take(5)
-							# puts "candidates #{xs[i]}..#{xs[j]}: #{candidates.map { |c| "#{c.chr}(%.2f)" % result[c] }.join('; ')}"
+							# puts "candidates #{xs[i]}..#{xs[j]}: #{candidates.map { |c| "#{c}(%.2f)" % result[c] }.join('; ')}"
 							candidates.each do |letter|
-								edges << Oversegmentation::Edge.new(xs[i], xs[j], letter.chr, result[letter])
+								edges << Oversegmentation::Edge.new(xs[i], xs[j], letter, result[letter])
 							end
 						end
 					end
