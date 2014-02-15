@@ -101,10 +101,11 @@ module RCR
 		end
 
 		def self.load(filename)
-			fann_file = filename + ".fann"
+			fann_file = "#{filename}.fann"
 			puts "FANN file: #{fann_file}"
 			raise ArgumentError, "FANN file doesn't exist: #{fann_file}" unless File.exist?(fann_file)
-			fann = RubyFann::Standard::new(filename: fann_file)
+			# ??? fann = RubyFann::Standard::new(filename: fann_file)
+			fann = RubyFann::Standard.new(filename: fann_file)
 
 			yaml_file = "#{filename}.net-params"
 			puts "YAML file: #{yaml_file}"

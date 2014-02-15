@@ -39,13 +39,13 @@ module RCR
 				end
 				dataset = Neural.load_dataset(PREPARED)
 				classifier.start_anew(dataset, allowed_chars: RANGE)
-				classifier.train(dataset, allowed_chars: RANGE, generations: 5)
+				classifier.train(dataset, generations: 5)
 				classifier
 			end
 
 			def prepare_classifier
 				@classifier = self.class.prepare_classifier
-				@classifier.save CLASSIFIER
+				@classifier.save_internal CLASSIFIER
 			end
 
 			def setup
@@ -62,7 +62,7 @@ module RCR
 			end
 
 			def test_can_load_classifier
-				classifier = Neural.load(CLASSIFIER)
+				classifier = Neural.load_internal(CLASSIFIER)
 				assert classifier
 			end
 

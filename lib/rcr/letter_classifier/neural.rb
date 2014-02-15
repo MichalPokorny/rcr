@@ -7,11 +7,15 @@ require 'rcr/data/integer_raw_dataset'
 require 'fileutils'
 
 require 'rcr/logging'
+require 'rcr/marshal'
 
 module RCR
 	module LetterClassifier
 		class Neural
 			include Logging
+
+			MARSHAL_ID = self.name
+			include Marshal
 
 			def self.convert_data_for_eblearn(source_dir, target_dir)
 				indexes = {}
@@ -153,7 +157,7 @@ module RCR
 				end
 			end
 
-			def save(filename)
+			def save_internal(filename)
 				log "Saving neural letter classifier to #{filename}"
 				@classifier.save(filename)
 			end
@@ -162,8 +166,9 @@ module RCR
 				@classifier = classifier
 			end
 
-			def self.load(filename)
+			def self.load_internal(filename)
 				log "Loading neural letter classifier from #{filename}"
+				puts "Loading neural letter classifier from #{filename}"
 				self.new(Classifier::Neural.load(filename))
 			end
 

@@ -1,7 +1,6 @@
 require 'rcr/logging'
 require 'rcr/data/image'
 require 'rcr/data/pixmap-imagelike'
-require 'rcr/letter-classifier/neural'
 require 'rcr/gui/drawing-window'
 
 # TODO: "make new sample" button

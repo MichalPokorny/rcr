@@ -1,19 +1,19 @@
 require 'rcr/config'
-require 'rcr/letter-classifier/neural'
+require 'rcr/letter_classifier/neural'
 
 module RCR
 	def self.build_letter_classifier(opts = {})
 		config =
 			if opts.key?(:config)
-				opts[:config]
+				opts.delete(:config)
 			elsif opts.key?(:config_file)
-				RCR::Config.load_from_file(opts[:config_file])
+				RCR::Config.load_from_file(opts.delete(:config_file))
 			else
 				RCR::Config.instance
 			end
 
 		# TODO: load the classifier we should actually load!
-		RCR::LetterClassifier::Neural.load(config.letter_classifier_path)
+		RCR::Marshal.load(config.letter_classifier_path)
 	end
 
 	def self.build_language_model(opts = {})

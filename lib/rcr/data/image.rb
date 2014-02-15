@@ -11,7 +11,12 @@ module RCR
 			class EmptyImage < StandardError; end
 
 			def self.load(path)
-				self.new(ChunkyPNG::Image.from_file(path))
+				self.new(case path
+					when /\.png$/
+						ChunkyPNG::Image.from_file(path)
+					else
+						Magick::Image::read(path).first
+				end)
 			end
 
 			# pixels: 2D array of R-G-B pixels (0..256)
@@ -25,8 +30,23 @@ module RCR
 				self.new(image)
 			end
 
+			private
+			def image=(new_image)
+				@image = case new_image
+					when ChunkyPNG::Canvas
+						new_image
+					when Magick::Image
+						ChunkyPNG::RMagick.import(new_image)
+					when String
+						raise "Use RCR::Image#load to load images by their path."
+					else
+						raise ArgumentError, "Cannot import image of type #{new_image.class}"
+					end
+			end
+
+			public
 			def initialize(image)
-				@image = image
+				self.image = image
 			end
 
 			def crop(x, y, width, height)
@@ -71,7 +91,7 @@ module RCR
 			end
 
 			def to_raw_data
-				bytes = [ width, height ].pack("QQ")
+				bytes = [width, height].pack("QQ")
 				bytes += @image.to_rgba_stream
 				bytes
 			end
@@ -89,7 +109,7 @@ module RCR
 
 				rmagick_image = ChunkyPNG::RMagick.export(@image)
 				rmagick_image.scale!(new_width, new_height)
-				@image = ChunkyPNG::RMagick.import(rmagick_image)
+				self.image = ChunkyPNG::RMagick.import(rmagick_image)
 			end
 
 			def scale(width, height)
@@ -112,7 +132,7 @@ module RCR
 
 			public
 			def guillotine!
-				@image = rmagick_guillotine
+				self.image = rmagick_guillotine
 			end
 
 			def guillotine
@@ -178,10 +198,10 @@ module RCR
 
 				ChunkyPNG::RMagick.import(img)
 			end
-			
+
 			public
 			def border_to_and_resize_to_fit!(new_w, new_h)
-				@image = rmagick_border_to_and_resize_to_fit(new_w, new_h)
+				self.image = rmagick_border_to_and_resize_to_fit(new_w, new_h)
 			end
 
 			private
@@ -190,7 +210,7 @@ module RCR
 				# scaling x, rotation x, y, scaling y, translate x, y
 				sx = 0.9 + (rand() * 0.2)
 				sy = 0.9 + (rand() * 0.2)
-				
+
 				max_rot = Math::PI / 8
 
 				rx = (max_rot / 2) - rand() * max_rot
