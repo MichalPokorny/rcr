@@ -49,7 +49,7 @@ module RCR
 
 			def drawn_letter
 				log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
-				letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap)).chr
+				letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap))
 				log "classification finished: #{letter}"
 				# @area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 				letter

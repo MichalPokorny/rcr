@@ -30,8 +30,6 @@ module RCR
 				# TODO: what about other tips?
 				result, score = @letter_classifier.classify_with_score(img) # first returned value: result
 
-				result = result.chr
-
 				lm_score =
 					if @language_model
 						@language_model.score(context, result)
@@ -48,7 +46,7 @@ module RCR
 
 				log sprintf("#{x0}..#{x1}: score=%.2f result=#{result}#{lm_msg}", score)
 
-				[ result, score * lm_score ]
+				[result, score * lm_score]
 			end
 
 			def show_oversegmentation(image, color: ChunkyPNG::Color.rgb(200, 200, 200))

@@ -1,5 +1,6 @@
 require 'ruby-fann'
 require 'rcr/data/neural-net-input'
+require 'rcr/logging'
 
 #@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
 
@@ -8,6 +9,8 @@ require 'rcr/data/neural-net-input'
 
 module RCR
 	class NeuralNet
+		include Logging
+
 		QUANTUMS = 10
 
 		# TODO: contrast normalization
@@ -22,7 +25,7 @@ module RCR
 			else
 				image.border_to_and_resize_to_fit!(16, 16)
 			end
-			
+
 			data = []
 			(0...image.width).each { |x|
 				(0...image.height).each { |y|
@@ -36,7 +39,7 @@ module RCR
 			Data::NeuralNetInput.new(data)
 		end
 
-		def self.shuffle_xys(xs, ys)	
+		def self.shuffle_xys(xs, ys)
 			indexes = (0...xs.length).to_a.shuffle
 			[ indexes.map { |i| xs[i] }, indexes.map { |i| ys[i] } ]
 		end
@@ -53,7 +56,7 @@ module RCR
 				num_outputs.nil? || num_outputs < 1 || hidden_neurons.any? { |n| n <= 0 } ||
 				num_inputs < 1
 
-			puts "Num inputs: #{num_inputs}, neurons: #{hidden_neurons.inspect}, outputs: #{num_outputs.inspect}"
+			log "Num inputs: #{num_inputs}, neurons: #{hidden_neurons.inspect}, outputs: #{num_outputs.inspect}"
 
 			fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: num_outputs)	
 
@@ -86,7 +89,7 @@ module RCR
 		end
 
 		def save(filename)
-			puts "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
+			log "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
 
 			# pp @fann.get_neurons
 			# @fann.print_connections
@@ -102,17 +105,17 @@ module RCR
 
 		def self.load(filename)
 			fann_file = "#{filename}.fann"
-			puts "FANN file: #{fann_file}"
+			log "FANN file: #{fann_file}"
 			raise ArgumentError, "FANN file doesn't exist: #{fann_file}" unless File.exist?(fann_file)
 			# ??? fann = RubyFann::Standard::new(filename: fann_file)
 			fann = RubyFann::Standard.new(filename: fann_file)
 
 			yaml_file = "#{filename}.net-params"
-			puts "YAML file: #{yaml_file}"
+			log "YAML file: #{yaml_file}"
 			raise ArgumentError, "YAML file doesn't exist: #{yaml_file}" unless File.exist?(yaml_file)
 			params = YAML.load_file(yaml_file)
 
-			puts "Loaded neural net with #{params[:n_inputs]} inputs and #{params[:n_outputs]} outputs"
+			log "Loaded neural net with #{params[:n_inputs]} inputs and #{params[:n_outputs]} outputs"
 
 			# pp fann.get_neurons
 			# fann.print_connections

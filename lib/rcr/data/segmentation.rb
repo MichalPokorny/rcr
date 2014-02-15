@@ -14,7 +14,7 @@ module RCR
 
 			def detected_text(letter_classifier)
 				@boxes.sort_by(&:x0).map { |box|
-					letter_classifier.classify(box.image).chr
+					letter_classifier.classify(box.image)
 				}.join
 			end
 

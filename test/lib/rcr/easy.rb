@@ -12,7 +12,7 @@ module RCR
 			assert classifier.is_a?(RCR::LetterClassifier::Neural)
 
 			result = classifier.classify(RCR::Data::Image.load(TEST_INPUT))
-			pp result
+			assert result && result.is_a?(String)
 		end
 	end
 end
