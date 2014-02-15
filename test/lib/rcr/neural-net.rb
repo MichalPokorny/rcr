@@ -11,7 +11,7 @@ module RCR
 
 		def test_function(inputs)
 			raise unless inputs.size == INPUTS
-			
+
 			[(inputs[0] + inputs[1]) / 2, (inputs[1] + inputs[3] + inputs[4]) / 3, (inputs[2] + inputs[4]) / 2]
 		end
 

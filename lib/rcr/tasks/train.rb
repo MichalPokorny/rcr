@@ -17,7 +17,7 @@ module RCR
 
 					case task.downcase
 					when "letter" then
-						require 'rcr/letter-classifier/neural'
+						require 'rcr/letter_classifier/neural'
 						lc = LetterClassifier::Neural.new
 						dataset = LetterClassifier::Neural.load_dataset(Config.prepared_letter_data_path)
 						chars = ('A'..'Z')

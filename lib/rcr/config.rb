@@ -10,14 +10,14 @@ module RCR
 		end
 
 		def self.load_from_file(path)
-			settings = 
+			settings =
 				if File.exist?(path)
 					YAML.load_file(path)
 				else
 					puts "Loading default configuration."
+					{}
 				end
 
-			settings = File.exist?(path) ? YAML.load_file(path) : {}
 			self.new(settings)
 		end
 
@@ -26,7 +26,8 @@ module RCR
 		end
 
 		def initialize(settings)
-			@settings = settings
+			# Normalize: use symbols.
+			@settings = Hash[settings.map { |k, v| [k.to_sym, v] }]
 		end
 
 		private
@@ -36,44 +37,51 @@ module RCR
 
 		public
 		def data_path
-			raise InvalidConfiguration, "No data directory defined." unless @settings.key?("data_path")
-			expand @settings["data_path"]
+			raise InvalidConfiguration, "No data directory defined." unless @settings.key?(:data_path)
+			expand @settings[:data_path]
 		end
 
+		private
+		def expand_or(key)
+			@settings[key] ? expand(@settings[key]) : yield
+		end
+
+		public
 		def trained_path
-			@settings["trained_path"] ? expand(@settings["trained_path"]) : File.join(data_path, "trained")
+			expand_or(:trained_path) { File.join(data_path, "trained") }
 		end
 
 		def input_path
-			@settings["input_path"] ? expand(@settings["input_path"]) : File.join(data_path, "input")
+			expand_or(:input_path) { File.join(data_path, "input") }
 		end
 
 		def prepared_path
-			@settings["prepared_path"] ? expand(@settings["prepared_path"]) : File.join(data_path, "prepared")
+			expand_or(:prepared_path) { File.join(data_path, "prepared") }
 		end
 
 		def letter_inputs_path
-			File.join(input_path, "letter")
+			expand_or(:letter_inputs_path) { File.join(input_path, "letter") }
 		end
 
 		def segmentation_inputs_path
-			File.join(input_path, "segment")
+			expand_or(:segmentation_inputs_path) { File.join(input_path, "segment") }
 		end
 
 		def word_segmenter_path
-			File.join(trained_path, "word-segmenter")
+			expand_or(:word_segmented_path) { File.join(trained_path, "word-segmenter") }
 		end
-		
+
+		# TODO: allow using more classifiers for different purposes
 		def letter_classifier_path
-			File.join(trained_path, "letter-classifier")
+			expand_or(:letter_classifier_path) { File.join(trained_path, "letter-classifier") }
 		end
 
 		def prepared_letter_data_path
-			File.join(prepared_path, "letter.data")
+			expand_or(:prepared_letter_data_path) { File.join(prepared_path, "letter.data") }
 		end
 
 		def logging_enabled
-			@settings["debug"]
+			@settings[:debug]
 		end
 	end
 end

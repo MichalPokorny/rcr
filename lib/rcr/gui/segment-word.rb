@@ -1,5 +1,5 @@
 require 'rcr/data/image'
-require 'rcr/letter-classifier/neural'
+require 'rcr/letter_classifier/neural'
 require 'rcr/word-segmentator/default'
 require 'rcr/gui/drawing-window'
 
@@ -11,7 +11,7 @@ module RCR
 		module SegmentWord
 			class Window < RCR::GUI::DrawingWindow
 				include Logging
-				
+
 				def initialize(segmentator, classifier)
 					super()
 					@segmentator = segmentator

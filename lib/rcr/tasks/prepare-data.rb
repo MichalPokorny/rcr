@@ -1,5 +1,5 @@
 require 'rcr/config'
-require 'rcr/letter-classifier/neural'
+require 'rcr/letter_classifier/neural'
 
 module RCR
 	module Tasks
