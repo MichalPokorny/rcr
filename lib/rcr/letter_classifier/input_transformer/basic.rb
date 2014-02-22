@@ -16,6 +16,23 @@ module RCR
 				def transform(image)
 					Data::NeuralNetInput.new(@feature_extractor.extract_features(image))
 				end
+
+				MARSHAL_ID = self.name
+				include Marshal
+
+				def save_internal(filename)
+					File.open "#{filename}", "w" do |file|
+						YAML.dump({
+							guillotine: @guillotine,
+							forget_aspect_ratio: @forget_aspect_ratio
+						}, file)
+					end
+				end
+
+				def self.load_internal(filename)
+					data = YAML.load_file(filename)
+					self.new(*data)
+				end
 			end
 		end
 	end

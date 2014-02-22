@@ -245,9 +245,9 @@ module RCR
 				end
 
 				def each
-					(0...image.width).each do |x|
-						(0...image.height).each do |y|
-							yield(image[x, y])
+					(0...@image.width).each do |x|
+						(0...@image.height).each do |y|
+							yield(@image[x, y])
 						end
 					end
 				end

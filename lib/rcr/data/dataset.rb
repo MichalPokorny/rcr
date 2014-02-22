@@ -20,8 +20,8 @@ module RCR
 				@content.empty?
 			end
 
-			def shuffle
-				@content.shuffle
+			def shuffle!
+				@content.shuffle!
 			end
 
 			def size
@@ -42,7 +42,18 @@ module RCR
 			end
 
 			def to_xs_ys_arrays
-				[@content.map(&:first), @content.map(&:last)]
+				# XXX
+				[@content.map(&:last), @content.map(&:first)]
+			end
+
+			def restrict_keys(keys)
+				self.class.new(@content.select { |pair|
+					keys.include?(pair.first)
+				})
+			end
+
+			def transform_keys
+				self.class.new(@content.map { |pair| [yield(pair.first), pair.last] })
 			end
 		end
 	end

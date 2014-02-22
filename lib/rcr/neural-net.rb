@@ -42,13 +42,24 @@ module RCR
 			train_on_xys(*dataset.to_xs_ys_arrays)
 		end
 
+		# xs: array of NeuralNetInput-s, ys: array of arrays
 		def train_on_xys(xs, ys)
 			raise unless xs.length == ys.length
 
 			xs.each_index do |i|
-				raise "Input size doesn't match" if xs[i].size != @n_inputs
-				raise "Output size doesn't match" if ys[i].size != @n_outputs
-				@fann.train(xs[i], ys[i])
+				x, y = xs[i], ys[i]
+				raise ArgumentError, "Expecting NeuralNetInput, got #{x.class} as given input" unless x.is_a?(Data::NeuralNetInput)
+				raise ArgumentError, "Expecting Array, got #{y.class} as expected output" unless y.is_a?(Array)
+
+				if x.size != @n_inputs
+					raise "Input size doesn't match: expected #@n_inputs, got #{x.size}"
+				end
+
+				if y.size != @n_outputs
+					raise "Output size doesn't match: expected #@n_outputs, got #{y.size}"
+				end
+
+				@fann.train(x.data, y)
 			end
 		end
 
@@ -87,8 +98,10 @@ module RCR
 			self.new(fann, params[:n_inputs], params[:n_outputs])
 		end
 
+		# x: NeuralNetInput
 		def run(x)
-			@fann.run(x)
+			raise ArgumentError, "Expecting NeuralNetInput, got #{x.class}" unless x.is_a? Data::NeuralNetInput
+			@fann.run(x.data)
 		end
 	end
 end
