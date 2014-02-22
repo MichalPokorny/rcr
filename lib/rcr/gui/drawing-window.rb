@@ -101,9 +101,6 @@ module RCR
 
 				@area.signal_connect :motion_notify_event do |widget, event|
 					x, y, state = event.x, event.y, event.state
-					if event.hint?
-						_, x, y, state = event.window.pointer
-					end
 
 					if state.button1_mask? && @pixmap
 						draw_brush(x, y)

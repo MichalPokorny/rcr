@@ -238,6 +238,27 @@ module RCR
 				# puts "Drawing rect #{x0};#{y0} --- #{x1};#{y1}"
 				@image.rect(x0, y0, x1, y1, stroke, fill)
 			end
+
+			class PixelEnumerator
+				def initialize(image)
+					@image = image
+				end
+
+				def each
+					(0...image.width).each do |x|
+						(0...image.height).each do |y|
+							yield(image[x, y])
+						end
+					end
+				end
+
+				include Enumerable
+			end
+
+			# Yields every pixel as R-G-B triple (0..255)
+			def pixels
+				PixelEnumerator.new(self)
+			end
 		end
 	end
 end

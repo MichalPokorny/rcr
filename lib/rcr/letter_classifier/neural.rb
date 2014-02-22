@@ -17,45 +17,75 @@ module RCR
 			MARSHAL_ID = self.name
 			include Marshal
 
-			def self.convert_data_for_eblearn(source_dir, target_dir)
-				indexes = {}
-
-				Dir["#{source_dir}/*"].each do |sample_dir|
-					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
-
-					# Create list of letter codes contained in the file.
-					letters = []
-					desc["segments"].each do |segment|
-						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
-					end
-
-					image = Data::Image.load(File.join(sample_dir, "data.png"))
-
-					data = image.crop_by_columns(letters.count, desc["cell_height"])
-
-					# Make it so that the data is indexed by letter.
-					data.each_index do |index|
-						letter = letters[index].chr
-
-						images = data[index]
-
-						images.each do |img|
-							indexes[letter] ||= 0
-							FileUtils.mkdir_p(File.join(target_dir, letter))
-							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
-							indexes[letter] += 1
-
-							img.save(path)
-						end
-					end
-				end
-			end
-
-			def self.image_to_net_input(image)
-				NeuralNet.image_to_input(image, guillotine: true, rescale: false)
-			end
-
-			def self.prepare_data(source_dir, target_file)
+#			def self.convert_data_for_torch(source_dir)
+#				indexes = {}
+#
+#				Dir["#{source_dir}/*"].each do |sample_dir|
+#					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
+#
+#					# Create list of letter codes contained in the file.
+#					letters = []
+#					desc["segments"].each do |segment|
+#						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
+#					end
+#
+#					image = Data::Image.load(File.join(sample_dir, "data.png"))
+#
+#					data = image.crop_by_columns(letters.count, desc["cell_height"])
+#
+#					# Make it so that the data is indexed by letter.
+#					data.each_index do |index|
+#						letter = letters[index].chr
+#
+#						images = data[index]
+#
+#						images.each do |img|
+#							indexes[letter] ||= 0
+#							FileUtils.mkdir_p(File.join(target_dir, letter))
+#							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
+#							indexes[letter] += 1
+#
+#							img.save(path)
+#						end
+#					end
+#				end
+#			end
+#
+#			def self.convert_data_for_eblearn(source_dir, target_dir)
+#				indexes = {}
+#
+#				Dir["#{source_dir}/*"].each do |sample_dir|
+#					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
+#
+#					# Create list of letter codes contained in the file.
+#					letters = []
+#					desc["segments"].each do |segment|
+#						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
+#					end
+#
+#					image = Data::Image.load(File.join(sample_dir, "data.png"))
+#
+#					data = image.crop_by_columns(letters.count, desc["cell_height"])
+#
+#					# Make it so that the data is indexed by letter.
+#					data.each_index do |index|
+#						letter = letters[index].chr
+#
+#						images = data[index]
+#
+#						images.each do |img|
+#							indexes[letter] ||= 0
+#							FileUtils.mkdir_p(File.join(target_dir, letter))
+#							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
+#							indexes[letter] += 1
+#
+#							img.save(path)
+#						end
+#					end
+#				end
+#			end
+#
+			def self.load_inputs(source_dir)
 				data_by_letter = {}
 
 				Dir["#{source_dir}/*"].each do |sample_dir|
@@ -74,27 +104,63 @@ module RCR
 					# Make it so that the data is indexed by letter.
 					data.each_index do |index|
 						letter = letters[index]
-						unless data_by_letter.key?(letter)
-							data_by_letter[letter] = []
-						end
-
 						images = data[index]
 
-						data_by_letter[letter] += images.map { |img|
-							image_to_net_input(img)
-						}
+						data_by_letter[letter] ||= []
+						data_by_letter[letter] += data[index]
 
-						0.times { |mutation|
-							data_by_letter[letter] += images.map { |img|
-								image_to_net_input(img.mutate)
-							}
-						}
+						# Automatic mutations:
+						# 0.times { |mutation|
+						# 	data_by_letter[letter] += images.map { |img|
+						# 		image_to_net_input(img.mutate)
+						# 	}
+						# }
 					end
 				end
 
-				dataset = Data::IntegerRawDataset.new(data_by_letter)
-				dataset.save(target_file)
+				data_by_letter
 			end
+
+#			def self.prepare_data(source_dir, target_file)
+#				data_by_letter = {}
+#
+#				Dir["#{source_dir}/*"].each do |sample_dir|
+#					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
+#
+#					# Create list of letter codes contained in the file.
+#					letters = []
+#					desc["segments"].each do |segment|
+#						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
+#					end
+#
+#					image = Data::Image.load(File.join(sample_dir, "data.png"))
+#
+#					data = image.crop_by_columns(letters.count, desc["cell_height"])
+#
+#					# Make it so that the data is indexed by letter.
+#					data.each_index do |index|
+#						letter = letters[index]
+#						unless data_by_letter.key?(letter)
+#							data_by_letter[letter] = []
+#						end
+#
+#						images = data[index]
+#
+#						data_by_letter[letter] += images.map { |img|
+#							image_to_net_input(img)
+#						}
+#
+#						0.times { |mutation|
+#							data_by_letter[letter] += images.map { |img|
+#								image_to_net_input(img.mutate)
+#							}
+#						}
+#					end
+#				end
+#
+#				dataset = Data::IntegerRawDataset.new(data_by_letter)
+#				dataset.save(target_file)
+#			end
 
 			# TODO: move to 'integer_raw_dataset'?
 			def self.data_inputs_size(data)
@@ -111,22 +177,21 @@ module RCR
 				raise "unimplemented"
 			end
 
-			private
+			#private
 #			puts "LOADING DATASET"
 #			Data::IntegerRawDataset.load(dataset, RCR::Data::NeuralNetInput)
 
-			public
-			def self.load_dataset(path, logging: false)
-				Data::IntegerRawDataset.load(path, RCR::Data::NeuralNetInput, logging: logging)
-			end
+#			public
+#			def self.load_dataset(path, logging: false)
+#				Data::IntegerRawDataset.load(path, RCR::Data::NeuralNetInput, logging: logging)
+#			end
 
 			def start_anew(dataset, allowed_chars: nil)
 				raise unless allowed_chars
-				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
 
-				log "Starting new neural net for letter classifier (#{allowed_chars.size} classes)"
-				num_inputs = self.class.data_inputs_size(dataset)
-				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [ 14*14, 9*9 ], classes: allowed_chars.to_a.map(&:ord))
+				log "Starting letter classifier anew (#{allowed_chars.size} classes)"
+				num_inputs = @transformer.output_size
+				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [14*14, 9*9], classes: allowed_chars)
 			end
 
 			def evaluate(dataset)
@@ -135,8 +200,13 @@ module RCR
 				@classifier.evaluate(dataset)
 			end
 
+			# dataset: hash of class => array of images
 			def train(dataset, generations: 100, logging: false)
-				raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
+				pairs = Dataset.new(Hash[dataset.map { |letter, values|
+					[letter, values.map { |image| @transformer.transform(image) }]
+				}])
+
+				#raise "Passed dataset is not a IntegerRawDataset" unless dataset.is_a?(Data::IntegerRawDataset)
 
 				with_logging_set(logging) do
 					raise "Internal classifier not prepared." unless @classifier
@@ -144,38 +214,39 @@ module RCR
 
 					# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
 
-					num_inputs = self.class.data_inputs_size(dataset)
-					log "Training neural classifier of #{num_inputs} inputs"
+					log "Training neural classifier of #{@transformer.output_size} inputs"
 					@classifier.train(dataset, generations: generations, logging: logging)
 				end
 			end
 
 			def save_internal(filename)
 				log "Saving neural letter classifier to #{filename}"
-				@classifier.save(filename)
+				@transformer.save("#{filename}.transformer")
+				@classifier.save("#{filename}.classifier")
 			end
 
-			def initialize(classifier = nil)
+			def initialize(@transformer = nil, @classifier = nil)
+				@transformer = transformer
 				@classifier = classifier
 			end
 
 			def self.load_internal(filename)
 				log "Loading neural letter classifier from #{filename}"
-				self.new(Classifier::Neural.load(filename))
+				self.new(Marshal.load("#{filename}.transformer"), Classifier::Neural.load(filename))
 			end
 
 			def classify(image)
-				@classifier.classify(self.class.image_to_net_input(image).data).chr
+				@classifier.classify(@transformer.transform(image).data).chr
 			end
 
 			def classify_with_score(image)
-				letter, score = @classifier.classify_with_score(self.class.image_to_net_input(image).data)
+				letter, score = @classifier.classify_with_score(@transformer.transform(image).data)
 				[letter.chr, score]
 			end
 
 			def classify_with_alternatives(image)
 				Hash[
-					@classifier.classify_with_alternatives(self.class.image_to_net_input(image).data).map { |letter, score|
+					@classifier.classify_with_alternatives(@transformer.transform(image).data).map { |letter, score|
 						[letter.chr, score]
 					}
 				]

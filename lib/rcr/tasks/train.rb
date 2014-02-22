@@ -12,31 +12,29 @@ module RCR
 				until argv.empty?
 					task = argv.shift
 
-					prepared_dir = RCR::Config.prepared_path
-					trained_dir = RCR::Config.trained_path
+					# trained_dir = RCR::Config.trained_path
 
 					case task.downcase
 					when "letter" then
 						require 'rcr/letter_classifier/neural'
-						lc = LetterClassifier::Neural.new
-						dataset = LetterClassifier::Neural.load_dataset(Config.prepared_letter_data_path)
+						transformer = LetterClassifier::InputTransformer::Basic.new(guillotine: true, forget_aspect_ratio: true)
+						lc = LetterClassifier::Neural.new(transformer)
+						dataset = LetterClassifier::Neural.load_inputs(Config.letter_inputs_path)
 						chars = ('A'..'Z')
 						dataset = dataset.restrict_keys(chars.map(&:ord))
-						lc.start_anew(dataset, allowed_chars: chars)
+						lc.start_anew(allowed_chars: chars)
 
 						# chars = dataset.keys.map(&:chr)
 						# puts "chars: #{chars.inspect}"
 						# lc.start_anew(dataset, allowed_chars: chars)
 						lc.train(dataset, logging: true)
-						puts "eval before save: #{lc.evaluate(dataset)}"
 						lc.save(Config.letter_classifier_path)
-						puts "eval after save: #{lc.evaluate(dataset)}"
-					when "segment" then
+					# when "segment" then
 						# TODO: doesn't work!
-						require 'rcr/word-segmentator/default'
-						ws = WordSegmentator::Default.new
-						ws.train(File.join(prepared_dir, "segment.data"))
-						ws.save(File.join(trained_dir, "word-segmentator"))
+						# require 'rcr/word-segmentator/default'
+						# ws = WordSegmentator::Default.new
+						# ws.train(File.join(prepared_dir, "segment.data"))
+						# ws.save(File.join(trained_dir, "word-segmentator"))
 					# TODO: more
 					else
 						puts "Cannot prepare '#{task}' data"

@@ -55,10 +55,6 @@ module RCR
 			expand_or(:input_path) { File.join(data_path, "input") }
 		end
 
-		def prepared_path
-			expand_or(:prepared_path) { File.join(data_path, "prepared") }
-		end
-
 		def letter_inputs_path
 			expand_or(:letter_inputs_path) { File.join(input_path, "letter") }
 		end
@@ -74,10 +70,6 @@ module RCR
 		# TODO: allow using more classifiers for different purposes
 		def letter_classifier_path
 			expand_or(:letter_classifier_path) { File.join(trained_path, "letter-classifier") }
-		end
-
-		def prepared_letter_data_path
-			expand_or(:prepared_letter_data_path) { File.join(prepared_path, "letter.data") }
 		end
 
 		def logging_enabled
