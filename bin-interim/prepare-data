@@ -1,5 +1,0 @@
-#!/usr/bin/ruby -w
-
-require 'rcr/tasks/prepare-data'
-
-RCR::Tasks::PrepareData.run(ARGV)

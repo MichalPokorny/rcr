@@ -47,7 +47,7 @@ module RCR
 
 				good_minima << x0 << x1
 				good_minima.sort!
-				
+
 				log "building from good minima: #{good_minima}"
 
 				Oversegmentation.build_from_xs(image, letter_classifier, good_minima, y0, y1)

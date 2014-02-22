@@ -46,22 +46,34 @@ module RCR
 				for x0 in xs
 					edges_from_x(x0).each do |edge|
 						score = scores[x0] * edge.score
+
+#						if edge.score < 0.01
+#							puts "hack"
+#							next
+#						end
+#
+#						# XXX HACK HACK
+#						if edge.x1 - edge.x0 > @image.height
+#							puts "hackety hack"
+#							score /= ((edge.x1 - edge.x0) / @image.height) ** 2
+#						end
+
 						if scores[edge.x1].nil? || scores[edge.x1] < score
 							scores[edge.x1], path[edge.x1] = score, path[edge.x0] + [edge]
 							# context[edge.x1] = context[edge.x0] + [edge.letter]
 						end
 					end
 				end
-				
+
 				# TODO: mayhaps don't require oversegmenting the whole image?
 				[ path[xs.last], scores[xs.last] ] # .map { |edge| edge.letter }.join('')
 			end
 
 			def best_path_of_word_with_score(word)
 				# TODO: suboptimal
-				
+
 				log "searching for best path of #{word}, xs=#{xs}"
-			
+
 				scores = {} # TODO: provide context as well?
 				scores[xs[0]] = 1
 

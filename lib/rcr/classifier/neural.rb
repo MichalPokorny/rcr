@@ -141,25 +141,24 @@ module RCR
 
 			public
 			def evaluate(dataset)
-				xs, ys = *dataset_to_xys(dataset)
-				evaluate_on_xys(xs, ys)
+				evaluate_on_xys(*dataset.to_xs_ys_arrays)
 			end
 
-			# Hash: class => [ inputs that have this class ]
+			# Hash: class => [inputs that have this class]
 			def train(dataset, generations: 100, dataset_split: 0.8, logging: false)
 				with_logging_set(logging) {
 					train_log = File.open "train.log", "w"
 
-					xs, ys = NeuralNet.shuffle_xys(*dataset_to_xys(dataset))
-					xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, dataset_split)
+					dataset.shuffle
+					train, test = dataset.split(threshold: dataset_split)
 
-					log "Training neural classifier. #{xs_train.length} training inputs, #{xs_test.length} testing inputs."
+					log "Training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
 
 					generations.times { |round|
-						@net.train_on_xys(xs_train, ys_train)
+						@net.train(train)
 
-						e = evaluate_on_xys(xs_test, ys_test)
-						log "After round #{round + 1}/#{generations}: %.2f%% (%.2f%% on all inputs)" % [ e, evaluate_on_xys(xs, ys) ]
+						e = evaluate(test)
+						log "After round #{round + 1}/#{generations}: %.2f%% (%.2f%% on all inputs)" % [e, evaluate(dataset)]
 						train_log.puts "#{round + 1}\t%.2f" % [ e ]
 						train_log.flush
 					}

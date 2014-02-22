@@ -1,7 +1,7 @@
 #!/usr/bin/ruby -w
 
 require 'rcr/config'
-require 'rcr/letter-classifier/neural'
+require 'rcr/letter_classifier/neural'
 require 'rcr/data/image'
 require 'rcr/easy'
 
@@ -16,8 +16,11 @@ FileUtils.mkdir_p(OUTPUT_DIR)
 BATCH_SIZE = 10
 GENERATIONS = 30
 
-30.times do |generation|
-	classifier = RCR.build_letter_classifier
+1000.times do |generation|
+	classifier = RCR::LetterClassifier::Neural.new # RCR.build_letter_classifier
+	dataset = RCR::LetterClassifier::Neural.load_dataset(RCR::Config.instance.prepared_letter_data_path)
+	classifier.start_anew(dataset, allowed_chars: ('A'..'Z'))
+
 	segmentator = RCR.build_word_segmentator
 
 	# Evaluation won't work!
@@ -76,7 +79,7 @@ GENERATIONS = 30
 
 	bootstrap_dataset = RCR::Data::IntegerRawDataset.new(Hash[bootstrap_dataset.map { |k, v| [k.ord, v] }])
 	classifier.train(bootstrap_dataset, generations: GENERATIONS, logging: true)
-	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier"))
+	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier-oversegmentation"))
 	puts "-----------"
 	puts "Training finished."
 end

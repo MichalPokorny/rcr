@@ -6,8 +6,6 @@ classifier = RCR.build_letter_classifier
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
 	require 'rcr/gui/classify-letter'
-	dataset = RCR::Config.prepared_letter_data_path
-	pp classifier.evaluate(dataset)
 	gui = RCR::GUI::ClassifyLetter.new(classifier)
 	gui.run
 else

@@ -11,45 +11,7 @@ module RCR
 	class NeuralNet
 		include Logging
 
-		QUANTUMS = 10
-
 		# TODO: contrast normalization
-		def self.image_to_input(image, guillotine: true, rescale: true)
-			if guillotine
-				image = image.guillotine
-			end
-
-			if rescale
-				# Rescale the image, forget its aspect ratio
-				image.scale!(16,16)
-			else
-				image.border_to_and_resize_to_fit!(16, 16)
-			end
-
-			data = []
-			(0...image.width).each { |x|
-				(0...image.height).each { |y|
-					r, g, b = image[x, y]
-					value = (r + g + b) / ((256 * 3) / QUANTUMS)
-					value /= QUANTUMS.to_f
-					data << value
-				}
-			}
-
-			Data::NeuralNetInput.new(data)
-		end
-
-		def self.shuffle_xys(xs, ys)
-			indexes = (0...xs.length).to_a.shuffle
-			[ indexes.map { |i| xs[i] }, indexes.map { |i| ys[i] } ]
-		end
-
-		def self.split_xys(xs, ys, split)
-			raise unless xs.length == ys.length
-			pt = (xs.length * split).floor
-
-			[ xs[0...pt], ys[0...pt], xs[pt...xs.length], ys[pt...ys.length] ]
-		end
 
 		def self.create(num_inputs: nil, hidden_neurons: [], num_outputs: nil)
 			raise ArgumentError if num_inputs.nil? || hidden_neurons.empty? ||
@@ -76,12 +38,14 @@ module RCR
 
 		attr_reader :n_inputs
 
+		def train(dataset)
+			train_on_xys(*dataset.to_xs_ys_arrays)
+		end
+
 		def train_on_xys(xs, ys)
 			raise unless xs.length == ys.length
 
-			xs, ys = self.class.shuffle_xys(xs, ys)
-
-			(0...xs.length).each do |i|
+			xs.each_index do |i|
 				raise "Input size doesn't match" if xs[i].size != @n_inputs
 				raise "Output size doesn't match" if ys[i].size != @n_outputs
 				@fann.train(xs[i], ys[i])
