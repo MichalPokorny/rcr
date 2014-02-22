@@ -1,4 +1,5 @@
 require 'rcr/config'
+require 'rcr/letter_classifier/input_transformer/basic'
 
 module RCR
 	module Tasks
@@ -21,7 +22,7 @@ module RCR
 						lc = LetterClassifier::Neural.new(transformer)
 						dataset = LetterClassifier::Neural.load_inputs(Config.letter_inputs_path)
 						chars = ('A'..'Z')
-						dataset = dataset.restrict_keys(chars.map(&:ord))
+						# dataset = dataset.restrict_keys(chars.map(&:ord))
 						lc.start_anew(allowed_chars: chars)
 
 						# chars = dataset.keys.map(&:chr)

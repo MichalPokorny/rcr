@@ -12,7 +12,7 @@ module RCR
 			def extract_features(image)
 				image = image.guillotine if @guillotine
 
-				if rescale
+				if @forget_aspect_ratio
 					# Forget aspect ratio
 					image.scale!(@size_x, @size_y)
 				else

@@ -9,8 +9,10 @@ module RCR
 
 			def initialize(net = nil, classes = nil)
 				@net = net
-				@classes = classes
+				@classes = classes.to_a
 			end
+
+			attr_reader :classes
 
 			def self.load(filename)
 				opts = YAML.load_file "#{filename}.classifier-opts"
@@ -26,8 +28,9 @@ module RCR
 				end
 			end
 
-			def self.create(num_inputs: nil, hidden_neurons: [], classes: [])
-				raise ArgumentError if classes.empty? || !classes.is_a?(Array)
+			def self.create(num_inputs: nil, hidden_neurons: nil, classes: nil)
+				classes = classes.to_a
+				raise ArgumentError, "Empty class list given to classifier" if classes.empty?
 				net = NeuralNet.create(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: classes.size)
 				self.new(net, classes)
 			end
@@ -111,27 +114,32 @@ module RCR
 				@classes.map { 0 }
 			end
 
-			public
-			def untrain(inputs, generations: 100, logging: false)
-				xs, ys = inputs.map(&:data), inputs.map { output_select_empty }
-				with_logging_set(logging) {
-					log "Untraining neural classifier."
-					generations.times { |round|
-						log "Round #{round}."
-						@net.train_on_xys(xs, ys)
-					}
-				}
-			end
+			#public
+			#def untrain(inputs, generations: 100, logging: false)
+			#	xs, ys = inputs.map(&:data), inputs.map { output_select_empty }
+			#	with_logging_set(logging) {
+			#		log "Untraining neural classifier."
+			#		generations.times { |round|
+			#			log "Round #{round}."
+			#			@net.train_on_xys(xs, ys)
+			#		}
+			#	}
+			#end
 
 			private
 			def evaluate_on_xys(xs, ys)
 				raise "Incompatible sizes of xs and ys to evaluate" if xs.size != ys.size
 				good, total = 0, 0
 				(0...xs.length).each { |i|
-					if classify(xs[i]) == @classes[ys[i].index(ys[i].max)]
+					x, y = xs[i], ys[i]
+
+					raise unless x.is_a?(Data::NeuralNetInput)
+					raise unless @classes.include?(y)
+
+					if classify(x) == y
 						good += 1
 					else
-						# puts "f: got:#{classify(xs[i])} != expect:#{@classes[ys[i].index(ys[i].max)]}"
+						# puts "f: got:#{classify(x)} != expect:#{y}"
 					end
 					total += 1
 				}
@@ -149,10 +157,18 @@ module RCR
 				with_logging_set(logging) {
 					train_log = File.open "train.log", "w"
 
-					dataset.shuffle
+					dataset.shuffle!
 					train, test = dataset.split(threshold: dataset_split)
 
+					train = train.transform_keys { |key|
+						output_select(key)
+					}
+
 					log "Training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
+
+					if train.empty? || test.empty?
+						raise ArgumentError, "Empty testing or training dataset given. Give me more data."
+					end
 
 					generations.times { |round|
 						@net.train(train)
