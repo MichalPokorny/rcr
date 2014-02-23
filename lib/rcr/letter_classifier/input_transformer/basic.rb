@@ -1,15 +1,10 @@
 require 'rcr/marshal'
 require 'rcr/data/neural-net-input'
-require 'rcr/feature_extractor/raw_image'
 
 module RCR
 	module LetterClassifier
 		module InputTransformer
 			class Basic
-				def self.create(*args)
-					self.new(RCR::FeatureExtractor::RawImage.new(16, 16, *args))
-				end
-
 				def initialize(feature_extractor)
 					@feature_extractor = feature_extractor
 				end

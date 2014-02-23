@@ -16,6 +16,8 @@ module RCR
 
 				@classifier = classifier
 
+				@overlays = []
+
 				@pixmap = nil
 
 				signal_connect :expose_event do
@@ -47,12 +49,18 @@ module RCR
 					Gdk::Event::POINTER_MOTION_HINT_MASK
 			end
 
+			def drawn_imagelike
+				Data::PixmapImagelike.new(@pixmap)
+			end
+
+			def drawn_letter_variants
+				log "classifying. (pixmap size: #{@pixmap.size.inspect})..."
+				@classifier.classify_with_alternatives(drawn_imagelike)
+			end
+
 			def drawn_letter
-				log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
-				letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap))
-				log "classification finished: #{letter}"
-				# @area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
-				letter
+				log "classifying. (pixmap size: #{@pixmap.size.inspect})..."
+				@classifier.classify(drawn_imagelike)
 			end
 
 			def clear
@@ -96,8 +104,12 @@ module RCR
 				window.draw_rectangle(style.black_gc, false, 0, 0, w, h)
 
 				# TODO: dalsi veci nad tim
-				# draw_on_area(@area)
+				@overlays.each do |overlay|
+					overlay.draw_on_area(@area)
+				end
 			end
+
+			attr_accessor :overlays
 		end
 	end
 end

@@ -15,19 +15,15 @@ module RCR
 					super()
 					@classifier = classifier
 					@letter = nil
-				end
 
-				def classify
-					log "classifying... (pixmap size: #{@pixmap.size.inspect})..."
-					@letter = @classifier.classify(Data::PixmapImagelike.new(@pixmap))
-					log "classification finished: #@letter"
-					@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
+					@area.overlays << self
 				end
 
 				def add_box_controls(box)
 					button = Gtk::Button.new("Classify")
 					button.signal_connect :clicked do
-						classify
+						@drawn_letter = @area.drawn_letter
+						@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 					end
 					box.pack_end(button, false, false)
 					button.show
