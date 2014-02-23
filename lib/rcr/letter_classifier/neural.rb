@@ -3,7 +3,6 @@ require 'yaml'
 require 'rcr/classifier/neural'
 
 require 'rcr/data/image'
-require 'rcr/data/integer_raw_dataset'
 require 'fileutils'
 
 require 'rcr/logging'
