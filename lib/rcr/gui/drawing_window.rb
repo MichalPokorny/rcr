@@ -1,5 +1,6 @@
 require 'gtk2'
 require 'rcr/logging'
+require 'rcr/gui/letter_drawing_area'
 
 module RCR
 	module GUI
@@ -14,8 +15,8 @@ module RCR
 				"(title not set)"
 			end
 
-			def initialize
-				super
+			def initialize(classifier = nil)
+				super()
 
 				set_title title
 				signal_connect "destroy" do
@@ -38,13 +39,14 @@ module RCR
 
 				fixed = Gtk::Fixed.new
 
-				@area = RCR::GUI::LetterDrawingArea.new
+				@area = RCR::GUI::LetterDrawingArea.new(classifier)
 				@area.set_size_request 256, 256
 
 				fixed.put(@area, 0, 0)
 				@area.show
 
 				@box.pack_start(fixed, true, true)
+				fixed.show
 
 				add @box
 

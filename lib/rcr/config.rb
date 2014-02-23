@@ -75,5 +75,13 @@ module RCR
 		def logging_enabled
 			@settings[:debug]
 		end
+
+		def language_model_path
+			expand_or(:language_model_path) { File.join(trained_path, "language-model") }
+		end
+
+		def language_corpus_path
+			expand_or(:language_corpus_path) { File.join(input_path, "corpus.txt") }
+		end
 	end
 end

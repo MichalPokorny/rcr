@@ -11,7 +11,7 @@ module RCR
 			attr_reader :pixmap
 
 			public
-			def initialize(classifier)
+			def initialize(classifier = nil) # Can be used without passed classifier.
 				super()
 
 				@classifier = classifier
@@ -105,7 +105,7 @@ module RCR
 
 				# TODO: dalsi veci nad tim
 				@overlays.each do |overlay|
-					overlay.draw_on_area(@area)
+					overlay.draw_on_area(self)
 				end
 			end
 
