@@ -1,7 +1,7 @@
 require 'rcr/logging'
 require 'rcr/data/segmentation'
-require 'rcr/data/segmentation-box'
-require 'rcr/data/cropped-imagelike'
+require 'rcr/data/segmentation_box'
+require 'rcr/data/cropped_imagelike'
 
 # TODO: Markov chain modeling is probably horribly wrong!
 

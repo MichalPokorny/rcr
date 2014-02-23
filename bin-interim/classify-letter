@@ -5,7 +5,7 @@ require 'rcr/easy'
 classifier = RCR.build_letter_classifier
 
 if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
-	require 'rcr/gui/classify-letter'
+	require 'rcr/gui/classify_letter'
 	gui = RCR::GUI::ClassifyLetter.new(classifier)
 	gui.run
 else

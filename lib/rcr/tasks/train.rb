@@ -42,7 +42,7 @@ module RCR
 						lc.save(Config.letter_classifier_path)
 					# when "segment" then
 						# TODO: doesn't work!
-						# require 'rcr/word-segmentator/default'
+						# require 'rcr/word_segmentator/default'
 						# ws = WordSegmentator::Default.new
 						# ws.train(File.join(prepared_dir, "segment.data"))
 						# ws.save(File.join(trained_dir, "word-segmentator"))

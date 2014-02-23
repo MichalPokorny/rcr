@@ -1,6 +1,6 @@
 require 'rcr/classifier/base'
-require 'rcr/neural-net'
-require 'rcr/data/neural-net-input'
+require 'rcr/neural_net'
+require 'rcr/data/neural_net_input'
 require 'rcr/logging'
 
 module RCR

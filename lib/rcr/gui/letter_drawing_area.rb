@@ -1,6 +1,6 @@
 require 'gtk2'
 require 'rcr/logging'
-require 'rcr/data/pixmap-imagelike'
+require 'rcr/data/pixmap_imagelike'
 
 module RCR
 	module GUI

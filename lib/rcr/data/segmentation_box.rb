@@ -1,6 +1,6 @@
 require 'rcr/data/image'
-require 'rcr/data/merged-imagelike'
-require 'rcr/data/cropped-imagelike'
+require 'rcr/data/merged_imagelike'
+require 'rcr/data/cropped_imagelike'
 
 module RCR
 	module Data
@@ -28,7 +28,7 @@ module RCR
 				raise unless maybe_covers_pixel?(px, py)
 
 				ax, ay = px - x0, py - y0
-				
+
 				# TODO!
 				r, g, b = *image[ax, ay]
 				r < 127 && g < 127 && b < 127 && r + g + b < 400

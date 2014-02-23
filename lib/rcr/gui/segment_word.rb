@@ -1,7 +1,7 @@
 require 'rcr/data/image'
 require 'rcr/letter_classifier/neural'
-require 'rcr/word-segmentator/default'
-require 'rcr/gui/drawing-window'
+require 'rcr/word_segmentator/default'
+require 'rcr/gui/drawing_window'
 
 # TODO: write this tool.
 # TODO: "make new sample" button.
