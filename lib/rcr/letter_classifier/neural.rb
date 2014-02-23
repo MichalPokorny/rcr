@@ -1,12 +1,8 @@
-require 'yaml'
-
-require 'rcr/classifier/neural'
-
-require 'rcr/data/image'
-require 'fileutils'
-
 require 'rcr/logging'
 require 'rcr/marshal'
+require 'rcr/classifier/neural'
+require 'rcr/data/image'
+require 'fileutils'
 require 'rcr/data/dataset'
 
 module RCR
@@ -85,57 +81,6 @@ module RCR
 #				end
 #			end
 #
-			def self.load_inputs(source_dir)
-				data_by_letter = {}
-
-				Dir["#{source_dir}/*"].each do |sample_dir|
-					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
-
-					# Create list of letter codes contained in the file.
-					letters = []
-					desc["segments"].each do |segment|
-						letters += (segment["first"]..segment["last"]).to_a
-					end
-
-					image = Data::Image.load(File.join(sample_dir, "data.png"))
-
-					data = image.crop_by_columns(letters.count, desc["cell_height"])
-
-					# Make it so that the data is indexed by letter.
-					data.each_index do |index|
-						letter = letters[index]
-						images = data[index]
-
-						data_by_letter[letter] ||= []
-						data_by_letter[letter] += data[index]
-
-						# Automatic mutations:
-						# 0.times { |mutation|
-						# 	data_by_letter[letter] += images.map { |img|
-						# 		image_to_net_input(img.mutate)
-						# 	}
-						# }
-					end
-				end
-
-				data_by_letter
-			end
-
-			# TODO: move to 'integer_raw_dataset'?
-			def self.data_inputs_size(data)
-				raise "Dataset has no keys, can't detect input size" if data.keys.empty?
-				inputs = data[data.keys.first]
-				# puts "inputs first: #{inputs.first.inspect}"
-				size = inputs.first.size
-				size
-			end
-
-			def untrain(inputs, generations: 100, logging: false)
-				log "Untraining neural classifier."
-
-				raise "unimplemented"
-			end
-
 			def start_anew(allowed_chars: nil)
 				raise unless allowed_chars
 
@@ -149,7 +94,7 @@ module RCR
 			end
 
 			# dataset: hash of class => array of images
-			def train(dataset, generations: 100, logging: false)
+			def train(dataset, generations: 1000, logging: false)
 				with_logging_set(logging) do
 					dataset = Data::Dataset.new(Hash[dataset.map { |letter, values|
 						[letter, values.map { |image| @transformer.transform(image) }]
@@ -186,20 +131,15 @@ module RCR
 			end
 
 			def classify(image)
-				@classifier.classify(@transformer.transform(image).data).chr
+				@classifier.classify(@transformer.transform(image))
 			end
 
 			def classify_with_score(image)
-				letter, score = @classifier.classify_with_score(@transformer.transform(image).data)
-				[letter.chr, score]
+				@classifier.classify_with_score(@transformer.transform(image))
 			end
 
 			def classify_with_alternatives(image)
-				Hash[
-					@classifier.classify_with_alternatives(@transformer.transform(image).data).map { |letter, score|
-						[letter.chr, score]
-					}
-				]
+				@classifier.classify_with_alternatives(@transformer.transform(image))
 			end
 		end
 	end

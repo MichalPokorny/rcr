@@ -1,18 +1,16 @@
+require 'rcr/classifier/base'
 require 'rcr/neural-net'
 require 'rcr/data/neural-net-input'
 require 'rcr/logging'
 
 module RCR
 	module Classifier
-		class Neural
-			include Logging
-
+		class Neural < Base
 			def initialize(net = nil, classes = nil)
+				super(classes)
 				@net = net
 				@classes = classes.to_a
 			end
-
-			attr_reader :classes
 
 			def self.load(filename)
 				opts = YAML.load_file "#{filename}.classifier-opts"
@@ -35,33 +33,6 @@ module RCR
 				self.new(net, classes)
 			end
 
-			def classify(x)
-				result = @net.run(x)
-				@classes[result.index(result.max)]
-			end
-
-			def classify_with_score(x)
-				result = @net.run(x)
-				max = result.max
-
-				# Former variant (not resistant to guessing):
-				#
-				# This is probably broken. Just because a neural network fires in
-				# only one node doesn't mean that it's sure of the result.
-				#
-				sum = result.inject(&:+)
-				score = if sum == 0 # TODO: isn't that too much?
-					log "No outputs fired, classifying with score epsilon."
-					0.00000001
-				else
-					max / sum
-				end
-
-				#score = max / sum
-
-				[ @classes[result.index(max)], score ]
-			end
-
 			# Returns hash { class => score }
 			# TODO: perhaps another scoring mechanism?
 			def classify_with_alternatives(x)
@@ -72,8 +43,8 @@ module RCR
 				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
 
 				if sum == 0
-					log "No outputs fired, returning empty distribution."
-					{}
+					log "No outputs fired, returning uniform distribution."
+					result.map! { 1 }
 				end
 
 				@classes.each_index do |i|
@@ -81,6 +52,10 @@ module RCR
 						# Stupid smoothing.
 						(min_nonzero + result[i]) / (sum + min_nonzero * result.size)
 				end
+
+				sum = alts.values.inject(&:+)
+				alts.keys.each do |k| alts[k] /= sum end
+
 				alts
 			end
 
@@ -90,21 +65,6 @@ module RCR
 			end
 
 			private
-			def dataset_to_xys(dataset)
-				inputs = []
-				outputs = []
-
-				dataset.keys.each { |x|
-					dataset[x].each { |input|
-						raise "Dataset isn't made of entries of type Data::NeuralNetInput" unless input.is_a? Data::NeuralNetInput
-						inputs << input.data
-						outputs << output_select(x)
-					}
-				}
-
-				[ inputs, outputs ]
-			end
-
 			def output_select(x)
 				raise "#{x} is not a class (classes: #{@classes.inspect})" unless @classes.include?(x)
 				@classes.map { |l| (l == x) ? 1 : 0 }
@@ -153,7 +113,7 @@ module RCR
 			end
 
 			# Hash: class => [inputs that have this class]
-			def train(dataset, generations: 100, dataset_split: 0.8, logging: false)
+			def train(dataset, generations: nil, dataset_split: 0.8, logging: false)
 				with_logging_set(logging) {
 					train_log = File.open "train.log", "w"
 
@@ -171,11 +131,12 @@ module RCR
 					end
 
 					generations.times { |round|
+						train.shuffle!
 						@net.train(train)
 
 						e = evaluate(test)
-						log "After round #{round + 1}/#{generations}: %.2f%% (%.2f%% on all inputs)" % [e, evaluate(dataset)]
-						train_log.puts "#{round + 1}\t%.2f" % [ e ]
+						log "After round #{round + 1}/#{generations}: %.2f%% on test (%.2f%% on all inputs)" % [e, evaluate(dataset)]
+						train_log.puts("#{round + 1}\t%.2f" % [e])
 						train_log.flush
 					}
 

@@ -20,7 +20,9 @@ module RCR
 
 			log "Num inputs: #{num_inputs}, neurons: #{hidden_neurons.inspect}, outputs: #{num_outputs.inspect}"
 
-			fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: num_outputs)	
+			fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: num_outputs)
+
+			# TODO: try different training algorithm, activation function, etc.
 
 			# This tries some smart algorithm, but it seems to initialize nonsense.
 			# @fann.init_weights(train_data)

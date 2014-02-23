@@ -83,7 +83,7 @@ module RCR
 				add_box_controls(@box)
 
 				button = Gtk::Button.new("Clear")
-				button.signal_connect "clicked" do
+				button.signal_connect :clicked do
 					clear_canvas
 				end
 				@box.pack_end(button, false, false)

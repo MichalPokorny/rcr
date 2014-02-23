@@ -5,10 +5,18 @@ module RCR::Marshal
 		@@known_classes[klass::MARSHAL_ID] = klass
 	end
 
+	def self.included(base)
+		puts "Registering marshalled class #{base}"
+		register_class(base)
+	end
+
 	def self.register_all_classes
 		require 'rcr/letter_classifier/neural'
-		register_class(RCR::LetterClassifier::Neural)
+		require 'rcr/letter_classifier/input_transformer/basic'
+		require 'rcr/feature_extractor/raw_image'
 	end
+
+	register_all_classes
 
 	def save(filename)
 		File.open "#{filename}.type", "w" do |file|
