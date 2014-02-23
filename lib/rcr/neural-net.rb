@@ -12,7 +12,6 @@ module RCR
 		include Logging
 
 		# TODO: contrast normalization
-
 		def self.create(num_inputs: nil, hidden_neurons: [], num_outputs: nil)
 			raise ArgumentError if num_inputs.nil? || hidden_neurons.empty? ||
 				num_outputs.nil? || num_outputs < 1 || hidden_neurons.any? { |n| n <= 0 } ||
@@ -39,6 +38,10 @@ module RCR
 		end
 
 		attr_reader :n_inputs
+
+		def cascade_train(dataset, max_neurons: nil, neurons_between_reports: 1, desired_error: 0.1)
+			@fann.cascadetrain_on_data(dataset.to_fann_dataset, max_neurons, neurons_between_reports, desired_error) # TODO
+		end
 
 		def train(dataset)
 			train_on_xys(*dataset.to_xs_ys_arrays)
