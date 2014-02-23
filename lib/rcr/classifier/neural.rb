@@ -43,7 +43,7 @@ module RCR
 				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
 
 				if result.min == result.max
-					log "No outputs fired, returning uniform distribution."
+					log "No differences seen in neural net outputs, returning uniform distribution."
 					result.map! { 1 }
 				end
 
@@ -53,8 +53,6 @@ module RCR
 
 				sum = alts.values.inject(&:+)
 				alts.keys.each { |k| alts[k] /= sum }
-
-				# pp alts
 
 				alts
 			end

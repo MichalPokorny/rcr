@@ -7,7 +7,7 @@ require 'rcr/data/dataset'
 
 module RCR
 	module LetterClassifier
-		class Neural
+		class Neural < Base
 			include Logging
 
 			MARSHAL_ID = self.name

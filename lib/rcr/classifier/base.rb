@@ -16,7 +16,7 @@ module RCR
 			def classify_with_score(x)
 				alternatives = classify_with_alternatives(x)
 				best = alternatives.values.max
-				[alternatives.keys.select { |k| alternatives[k] == best }.first, best]
+				[alternatives.keys.find { |k| alternatives[k] == best }, best]
 			end
 
 			def classify(x)
