@@ -1,4 +1,5 @@
 require 'rcr/config'
+require 'rcr/letter_classifier'
 require 'rcr/letter_classifier/input_transformer/basic'
 
 module RCR
@@ -16,19 +17,13 @@ module RCR
 					# trained_dir = RCR::Config.trained_path
 
 					case task.downcase
-					when "letter" then
+					when "letter"
 						require 'rcr/letter_classifier/neural'
-						transformer = LetterClassifier::InputTransformer::Basic.new(guillotine: true, forget_aspect_ratio: true)
+						transformer = LetterClassifier::InputTransformer::Basic.create(guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
 						lc = LetterClassifier::Neural.new(transformer)
-						dataset = LetterClassifier::Neural.load_inputs(Config.letter_inputs_path)
-						chars = ('A'..'Z')
-						# dataset = dataset.restrict_keys(chars.map(&:ord))
-						lc.start_anew(allowed_chars: chars)
+						lc.start_anew(allowed_chars: 'A'..'Z')
 
-						# chars = dataset.keys.map(&:chr)
-						# puts "chars: #{chars.inspect}"
-						# lc.start_anew(dataset, allowed_chars: chars)
-						lc.train(dataset, logging: true)
+						lc.train(LetterClassifier.load_inputs(Config.letter_inputs_path), generations: 1000, logging: true)
 						lc.save(Config.letter_classifier_path)
 					# when "segment" then
 						# TODO: doesn't work!
@@ -38,7 +33,7 @@ module RCR
 						# ws.save(File.join(trained_dir, "word-segmentator"))
 					# TODO: more
 					else
-						puts "Cannot prepare '#{task}' data"
+						puts "Don't know how to train '#{task}'."
 					end
 				end
 			end

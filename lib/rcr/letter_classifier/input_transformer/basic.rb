@@ -1,3 +1,4 @@
+require 'rcr/marshal'
 require 'rcr/data/neural-net-input'
 require 'rcr/feature_extractor/raw_image'
 
@@ -5,8 +6,12 @@ module RCR
 	module LetterClassifier
 		module InputTransformer
 			class Basic
-				def initialize(guillotine: true, forget_aspect_ratio: true)
-					@feature_extractor = RCR::FeatureExtractor::RawImage.new(16, 16, guillotine: guillotine, forget_aspect_ratio: forget_aspect_ratio)
+				def self.create(*args)
+					self.new(RCR::FeatureExtractor::RawImage.new(16, 16, *args))
+				end
+
+				def initialize(feature_extractor)
+					@feature_extractor = feature_extractor
 				end
 
 				def output_size
@@ -21,17 +26,11 @@ module RCR
 				include Marshal
 
 				def save_internal(filename)
-					File.open "#{filename}", "w" do |file|
-						YAML.dump({
-							guillotine: @guillotine,
-							forget_aspect_ratio: @forget_aspect_ratio
-						}, file)
-					end
+					@feature_extractor.save("#{filename}.feature-extractor")
 				end
 
 				def self.load_internal(filename)
-					data = YAML.load_file(filename)
-					self.new(*data)
+					self.new(Marshal.load("#{filename}.feature-extractor"))
 				end
 			end
 		end
