@@ -9,7 +9,7 @@ module RCR
 			# Return the most likely word given a list of letter classification
 			# results (array of hashes of letter => score).
 			# Default implementation: Viterbi algorithm.
-			def most_likely_words(letter_hypotheses, want_words: 10)
+			def most_likely_words(letter_hypotheses, want_words: 100)
 				last_most_likely_words = { 1.0 => "" }
 
 				# TODO: probably doesn't actually work all that well... !!!!!
