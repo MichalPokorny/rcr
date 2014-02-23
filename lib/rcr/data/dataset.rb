@@ -55,6 +55,11 @@ module RCR
 			def transform_keys
 				self.class.new(@content.map { |pair| [yield(pair.first), pair.last] })
 			end
+
+			def to_fann_dataset
+				xs, ys = to_xs_ys_arrays
+				RubyFann::TrainData.new(inputs: xs, desired_outputs: ys)
+			end
 		end
 	end
 end

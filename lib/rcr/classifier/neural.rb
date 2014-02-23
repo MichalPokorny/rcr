@@ -37,24 +37,24 @@ module RCR
 			# TODO: perhaps another scoring mechanism?
 			def classify_with_alternatives(x)
 				result = @net.run(x)
+				# pp result
 				alts = {}
-				sum = result.inject(&:+)
 
 				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
 
-				if sum == 0
+				if result.min == result.max
 					log "No outputs fired, returning uniform distribution."
 					result.map! { 1 }
 				end
 
-				@classes.each_index do |i|
-					alts[@classes[i]] =
-						# Stupid smoothing.
-						(min_nonzero + result[i]) / (sum + min_nonzero * result.size)
+				@classes.each.with_index do |c, i|
+					alts[c] = min_nonzero + result[i] # Stupid smoothing.
 				end
 
 				sum = alts.values.inject(&:+)
-				alts.keys.each do |k| alts[k] /= sum end
+				alts.keys.each { |k| alts[k] /= sum }
+
+				# pp alts
 
 				alts
 			end
@@ -85,32 +85,7 @@ module RCR
 			#		}
 			#	}
 			#end
-
-			private
-			def evaluate_on_xys(xs, ys)
-				raise "Incompatible sizes of xs and ys to evaluate" if xs.size != ys.size
-				good, total = 0, 0
-				(0...xs.length).each { |i|
-					x, y = xs[i], ys[i]
-
-					raise unless x.is_a?(Data::NeuralNetInput)
-					raise unless @classes.include?(y)
-
-					if classify(x) == y
-						good += 1
-					else
-						# puts "f: got:#{classify(x)} != expect:#{y}"
-					end
-					total += 1
-				}
-				#puts
-				good.to_f * 100 / total
-			end
-
 			public
-			def evaluate(dataset)
-				evaluate_on_xys(*dataset.to_xs_ys_arrays)
-			end
 
 			# Hash: class => [inputs that have this class]
 			def train(dataset, generations: nil, dataset_split: 0.8, logging: false)
@@ -145,6 +120,28 @@ module RCR
 					log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
 				}
 			end
+
+			#def cascade_train(dataset, max_neurons: nil, dataset_split: 0.8, logging: false)
+			#	with_logging_set(logging) {
+			#		dataset.shuffle!
+			#		train, test = dataset.split(threshold: dataset_split)
+
+			#		train = train.transform_keys { |key| output_select(key) }
+
+			#		log "Cascade-training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
+
+			#		if train.empty? || test.empty?
+			#			raise ArgumentError, "Empty testing or training dataset given. Give me more data."
+			#		end
+
+			#		@net.cascade_train(train, max_neurons: max_neurons, neurons_between_reports: 1, desired_error: 0.1)
+
+			#		#train_log.close
+
+			#		log "Final score on test dataset: %.2f%%" % evaluate(test)
+			#		log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
+			#	}
+			#end
 		end
 	end
 end

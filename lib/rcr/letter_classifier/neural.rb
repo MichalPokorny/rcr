@@ -110,6 +110,7 @@ module RCR
 					# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
 
 					log "Training neural classifier of #{@transformer.output_size} inputs"
+					#@classifier.cascade_train(dataset, max_neurons: 1000, logging: logging)
 					@classifier.train(dataset, generations: generations, logging: logging)
 				end
 			end
