@@ -12,8 +12,7 @@ module RCR
 				include Logging
 
 				def initialize(classifier)
-					super()
-					@classifier = classifier
+					super(classifier)
 					@letter = nil
 
 					@area.overlays << self
@@ -23,6 +22,8 @@ module RCR
 					button = Gtk::Button.new("Classify")
 					button.signal_connect :clicked do
 						@drawn_letter = @area.drawn_letter
+						log "#{@area.drawn_letter_variants.inspect}"
+						log "Drawn letter: #@drawn_letter"
 						@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 					end
 					box.pack_end(button, false, false)
@@ -35,6 +36,7 @@ module RCR
 
 				def draw_on_area(area)
 					if @letter
+						puts "Vykreslim to."
 						layout = Pango::Layout.new Gdk::Pango.context
 						layout.font_description = Pango::FontDescription.new('Sans 14')
 						layout.text = "Detected: #@letter"

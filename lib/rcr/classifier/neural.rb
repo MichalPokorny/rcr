@@ -37,18 +37,17 @@ module RCR
 			# TODO: perhaps another scoring mechanism?
 			def classify_with_alternatives(x)
 				result = @net.run(x)
-				# pp result
 				alts = {}
-
-				min_nonzero = (result.select { |i| i > 0 }.min) || 0.0000001
 
 				if result.min == result.max
 					log "No differences seen in neural net outputs, returning uniform distribution."
-					result.map! { 1 }
-				end
+					result.map! { 1.0 }
+				else
+					min_nonzero = result.select { |i| i > 0 }.min / 100
 
-				@classes.each.with_index do |c, i|
-					alts[c] = min_nonzero + result[i] # Stupid smoothing.
+					@classes.each.with_index do |c, i|
+						alts[c] = min_nonzero + result[i] # Stupid smoothing.
+					end
 				end
 
 				sum = alts.values.inject(&:+)

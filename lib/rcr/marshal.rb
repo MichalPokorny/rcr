@@ -14,6 +14,8 @@ module RCR::Marshal
 		require 'rcr/letter_classifier/neural'
 		require 'rcr/letter_classifier/input_transformer/basic'
 		require 'rcr/feature_extractor/raw_image'
+		require 'rcr/language_model/markov_chains'
+		require 'rcr/markov_chain'
 	end
 
 	register_all_classes
