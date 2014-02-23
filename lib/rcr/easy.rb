@@ -19,15 +19,15 @@ module RCR
 	def self.build_language_model(opts = {})
 		# TODO: load the language model we should actually load!
 
-		# require 'rcr/markov-chain-model'
+		# require 'rcr/markov_chain_model'
 		# RCR::MarkovChainModel.load_from_corpus(1, '../rcr-data/prepared/corpus')
 
 		nil
 	end
 
 	def self.build_word_segmentator(opts = {})
-		require 'rcr/word-segmentator/heuristic-oversegmentation'
-		require 'rcr/heuristic-oversegmenter/local-minima'
+		require 'rcr/word_segmentator/heuristic_oversegmentation'
+		require 'rcr/heuristic_oversegmenter/local_minima'
 		# TODO: load the segmentator we should actually load!
 		#
 		# Old: Stupid instead of LocalMinima

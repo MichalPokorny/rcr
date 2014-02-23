@@ -1,6 +1,6 @@
 require_relative '../../../test_helper'
 require 'rcr/data/image'
-require 'rcr/heuristic-oversegmenter/oversegmentation'
+require 'rcr/heuristic_oversegmenter/oversegmentation'
 
 require_relative '../letter_classifier/neural'
 

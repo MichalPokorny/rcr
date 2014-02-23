@@ -1,7 +1,7 @@
 require 'rcr/logging'
 require 'rcr/data/image'
-require 'rcr/data/pixmap-imagelike'
-require 'rcr/gui/drawing-window'
+require 'rcr/data/pixmap_imagelike'
+require 'rcr/gui/drawing_window'
 
 # TODO: "make new sample" button
 

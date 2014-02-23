@@ -1,7 +1,7 @@
 require 'rcr/data/image'
 require 'rcr/data/segmentation'
-require 'rcr/data/segmentation-box'
-require 'rcr/word-segmentator'
+require 'rcr/data/segmentation_box'
+require 'rcr/word_segmentator'
 
 module RCR
 	module WordSegmentator

@@ -1,7 +1,7 @@
 require_relative '../../../test_helper'
 require 'fileutils'
 
-require 'rcr/data/neural-net-input'
+require 'rcr/data/neural_net_input'
 
 module RCR
 	module Classifier

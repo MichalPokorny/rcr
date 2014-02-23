@@ -1,5 +1,5 @@
 require 'rcr/marshal'
-require 'rcr/data/neural-net-input'
+require 'rcr/data/neural_net_input'
 
 module RCR
 	module LetterClassifier

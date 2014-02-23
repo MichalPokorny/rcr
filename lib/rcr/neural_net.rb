@@ -1,5 +1,5 @@
 require 'ruby-fann'
-require 'rcr/data/neural-net-input'
+require 'rcr/data/neural_net_input'
 require 'rcr/logging'
 
 #@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)

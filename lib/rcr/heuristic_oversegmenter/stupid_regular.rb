@@ -1,5 +1,5 @@
 require 'rcr/data/image'
-require 'rcr/heuristic-oversegmenter/oversegmentation'
+require 'rcr/heuristic_oversegmenter/oversegmentation'
 
 # Oversegments by X coordinates of contiguous blocks and by a regular
 # interval.

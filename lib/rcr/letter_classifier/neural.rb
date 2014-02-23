@@ -4,6 +4,7 @@ require 'rcr/classifier/neural'
 require 'rcr/data/image'
 require 'fileutils'
 require 'rcr/data/dataset'
+require 'rcr/letter_classifier/base'
 
 module RCR
 	module LetterClassifier
@@ -128,7 +129,7 @@ module RCR
 
 			def self.load_internal(filename)
 				log "Loading neural letter classifier from #{filename}"
-				self.new(Marshal.load("#{filename}.transformer"), Classifier::Neural.load(filename))
+				self.new(Marshal.load("#{filename}.transformer"), Classifier::Neural.load("#{filename}.classifier"))
 			end
 
 			def classify(image)
