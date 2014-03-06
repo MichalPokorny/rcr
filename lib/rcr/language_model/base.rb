@@ -19,13 +19,12 @@ module RCR
 					# letter hypothesis: hash of letter => score
 					best_now = {}
 
-					# pp last_most_likely_words
-					# pp letter_hypothesis
+					last_most_likely_words.each do |prefix_probability, prefix|
+						scores = score_prefix_continuations(prefix, letter_hypothesis.keys)
 
-					letter_hypothesis.each do |letter, letter_score|
-						last_most_likely_words.each do |prefix_probability, prefix|
+						letter_hypothesis.each do |letter, letter_score|
 							# puts "Prefix: #{prefix.inspect}"
-							posterior_score = letter_score * score(prefix, letter)
+							posterior_score = letter_score * scores[letter]
 							my_score = posterior_score * prefix_probability
 
 							best_now[my_score] = prefix + letter

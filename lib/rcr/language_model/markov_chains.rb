@@ -20,16 +20,23 @@ module RCR
 				}
 			end
 
-			def score(context, continuation)
+			def score_prefix_continuations(context, continuations)
 				context = context.upcase.each_char.to_a
-				continuation = continuation.upcase
+				continuations = continuations.map(&:upcase)
 
+				# Find first chain that has an opinion about every letter in the 
 				@depth.downto(0) do |depth|
 					next if context.length < depth
-					score = @chains[depth].score(context, continuation)
-					return score unless score.nil?
+					scores = {}
+					continuations.each do |continuation|
+						scores[continuation] = @chains[depth].score(context, continuation)
+					end
+
+					return scores if scores.values.none?(&:nil?)
 				end
-				nil
+
+				# Last resort: return uniform distribution (unknown letter)
+				Hash[continuations.map { |c| [c, 1.0 / continuations.size] }]
 			end
 
 			def self.train_from_corpus(depth, path)
