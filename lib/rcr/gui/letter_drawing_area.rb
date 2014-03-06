@@ -1,6 +1,6 @@
 require 'gtk2'
 require 'rcr/logging'
-require 'rcr/data/pixmap_imagelike'
+require 'rcr/data/cairo_imagelike'
 
 module RCR
 	module GUI
@@ -8,7 +8,7 @@ module RCR
 			include Logging
 
 			protected
-			attr_reader :pixmap
+			attr_reader :image
 
 			public
 			def empty?
@@ -23,14 +23,14 @@ module RCR
 
 				@classifier = classifier
 				@overlays = []
-				@pixmap = nil
+				@image = nil
 
 				signal_connect :expose_event do
 					expose_event
 				end
 
 				signal_connect :configure_event do
-					clear if !@pixmap
+					clear if !@image
 				end
 
 				# Button 1 = left button (ink)
@@ -38,17 +38,17 @@ module RCR
 				signal_connect :motion_notify_event do |widget, event|
 					x, y, state = event.x, event.y, event.state
 
-					if state.button1_mask? && @pixmap
-						draw_with_gc(x, y, style.black_gc)
+					if state.button1_mask? && @image
+						draw_brush(x, y)
 					end
 				end
 
 				signal_connect :button_press_event do |widget, event|
-					if @pixmap
+					if @image
 						case event.button
 						when 1
 							# Left button
-							draw_with_gc(event.x, event.y, style.black_gc)
+							draw_brush(event.x, event.y)
 						when 3
 							# Right button
 							clear
@@ -66,7 +66,7 @@ module RCR
 			end
 
 			def drawn_imagelike
-				Data::PixmapImagelike.new(@pixmap)
+				Data::CairoImagelike.new(@image)
 			end
 
 			def drawn_letter_variants
@@ -74,7 +74,7 @@ module RCR
 					log "Empty, no drawn letter variants."
 					nil
 				else
-					log "Classifying. (pixmap size: #{@pixmap.size.inspect})..."
+					log "Classifying. (pixmap size: #{@image.width}x#{@image.height})..."
 					@classifier.classify_with_alternatives(drawn_imagelike)
 				end
 			end
@@ -84,22 +84,25 @@ module RCR
 					log "Empty, no drawn letter."
 					nil
 				else
-					log "Classifying. (pixmap size: #{@pixmap.size.inspect})..."
+					log "Classifying. (pixmap size: #{@image.width}x#{@image.height})..."
 					@classifier.classify(drawn_imagelike)
 				end
 			end
 
 			def queue_redraw_all
-				queue_draw_area(0, 0, *@pixmap.size)
+				queue_draw_area(0, 0, @image.width, @image.height)
 			end
 
 			def clear
 				width, height = allocation.width, allocation.height
-				@pixmap_width, @pixmap_height = width, height
+				@image_width, @image_height = width, height
 				log "clearing letter drawing area: width #{width}, height #{height}"
 
-				@pixmap = Gdk::Pixmap.new(window, width, height, -1)
-				@pixmap.draw_rectangle(style.white_gc, true, 0, 0, width, height)
+				@image = Cairo::ImageSurface.new(width, height) # Gdk::Pixmap.new(window, width, height, -1)
+				@image_cr = Cairo::Context.new(@image)
+				@image_cr.set_source_rgb 1.0, 1.0, 1.0
+				@image_cr.paint
+				# @pixmap.draw_rectangle(style.white_gc, true, 0, 0, width, height)
 
 				@empty = true
 
@@ -111,7 +114,7 @@ module RCR
 				[allocation.width, allocation.height].min.to_f / 12.0
 			end
 
-			def draw_with_gc(x, y, gc)
+			def draw_brush(x, y)
 				width, height = allocation.width, allocation.height
 				unless x >= 0 && y >= 0 && x < width && y < height
 					log "Brush outside bounds (#{x}x#{y} outside #{width}x#{height})."
@@ -119,7 +122,10 @@ module RCR
 				end
 				b = brush_size / 2
 				rect = [x-b, y-b, b*2, b*2]
-				@pixmap.draw_rectangle(gc, true, *rect)
+
+				@image_cr.set_source_rgb 0.0, 0.0, 0.0
+				@image_cr.rectangle(*rect)
+				@image_cr.fill
 
 				if empty?
 					# Redraw all: show empty state
@@ -130,24 +136,53 @@ module RCR
 				end
 			end
 
+			def draw_border(ctx)
+				w, h = allocation.width, allocation.height
+
+				ctx.set_source_rgb 0.0, 0.0, 0.0
+				ctx.rectangle 0, 0, w, h
+				ctx.stroke
+			end
+
+			def draw_empty(ctx)
+				w, h = allocation.width, allocation.height
+
+				ctx.set_source_rgb 0.9, 0.9, 0.9
+				ctx.rectangle 0, 0, w, h
+				ctx.fill
+
+				# "X" in the middle
+				ctx.move_to w * 0.25, h * 0.25
+				ctx.line_to w * 0.75, h * 0.75
+				ctx.move_to w * 0.75, h * 0.25
+				ctx.line_to w * 0.25, h * 0.75
+				ctx.set_source_rgb 0.8, 0.8, 0.8
+				ctx.stroke
+			end
+
+			def draw_content(ctx)
+				ctx.set_source(@image, 0, 0)
+				ctx.paint
+			end
+
 			def expose_event
 				w, h = allocation.width, allocation.height
 
-				if !@pixmap || [w, h] != [@pixmap_width, @pixmap_height]
+				if !@image || [w, h] != [@image_width, @image_height]
 					log "letter drawing area size changed, clearing"
 					clear
 				end
 
+				ctx = window.create_cairo_context
+
 				if empty?
 					# Draw empty state
-					window.draw_rectangle(style.black_gc, true, 0, 0, w, h)
+					draw_empty(ctx)
 				else
-					# Draw nonempty state
-					window.draw_rectangle(style.white_gc, true, 0, 0, w, h)
-					window.draw_drawable(style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)
+					draw_content(ctx)
 				end
-				window.draw_rectangle(style.black_gc, false, 0, 0, w, h)
 
+				draw_border(ctx)
 
 				# TODO: dalsi veci nad tim
 				@overlays.each do |overlay|
