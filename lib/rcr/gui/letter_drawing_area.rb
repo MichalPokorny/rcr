@@ -11,13 +11,18 @@ module RCR
 			attr_reader :pixmap
 
 			public
-			def initialize(classifier = nil) # Can be used without passed classifier.
+			def empty?
+				@empty_state_used && @empty
+			end
+
+			def initialize(classifier = nil, options = {}) # Can be used without passed classifier.
 				super()
 
+				@empty_state_used = !options[:no_empty_state]
+				@empty = true
+
 				@classifier = classifier
-
 				@overlays = []
-
 				@pixmap = nil
 
 				signal_connect :expose_event do
@@ -28,17 +33,28 @@ module RCR
 					clear if !@pixmap
 				end
 
+				# Button 1 = left button (ink)
+				# Button 3 = clear
 				signal_connect :motion_notify_event do |widget, event|
 					x, y, state = event.x, event.y, event.state
 
 					if state.button1_mask? && @pixmap
-						draw_brush(x, y)
+						draw_with_gc(x, y, style.black_gc)
 					end
 				end
 
 				signal_connect :button_press_event do |widget, event|
-					if event.button == 1 && @pixmap
-						draw_brush(event.x, event.y)
+					if @pixmap
+						case event.button
+						when 1
+							# Left button
+							draw_with_gc(event.x, event.y, style.black_gc)
+						when 3
+							# Right button
+							clear
+						else
+							log "Unimplemented mouse button pressed: #{event.button}"
+						end
 					end
 				end
 
@@ -54,13 +70,27 @@ module RCR
 			end
 
 			def drawn_letter_variants
-				log "classifying. (pixmap size: #{@pixmap.size.inspect})..."
-				@classifier.classify_with_alternatives(drawn_imagelike)
+				if empty?
+					log "Empty, no drawn letter variants."
+					nil
+				else
+					log "Classifying. (pixmap size: #{@pixmap.size.inspect})..."
+					@classifier.classify_with_alternatives(drawn_imagelike)
+				end
 			end
 
 			def drawn_letter
-				log "classifying. (pixmap size: #{@pixmap.size.inspect})..."
-				@classifier.classify(drawn_imagelike)
+				if empty?
+					log "Empty, no drawn letter."
+					nil
+				else
+					log "Classifying. (pixmap size: #{@pixmap.size.inspect})..."
+					@classifier.classify(drawn_imagelike)
+				end
+			end
+
+			def queue_redraw_all
+				queue_draw_area(0, 0, *@pixmap.size)
 			end
 
 			def clear
@@ -71,24 +101,33 @@ module RCR
 				@pixmap = Gdk::Pixmap.new(window, width, height, -1)
 				@pixmap.draw_rectangle(style.white_gc, true, 0, 0, width, height)
 
-				queue_draw_area(0, 0, *@pixmap.size)
+				@empty = true
+
+				# Redraw all: show empty state
+				queue_redraw_all
 			end
 
 			def brush_size
 				[allocation.width, allocation.height].min.to_f / 12.0
 			end
 
-			def draw_brush(x, y)
+			def draw_with_gc(x, y, gc)
 				width, height = allocation.width, allocation.height
 				unless x >= 0 && y >= 0 && x < width && y < height
 					log "Brush outside bounds (#{x}x#{y} outside #{width}x#{height})."
 					return
 				end
-
 				b = brush_size / 2
 				rect = [x-b, y-b, b*2, b*2]
-				@pixmap.draw_rectangle(style.black_gc, true, *rect)
-				queue_draw_area(*rect)
+				@pixmap.draw_rectangle(gc, true, *rect)
+
+				if empty?
+					# Redraw all: show empty state
+					queue_redraw_all
+					@empty = false
+				else
+					queue_draw_area(*rect)
+				end
 			end
 
 			def expose_event
@@ -99,9 +138,16 @@ module RCR
 					clear
 				end
 
-				window.draw_rectangle(style.white_gc, true, 0, 0, w, h)
-				window.draw_drawable(style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)
+				if empty?
+					# Draw empty state
+					window.draw_rectangle(style.black_gc, true, 0, 0, w, h)
+				else
+					# Draw nonempty state
+					window.draw_rectangle(style.white_gc, true, 0, 0, w, h)
+					window.draw_drawable(style.fg_gc(Gtk::STATE_NORMAL), @pixmap, 0, 0, 0, 0, w, h)
+				end
 				window.draw_rectangle(style.black_gc, false, 0, 0, w, h)
+
 
 				# TODO: dalsi veci nad tim
 				@overlays.each do |overlay|
