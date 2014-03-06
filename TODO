@@ -1,3 +1,27 @@
+Dalsi features k implementaci do RCR:
+	- procento cernych pixelu
+	- pomery cernych pixelu v jednotlivych castech obrazu
+	- konvoluce s filtrem na detekci hran?
+
+	- serializace vystupu v lepsim formatu? (LeNeT 7)
+
+	- citlivost na tlak?
+
+	- datasety MNIST, dalsi?
+	- alternativni klasifikatory: SVM, deep network?
+
+	- special widget na slovo (s oriznutim prazdnych kusu)
+
+	- napad: pomohlo by mi v oversegmentation vedet, jak dlouhy je ten string?
+
+	- heuristic oversegmentation: zacit s nenaucenou siti?
+		- davat vetsi boxiky siti, at se lip uci?
+		=> to by pak chtelo davat siti konzistentne za vstup ctvercove okoli...
+			==> NESLO by to udelat s orezavanim.
+
+	- vyzkouset, co se tomu stane, kdyz s temi vecmi budu soupat.
+
+
 - optimalizovat segmentaci
 
 

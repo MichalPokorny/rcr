@@ -22,7 +22,7 @@ module RCR
 					button = Gtk::Button.new("Classify")
 					button.signal_connect :clicked do
 						@drawn_letter = @area.drawn_letter
-						log "#{@area.drawn_letter_variants.inspect}"
+						log "#{@area.drawn_letter_variants.map { |k, v| "#{k} => %.2f" % v }.join(', ')}"
 						log "Drawn letter: #@drawn_letter"
 						@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 					end
