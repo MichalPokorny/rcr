@@ -7,6 +7,10 @@ module RCR
 				[clipped.width.to_f / (clipped.width.to_f + clipped.width.to_f)]
 			end
 
+			def output_size
+				1
+			end
+
 			MARSHAL_ID = self.name
 			include Marshal
 
