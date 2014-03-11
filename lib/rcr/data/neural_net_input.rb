@@ -11,6 +11,10 @@ module RCR
 				}
 			end
 
+			def self.concat(inputs)
+				self.new(inputs.map(&:data).flatten)
+			end
+
 			def to_raw_data
 				raw = ""
 				raw << [@data.size].pack("Q")

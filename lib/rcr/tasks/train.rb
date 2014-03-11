@@ -19,6 +19,7 @@ module RCR
 					case task.downcase
 					when "letter"
 						require 'rcr/letter_classifier/neural'
+						require 'rcr/letter_classifier/input_transformer/combine'
 						require 'rcr/feature_extractor/raw_image'
 						require 'rcr/feature_extractor/content_aspect_ratio'
 
@@ -27,14 +28,14 @@ module RCR
 						# TODO: ukladat v datech "jakeho logickeho typu jsou"? Nechci prece
 						# na 1D data pripadne poustet konvolucni neuronovou sit...
 						transformers << LetterClassifier::InputTransformer::Basic.new(
-							FeatureExtractor::RawImage.new(16, 16, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
+							FeatureExtractor::RawImage.new(16, 16, guillotine: false, forget_aspect_ratio: false, normalize_contrast: true)
 						)
 
 						transformers << LetterClassifier::InputTransformer::Basic.new(
 							FeatureExtractor::ContentAspectRatio.new
 						)
 
-						lc = LetterClassifier::Neural.new(LetterClassifier::InputTransformer::Combine.new(transformer))
+						lc = LetterClassifier::Neural.new(LetterClassifier::InputTransformer::Combine.new(transformers))
 
 						lc.start_anew(allowed_chars: 'A'..'Z')
 
