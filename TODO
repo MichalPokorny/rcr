@@ -57,3 +57,5 @@ Dalsi features k implementaci do RCR:
 - pri bootstrapovem uceni bych mel i ODTRENOVAVAT SPATNE MATCHE!
 
 - dat logger jako property pro tridu, takze pak bude funovat dependency injection
+
+- ukazat v prikladech ziskany vysledek nejak hezceji; asi mi nefunguji overlaye

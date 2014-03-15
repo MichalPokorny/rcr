@@ -21,7 +21,7 @@ module RCR
 			rnd = Random.new(12345)
 			Data::Dataset.new(SAMPLES.times.map {
 				inputs = (0...INPUTS).map { rnd.rand }
-				[test_function(inputs), Data::NeuralNetInput.new(inputs)]
+				[Data::NeuralNetInput.new(inputs), test_function(inputs)]
 			})
 		end
 

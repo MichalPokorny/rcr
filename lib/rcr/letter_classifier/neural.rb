@@ -96,9 +96,9 @@ module RCR
 			end
 
 			def inputs_to_dataset(inputs)
-				Data::Dataset.new(Hash[inputs.map { |letter, values|
-					[letter, values.map { |image| @transformer.transform(image) }]
-				}])
+				Data::Dataset.new(inputs.map { |letter, values|
+					[values.map { |image| @transformer.transform(image) }, letter]
+				})
 			end
 
 			# dataset: hash of class => array of images

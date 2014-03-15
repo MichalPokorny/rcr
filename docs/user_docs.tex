@@ -1,3 +1,5 @@
+% TODO: zvyraznit syntaxi?
+
 \documentclass[a4paper]{article}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
@@ -8,6 +10,23 @@
 \usepackage{todonotes}
 \usepackage{fancyhdr}
 \usepackage{listings}
+
+\definecolor{string}{rgb}{0.7,0.0,0.0}
+\definecolor{comment}{rgb}{0.13,0.54,0.13}
+\definecolor{keyword}{rgb}{0.0,0.0,1.0}
+\lstset{
+% numbers=left,
+  language=Ruby,
+  frame=single,
+  tabsize=2,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{keyword}\textbf,
+  commentstyle=\color{comment}\textit,
+  stringstyle=\color{string}
+}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
 
 \def\datum{15. března 2014}
 
@@ -31,13 +50,125 @@ když se takový šum ve vstupu vyskytne. Je možné knihovnu nastavit tak, aby
 tento předpoklad nepoužívala. Takové nastavení však může podstatně snížit
 přesnost rozpoznávání.
 
+Knihovna RCR používá sémantické verzování.
+
+\section{Instalace}
+\todo{pozadavky: ruby 2 atd.}
+\todo{napsat}
+
 \section{Konfigurace knihovny}
 \todo{napsat}
 
 \section{Rozhraní pro Ruby}
+
+\subsection{Zjednodušené rozhraní}
+Aby nebylo potřeba při každém použití knihovny složitě vytvářet klasifikátory,
+obsahuje knihovna i zjednodušené rozhraní. Toto rozhraní umožňuje jedním
+příkazem vytvořit komponenty knihovny podle základní konfigurace.
+
+Toto rozhraní se importuje příkazem \texttt{require 'rcr/easy'}.
+\todo{priklad rychleho pouziti}
+
 \subsection{Neuronové sítě}
 \subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
+Třída \texttt{RCR::Data::NeuralNetInput} se importuje pomocí \texttt{require
+'rcr/data/neural\_net\_input'}. Tato třída se používá všude v knihovně, kde
+je se pracuje s daty, která půjdou na vstup neuronové síti. Účelem třídy
+je omezit málo restriktivní rozhraní, které by nabízelo použití jiných datových
+typů (například pole). Tato třída znesnadňuje svým uživatelům provádět operace,
+které by mohly porušit invariant "jedná se o validní vstup neuronové sítě".
+Pokud by například chyba v kódu způsobila, že se neuronové síti předá pole
+obsahující kromě čísel také položky typu \texttt{String}, mohla by se projevit
+velice hluboko v kódu RCR. Takto se tato logická chyba objeví dříve: ve chvíli,
+kdy by došlo k pokusu vytvořit \texttt{RCR::Data::NeuralNetInput} z pole,
+jehož položky nejsou pouze čísla.
+
+Veřejné rozhraní \texttt{RCR::Data::NeuralNetInput} se skládá z konstruktoru a
+metod \texttt{\#==}, \texttt{\#concat}, \texttt{\#size} a \texttt{\#data}.
+
+Konstruktor bere jako jediný parametr \texttt{Array}-like objekt obsahující
+prvky typu \texttt{Float}.
+\begin{lstlisting}
+input = RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3])
+\end{lstlisting}
+
+Metoda \texttt{\#==} podle své standartní sémantiky porovnává dva objekty typu
+\texttt{RCR::Data::NeuralNetInput}. Platí zde obvyklé problémy s aritmetikou
+v plovoucí čárce.
+\begin{lstlisting}
+input == RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3]) # true
+\end{lstlisting}
+
+Metoda \texttt{\#concat} spojuje dva vstupy za sebe:
+\begin{lstlisting}
+input.concat(RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
+  RCR::Data::NeuralNetInput([0.1, 0.2, 0.3, 0.4, 0.5])
+\end{lstlisting}
+
+\todo{chci zachovat metodu data???}
+
 \subsubsection{\texttt{RCR::Data::Dataset}: abstrakce nad datasety}
+Třída \texttt{RCR::Data::Dataset} se importuje pomocí \texttt{require
+'rcr/data/dataset'}. Jedná se o abstrakci nad datasetem: uspořádanou
+množinou párů "vstup - očekávaný výstup".
+
+Konstruktor této třídy přijímá buď parametr typu \texttt{Array}, nebo parametr
+typu \texttt{Hash}.
+
+Parametr typu \texttt{Array} se interpretuje jako seznam
+párů "vstup - očekávaný výstup":
+\begin{lstlisting}
+# Dataset pro funkci 'y = x0 + x1'
+dataset = RCR::Data::Dataset.new([
+  [[0.1, 0.1], 0.2], [[0.3, 0.5], 0.8], [[-0.5, 0.5], 0], [[0.1, -0.3], -0.2]
+])
+\end{lstlisting}
+
+Předá-li se konstruktoru parametr typu \texttt{Hash}, jsou jeho
+klíče interpretovány jako očekávané výsledky a hodnoty jako
+pole vstupů, které mají dát daný výsledek:
+\begin{lstlisting}
+# Dataset pro funkci 'y = x0 + x1'
+dataset2 = RCR::Data::Dataset.new({
+  0.0 => [[-0.1, 0.1], [0.0, 0.0], [0.5, -0.5]],
+  0.5 => [[-0.1, 0.6], [0.4, 0.1], [0.2, 0.3]],
+  -0.5 => [[-0.2, -0.3], [0.2, -0.7], [-0.9, 0.4]],
+})
+\end{lstlisting}
+
+Třída implementuje funkce \texttt{\#empty?}, \texttt{\#shuffle!} a
+\texttt{\#size} obdobným způsobem jako standartní třída \texttt{Array}
+(tedy dotaz na prázdnost, náhodné přeházení na místě a dotaz na počet párů
+vstup-výstup).
+
+Funkce \texttt{\#each} iteruje přes všechny páry klíč-hodnota:
+\begin{lstlisting}
+# [-0.1, 0.1] -> 0.0, [0.0, 0.0] -> 0.0, ...
+text = ""
+dataset2.each { |pair| text << "#{pair.first.inspect} -> #{pair.last}, " }
+puts text
+\end{lstlisting}
+
+Funkce \texttt{\#split} s volitelným pojmenovaným parametrem \texttt{threshold}
+rozdělí instanci na dva kusy v poměru daném tímto parametrem. Jeho standartní
+hodnota je \texttt{0.8}. Tato hodnota způsobí, že první vrácený poddataset bude
+přibližně $4\times$ větší než druhý.
+Tato funkce se dá použít například na pohodlné rozdělení na trénovací a
+testovací data:
+\begin{lstlisting}
+train, test = dataset2.split(threshold: 0.75)
+\end{lstlisting}
+
+Metoda \texttt{\#restrict\_keys} je určena pro odstranění nechtěných klíčů
+z datasetu. Dá se použít například máme-li dataset obsahující správné klasifikace
+obrázků písmen a čísel, ale chceme-li trénovat pouze klasifikátor na čísla.
+Obsah původního datasetu zůstane nezměněný, dataset s méně klíči se pouze vrátí.
+\begin{lstlisting}
+number_dataset = whole_dataset.restrict_keys('0'..'9')
+\end{lstlisting}
+
+\todo{zbytek API}
+
 \subsubsection{\texttt{RCR::NeuralNet}: neuronové sítě}
 \todo{obal nad FANN}
 
@@ -45,10 +176,10 @@ přesnost rozpoznávání.
 \subsubsection{\texttt{RCR::Classifier::Neural}: klasifikátory založené na
 neuronových sítích}
 
-\subsection{\texttt{RCR::MarkovChain}: Markovovy řetězce}
+\subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
 \subsection{\texttt{RCR::LanguageModel}: jazykové modely}
 \subsubsection{\texttt{RCR::LanguageModel::MarkovChain}: jazykové modely
-založené na Markovových řetězcích}
+založené na Markovských řetězcích}
 
 \subsection{\texttt{RCR::GUI}: grafické komponenty}
 \subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
@@ -107,5 +238,12 @@ C
 D
 E
 \end{lstlisting}
+
+\section{Příklady}
+Adresář \texttt{examples/} obsahuje několik praktických příkladů použití knihovny.
+
+\subsection{Tester klasifikátoru písmen
+(\texttt{examples/letter-classifier-gui})}
+
 
 \end{document}
