@@ -91,8 +91,7 @@ module RCR
 				with_logging_set(logging) {
 					train_log = File.open "train.log", "w"
 
-					dataset.shuffle!
-					train, test = dataset.split(threshold: dataset_split)
+					train, test = dataset.shuffle!.split(threshold: dataset_split)
 
 					train = train.transform_keys { |key|
 						output_select(key)
@@ -105,8 +104,7 @@ module RCR
 					end
 
 					generations.times { |round|
-						train.shuffle!
-						@net.train(train)
+						@net.train(train.shuffle!)
 
 						e = evaluate(test)
 						log "After round #{round + 1}/#{generations}: %.2f%% on test (%.2f%% on all inputs)" % [e, evaluate(dataset)]
@@ -122,8 +120,7 @@ module RCR
 
 			#def cascade_train(dataset, max_neurons: nil, dataset_split: 0.8, logging: false)
 			#	with_logging_set(logging) {
-			#		dataset.shuffle!
-			#		train, test = dataset.split(threshold: dataset_split)
+			#		train, test = dataset.shuffle!.split(threshold: dataset_split)
 
 			#		train = train.transform_keys { |key| output_select(key) }
 

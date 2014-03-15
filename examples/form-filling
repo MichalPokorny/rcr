@@ -1,0 +1,109 @@
+#!/usr/bin/ruby -w
+require 'gtk2'
+require 'rcr'
+require 'rcr/easy'
+require 'rcr/gui/letter_drawing_area'
+
+class MyWindow < Gtk::Window
+	def make_drawing_area_pack(n = 10)
+		pack_row = Gtk::HBox.new(false, 10)
+		areas = (0...n).map {
+			area = RCR::GUI::LetterDrawingArea.new(@classifier)
+			area.enable_logging = true
+			area.set_size_request 50, 40
+			pack_row.pack_start(area, false, false)
+			area.show
+			area
+		}
+
+		[pack_row, areas]
+	end
+
+	def construct_name_box(title, n = 10)
+		name_box = Gtk::VBox.new(false, 10)
+		label = Gtk::Label.new(title)
+		name_box.pack_start(label, false, false)
+		label.show
+
+		name_row, areas = make_drawing_area_pack(n)
+
+		name_box.pack_start(name_row)
+		name_row.show
+
+		[name_box, areas]
+	end
+
+	def initialize
+		super
+
+		@classifier = RCR.build_letter_classifier
+
+		signal_connect :destroy do Gtk.main_quit end
+
+		# @box = Gtk::VBox.new(false, 10)
+		# button = Gtk::Button.new("Hello")
+		# @box.pack_end(button, false, false)
+		# button.show
+
+		# @area = RCR::GUI::LetterDrawingArea.new
+		# @area.enable_logging = true
+		# @area.set_size_request 200, 200
+		# @box.pack_start(@area, true, true)
+		# @area.show
+
+		# add @box
+
+		# @box.show
+
+		@form_rows = Gtk::VBox.new(false, 10)
+
+		# @first_name_box = construct_name_box
+		# add @first_name_box
+		# @first_name_box.show
+
+		first_name_box, @first_name_areas = construct_name_box("Jméno:", 10)
+		first_name_box.show
+		@form_rows.pack_start(first_name_box)
+
+		last_name_box, @last_name_areas = construct_name_box("Příjmení:", 10)
+		last_name_box.show
+		@form_rows.pack_start(last_name_box)
+
+		phone_number_box, @phone_number_areas = construct_name_box("Telefonní číslo:", 10)
+		phone_number_box.show
+		@form_rows.pack_start(phone_number_box)
+
+		phone_number_box, @phone_number_areas = construct_name_box("Datum narození:", 10)
+		phone_number_box.show
+		@form_rows.pack_start(phone_number_box)
+
+		phone_number_box, @phone_number_areas = construct_name_box("Ulice:", 10)
+		phone_number_box.show
+		@form_rows.pack_start(phone_number_box)
+
+		@language_model = RCR.build_language_model
+
+		button = Gtk::Button.new("Precist vysledky")
+		button.signal_connect :clicked do
+			hypotheses = @first_name_areas.map(&:drawn_letter_variants).compact # compact: empties
+			p hypotheses.inspect
+
+			puts "Rovnou uvideno (Jmeno): " << @first_name_areas.map(&:drawn_letter).join('')
+			puts "Jmeno: " << @language_model.most_likely_word(hypotheses)
+		end
+		@form_rows.pack_end(button, false, false)
+		button.show
+
+		@scroll_window = Gtk::ScrolledWindow.new
+		@scroll_window.add_with_viewport @form_rows
+		@form_rows.show
+
+		add @scroll_window
+		@scroll_window.show
+	end
+end
+
+Gtk.init
+window = MyWindow.new
+window.show
+Gtk.main
