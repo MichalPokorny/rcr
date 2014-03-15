@@ -1,5 +1,0 @@
-#!/usr/bin/ruby -w
-
-require 'rcr/tasks/train'
-
-RCR::Tasks::Train.run(ARGV)
