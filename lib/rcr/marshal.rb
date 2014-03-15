@@ -1,4 +1,8 @@
+require 'rcr/logging'
+
 module RCR::Marshal
+	include RCR::Logging
+
 	@@known_classes = {}
 
 	def self.register_class(klass)
@@ -6,7 +10,7 @@ module RCR::Marshal
 	end
 
 	def self.included(base)
-		puts "Registering marshalled class #{base}"
+		log "Registering marshalled class #{base}"
 		register_class(base)
 	end
 

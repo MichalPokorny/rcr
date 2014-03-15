@@ -28,7 +28,7 @@ module RCR
 						# TODO: ukladat v datech "jakeho logickeho typu jsou"? Nechci prece
 						# na 1D data pripadne poustet konvolucni neuronovou sit...
 						transformers << LetterClassifier::InputTransformer::Basic.new(
-							FeatureExtractor::RawImage.new(16, 16, guillotine: false, forget_aspect_ratio: false, normalize_contrast: true)
+							FeatureExtractor::RawImage.new(16, 16, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
 						)
 
 						transformers << LetterClassifier::InputTransformer::Basic.new(

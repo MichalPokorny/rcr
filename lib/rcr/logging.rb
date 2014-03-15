@@ -1,6 +1,5 @@
 require 'rcr'
 require 'rcr/config'
-require 'pp'
 
 module RCR::Logging
 	ENABLED_BY_DEFAULT = RCR::Config.logging_enabled
@@ -22,7 +21,7 @@ module RCR::Logging
 			define_method :log do |*args|
 			  RCR::Logging.log_line(self.class, args) if logging_enabled?
 			end
-			
+
 			define_method :warn do |*args|
 				puts "[#{self.class}] WARN: #{args.map(&:to_s).join}"
 			end

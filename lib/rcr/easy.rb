@@ -1,5 +1,6 @@
 require 'rcr/config'
 require 'rcr/letter_classifier/neural'
+require 'rcr/data/image'
 
 module RCR
 	def self.extract_config!(opts)
@@ -28,5 +29,13 @@ module RCR
 		#
 		# Old: Stupid instead of LocalMinima
 		RCR::WordSegmentator::HeuristicOversegmentation.new(RCR::HeuristicOversegmenter::LocalMinima.new, build_letter_classifier, build_language_model)
+	end
+
+	def self.load_image(filename)
+		RCR::Data::Image.load(filename)
+	end
+
+	def self.load_image_from_blob(blob)
+		RCR::Data::Image.from_blob(blob)
 	end
 end
