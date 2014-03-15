@@ -1,0 +1,91 @@
+#!/usr/bin/ruby
+
+require 'rcr/easy'
+require 'active_support/core_ext/string' # strip_heredoc
+
+def usage
+	STDERR.puts <<-EOM.strip_heredoc
+		Usage: rcr-classify-letter (arguments) (file1) (file2) ... -- (verbatim filenames)
+
+		Arguments can be:
+			--show-alternatives:
+				Give a full list of all considered
+				alternatives instead of just the best one,
+				sorted by score.
+				The format is as follows:
+
+					A 0.87
+					B 0.1
+					C 0.03
+					...
+
+				Images are separated by empty lines.
+
+		Set (fileX) to '-' to read standard input, like this:
+
+			cat letter.png | rcr-classify-letter -
+
+		If you need to read a filename starting with '-', provide
+		the name after a '--' argument separator, like this:
+
+			# Classify files named - and --
+			rcr-classify-letter -- - --
+
+		Accepted formats: anything ImageMagick can read - PNG, JPG, etc.
+
+		Output: detected letters, one per line.
+	EOM
+	exit 1
+end
+
+usage if ARGV.empty?
+
+classifier = RCR.build_letter_classifier
+stdin_read = false
+verbatim = false
+show_alternatives = false
+
+ARGV.each do |filename|
+	image =
+		if !verbatim
+			case filename
+			when "-"
+				# Read standard input
+				if stdin_read
+					STDERR.puts <<-EOM.strip_heredoc
+						rcr-classify-letter cannot read standard input more than once.
+					EOM
+					exit 2
+				else
+					RCR.load_image_from_blob(STDIN.read)
+					stdin_read = true # Don't try to read STDIN again.
+				end
+			when "--"
+				# Switch to verbatim
+				verbatim = true
+				next
+			when "--show-alternatives"
+				show_alternatives = true
+				next
+			when /^-/
+				STDERR.puts "Unknown argument: #{filename}"
+				usage
+			else
+				# Some usual filename
+				RCR.load_image(filename)
+			end
+		else
+			# Load image names verbatim
+			RCR.load_image(filename)
+		end
+
+	if show_alternatives
+		alts = classifier.classify_with_alternatives(image).sort_by { |key, score| score }.reverse # highest score first
+		alts.each do |pair|
+			puts "#{pair[0]} %.3f" % pair[1]
+		end
+		puts # empty line separator
+	else
+		puts classifier.classify(image)
+	end
+end
