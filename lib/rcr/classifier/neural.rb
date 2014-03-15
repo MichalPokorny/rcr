@@ -86,6 +86,8 @@ module RCR
 
 			# Hash: class => [inputs that have this class]
 			def train(dataset, generations: nil, dataset_split: 0.8, logging: false)
+				raise "Wrong dataset type: #{dataset.class}" unless dataset.is_a? RCR::Data::Dataset
+
 				with_logging_set(logging) {
 					train_log = File.open "train.log", "w"
 
@@ -108,7 +110,7 @@ module RCR
 
 						e = evaluate(test)
 						log "After round #{round + 1}/#{generations}: %.2f%% on test (%.2f%% on all inputs)" % [e, evaluate(dataset)]
-						train_log.puts("#{round + 1}\t%.2f" % [e])
+						train_log.puts("#{round + 1}\t%.2f" % e)
 						train_log.flush
 					}
 

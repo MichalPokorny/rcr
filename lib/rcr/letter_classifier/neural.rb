@@ -94,12 +94,16 @@ module RCR
 				@classifier.evaluate(dataset)
 			end
 
+			def inputs_to_dataset(inputs)
+				Data::Dataset.new(Hash[inputs.map { |letter, values|
+					[letter, values.map { |image| @transformer.transform(image) }]
+				}])
+			end
+
 			# dataset: hash of class => array of images
-			def train(dataset, generations: 1000, logging: false)
+			def train(inputs, generations: 1000, logging: false)
 				with_logging_set(logging) do
-					dataset = Data::Dataset.new(Hash[dataset.map { |letter, values|
-						[letter, values.map { |image| @transformer.transform(image) }]
-					}])
+					dataset = inputs_to_dataset(inputs)
 
 					log "Dataset before key restrictions has #{dataset.size} samples."
 					dataset = dataset.restrict_keys(@classifier.classes)

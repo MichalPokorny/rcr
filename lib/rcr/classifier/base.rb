@@ -1,3 +1,5 @@
+require 'rcr/data/dataset'
+
 module RCR
 	module Classifier
 		class Base
@@ -27,12 +29,14 @@ module RCR
 				classify(x) == y
 			end
 
+			class NoSuchClass < StandardError; end
+
 			def evaluate_on_xys(xs, ys)
 				raise "Incompatible sizes of xs and ys to evaluate" if xs.size != ys.size
 				good, total = 0, 0
 				(0...xs.length).each { |i|
 					x, y = xs[i], ys[i]
-					raise unless @classes.include?(y)
+					raise NoSuchClass, "No class #{y} known to classifier (got #{@classes.inspect})" unless @classes.include?(y)
 
 					if classify(x) == y
 						good += 1
@@ -46,6 +50,7 @@ module RCR
 			end
 
 			def evaluate(dataset)
+				raise "Wrong type: #{dataset.class}" unless dataset.is_a? RCR::Data::Dataset
 				evaluate_on_xys(*dataset.to_xs_ys_arrays)
 			end
 		end
