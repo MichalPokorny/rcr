@@ -1,0 +1,111 @@
+\documentclass[a4paper]{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+% \usepackage{amssymb}
+% \usepackage{amsmath}
+\usepackage[czech]{babel}
+\usepackage{listings}
+\usepackage{todonotes}
+\usepackage{fancyhdr}
+\usepackage{listings}
+
+\def\datum{15. března 2014}
+
+\begin{document}
+\title{Uživatelská dokumentace \\ RCR -- OCR knihovna pro Ruby}
+\author{Michael Pokorný}
+\date{\datum}
+
+\maketitle
+
+\tableofcontents
+
+\section{Základní informace o knihovně}
+Účelem knihovny RCR je provádění OCR (Optical Character recognition) nad
+předanými obrazovými daty. Jedná se tedy o offline rozpoznávání, neboť
+se nepoužívají další informace, jako třeba tlak na pero, pořadí kreslených
+čar a podobné. Knihovna dále předpokládá, že vstupní data neobsahují
+šum kolem rozpoznávaného písmena. Tento předpoklad se používá k předávání
+lepších dat rozpoznávací neuronové síti, avšak to způsobuje problémy,
+když se takový šum ve vstupu vyskytne. Je možné knihovnu nastavit tak, aby
+tento předpoklad nepoužívala. Takové nastavení však může podstatně snížit
+přesnost rozpoznávání.
+
+\section{Konfigurace knihovny}
+\todo{napsat}
+
+\section{Rozhraní pro Ruby}
+\subsection{Neuronové sítě}
+\subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
+\subsubsection{\texttt{RCR::Data::Dataset}: abstrakce nad datasety}
+\subsubsection{\texttt{RCR::NeuralNet}: neuronové sítě}
+\todo{obal nad FANN}
+
+\subsection{\texttt{RCR::Classifier}: klasifikátory}
+\subsubsection{\texttt{RCR::Classifier::Neural}: klasifikátory založené na
+neuronových sítích}
+
+\subsection{\texttt{RCR::MarkovChain}: Markovovy řetězce}
+\subsection{\texttt{RCR::LanguageModel}: jazykové modely}
+\subsubsection{\texttt{RCR::LanguageModel::MarkovChain}: jazykové modely
+založené na Markovových řetězcích}
+
+\subsection{\texttt{RCR::GUI}: grafické komponenty}
+\subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
+písmene}
+
+\section{Rozhraní pro ostatní jazyky}
+Ke zjednodušení použití knihovny v jiných jazycích obsahuje balíček několik
+samostatně spustitelných programů. Všechny tyto utility používají globální
+konfiguraci RCR.
+
+\subsection{\texttt{rcr-classify-letter}}
+Tento program je určený ke klasifikaci obrázků obsahujících samostatná písmena.
+Tato písmena očekává v libovolném formátu přijímaném knihovnou ImageMagick,
+mimo jiné tedy akceptuje široce rozšířené formáty PNG a JPG.
+
+Syntaxe volání:
+\begin{lstlisting}
+$ rcr-classify-letter [--show-alternatives] (filename1) (filename2) ...
+\end{lstlisting}
+
+Parametry \texttt{filenameX} jsou názvy souborů, ze kterých se mají přečíst
+obrazová data. Je-li některý z názvů souborů pouze "\texttt{-}", pak se data
+pro toto písmeno přečtou ze standartního vstupu. Ze standartního vstupu
+není možné číst vstup více než jednou za spuštění.
+
+K předání názvů souborů začínajících pomlčkou je potřeba tyto názvy předat
+za standartním Unixovým oddělovačem argumentů a souborů: \texttt{--}.
+
+Parametr \texttt{--show-alternatives} způsobí, že pro vstupní soubory
+uvedené za tímto parametrem se na standartní výstup nevypíšou jenom
+písmena, kterým přidělil klasifikátor nejvyšší skóre, ale vypíšou se
+všechny hypotézy klasifikátoru sestupně podle skóre. Každá hypotéza
+pro písmeno je uvedena na samostatné řádce ve formátu \texttt{(písmeno)
+(skóre)}. Seznamy hypotéz pro vstupní soubory jsou na výstupu odděleny prázdnou
+řádkou.
+
+Příklady použití:
+\begin{lstlisting}
+$ rcr-classify-letter A.png
+A
+$ cat C.png | rcr-classify-letter --show-alternatives - D.png
+C 0.87
+O 0.04
+Q 0.04
+Z 0.03
+I 0.02
+
+D 0.94
+O 0.05
+Q 0.01
+
+$ cat C.png | rcr-classify-letter A.png B.jpg - -- -D.png -E.png
+A
+B
+C
+D
+E
+\end{lstlisting}
+
+\end{document}
