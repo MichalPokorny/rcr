@@ -16,6 +16,8 @@ Dalsi features k implementaci do RCR:
 
 	- heuristic oversegmentation: zacit s nenaucenou siti?
 		- davat vetsi boxiky siti, at se lip uci?
+			= necht klasifikator pismen dostava vic nez jenom ostry vyrez.
+			  to to mozna hodne zhorsuje.
 		=> to by pak chtelo davat siti konzistentne za vstup ctvercove okoli...
 			==> NESLO by to udelat s orezavanim.
 
@@ -24,13 +26,7 @@ Dalsi features k implementaci do RCR:
 
 - optimalizovat segmentaci
 
-
-
-
-- necht klasifikator pismen dostava vic nez jenom ostry vyrez.
-  to to mozna hodne zhorsuje.
-
-- segmentator radku
+- segmentator radku: napad na operaci pres souvisle segmenty (ale asi to je dost jalove)
 	- operace:
 		- spojit dva segmenty co jsou blizko sebe
 		- rozdelit segment v zajimavem bode
@@ -43,8 +39,6 @@ Dalsi features k implementaci do RCR:
 		- jaka je distribuce sirek segmentu
 		- jaky je pomer stran segmentu
 
-- normalizace kontrastu
-- pridat k obrazkum term "aspect ratio term" (volitelne)
 - implicitni segmentace
 - vytvorit confusion matrix
 
@@ -52,13 +46,11 @@ Dalsi features k implementaci do RCR:
 
 - vice korupci?
 
-- vzdyt muzu prece vytvorit furu dat ze svych poznamek!
+- vytvorit vice trenovacich dat?
 
 - heuristic oversegmentation: nekde je neco blbe...
 
 - mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
-
-- letter classifier a takove veci by mely jit samy od sebe deserializovat! tedka mam skoro vsude implicitni predpoklad ze se pouziva jeden klasifikator!
 
 - napsat aplikacku ktera bude rozpoznavat pismena psana na tabletu
 

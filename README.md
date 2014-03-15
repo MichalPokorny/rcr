@@ -1,6 +1,6 @@
 # RCR
 
-TODO: Write a gem description
+A basic Ruby OCR library.
 
 ## Installation
 
@@ -15,6 +15,11 @@ And then execute:
 Or install it yourself as:
 
     $ gem install rcr
+
+RCR requires RMagick and it has some problems with installing
+on systems that have ImageMagick built with enabled HDR. If you
+encounter problems with RMagick installation, try building ImageMagick
+without HDR.
 
 ## Usage
 
