@@ -1,4 +1,6 @@
 require_relative '../../test_helper'
+require 'rcr/data/dataset'
+require 'rcr/data/neural_net_input'
 
 module RCR
 	class NeuralNetTest < Test::Unit::TestCase
@@ -17,19 +19,21 @@ module RCR
 
 		def test_data
 			rnd = Random.new(12345)
-			(0..SAMPLES).map {
+			Data::Dataset.new(SAMPLES.times.map {
 				inputs = (0...INPUTS).map { rnd.rand }
-
-				[ inputs, test_function(inputs) ]
-			}
+				[test_function(inputs), Data::NeuralNetInput.new(inputs)]
+			})
 		end
 
 		public
 		def test_can_build_and_train
 			data = test_data
-			xs, ys = data.map(&:first), data.map { |item| item[1] }
+			xs, ys = data.to_xs_ys_arrays
 
-			xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, 0.8)
+			train, test = data.split(threshold: 0.8)
+			xs_train, ys_train = train.to_xs_ys_arrays
+			xs_test, ys_test = test.to_xs_ys_arrays
+
 			assert xs_train.size == ys_train.size
 			assert xs_test.size == ys_test.size
 			assert xs_train.size + xs_test.size == xs.size
@@ -50,9 +54,11 @@ module RCR
 		public
 		def test_saving_and_loading_gives_same_result
 			data = test_data
-			xs, ys = data.map(&:first), data.map { |item| item[1] }
+			xs, ys = data.to_xs_ys_arrays
 
-			xs_train, ys_train, xs_test, ys_test = NeuralNet.split_xys(xs, ys, 0.8)
+			train, test = data.split(threshold: 0.8)
+			xs_train, ys_train = train.to_xs_ys_arrays
+			xs_test, ys_test = test.to_xs_ys_arrays
 
 			net = NeuralNet.create(num_inputs: INPUTS, hidden_neurons: SHAPE, num_outputs: OUTPUTS)
 			assert net.is_a?(NeuralNet)

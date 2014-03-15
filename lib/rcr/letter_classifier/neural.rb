@@ -86,6 +86,7 @@ module RCR
 				raise unless allowed_chars
 
 				log "Starting letter classifier anew (#{allowed_chars.size} classes)"
+				raise "You forgot to specify an image-to-input transformer." unless @transformer
 				num_inputs = @transformer.output_size
 				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [14*14, 9*9], classes: allowed_chars)
 			end

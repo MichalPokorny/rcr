@@ -4,9 +4,7 @@ module RCR
 	class MarkovChainTest < Test::Unit::TestCase
 		def test_works
 			mc = MarkovChain.new(2)
-			mc.load([
-				0, 1, 2, 0, 1, 2, 0, 1, 3
-			])
+			mc.train([0, 1, 2, 0, 1, 2, 0, 1, 3])
 
 			assert mc.dict.key?([0,1])
 			assert mc.dict[[0,1]].key?(2)

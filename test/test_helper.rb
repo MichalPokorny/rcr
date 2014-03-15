@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'rcr'
 require 'rcr/markov_chain'
-require 'rcr/markov_chain_model'
+require 'rcr/language_model/markov_chains'
 require 'rcr/data/image'
 require 'rcr/word_segmentator'
 require 'rcr/letter_classifier/neural'

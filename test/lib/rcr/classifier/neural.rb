@@ -2,6 +2,7 @@ require_relative '../../../test_helper'
 require 'fileutils'
 
 require 'rcr/data/neural_net_input'
+require 'rcr/data/dataset'
 
 module RCR
 	module Classifier
@@ -14,7 +15,7 @@ module RCR
 
 			def create_sample(type, rnd)
 				a, b, c, d = *(1..4).map { rnd.rand }
-				case type
+				array = case type
 				when 1
 					[a/4, b/4, c, d]
 				when 2
@@ -28,11 +29,12 @@ module RCR
 				when :xyzzy
 					[a, 0.7 + b/3, c, d]
 				end
+				Data::NeuralNetInput.new(array)
 			end
 
 			def make_dataset
 				rnd = Random.new(12345)
-				Hash[CLASSES.map { |c| [c, (0..SAMPLES).map { RCR::Data::NeuralNetInput.new(create_sample(c, rnd)) }] }]
+				Data::Dataset.new(Hash[CLASSES.map { |c| [c, (0..SAMPLES).map { create_sample(c, rnd) }] }])
 			end
 
 			public
@@ -59,7 +61,7 @@ module RCR
 
 					cl, score = classifier.classify_with_score(sample)
 					assert score && cl && score.is_a?(Float)
-					
+
 					alts = classifier.classify_with_alternatives(sample)
 					assert alts.is_a?(Hash) && alts.keys.all? { |k| CLASSES.include?(k) }
 				}
