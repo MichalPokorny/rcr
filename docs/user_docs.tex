@@ -29,6 +29,7 @@
 \pgfsetlayers{background,main,foreground}
 
 \def\datum{15. března 2014}
+\def\githuburl{git clone https://github.com/MichalPokorny/rcr.git}
 
 \begin{document}
 \title{Uživatelská dokumentace \\ RCR -- OCR knihovna pro Ruby}
@@ -52,10 +53,16 @@ přesnost rozpoznávání.
 
 Knihovna RCR používá sémantické verzování.
 
-\section{Instalace}
+Vývoj probíhá přes verzovací systém Git. Hlavní repozitář se nachází
+na adrese \texttt{\githuburl}.
+
+Používání tohoto softwaru je povoleno pod MIT licencí (viz \texttt{LICENSE.txt}).
+
+\section{Instalace a infrastruktura}
 \subsection{Požadavky}
 Kromě níže popsaných Ruby gemů (softwarových balíků) požaduje knihovna RCR
 nainstalované Ruby verze aspoň 2, grafický toolkit GTK+ 2 a ImageMagick.
+Knihovna byla vytvářena s použitím verzovacího systému Git.
 
 \subsubsection{Ruby gemy}
 \begin{itemize}
@@ -73,8 +80,64 @@ nainstalované Ruby verze aspoň 2, grafický toolkit GTK+ 2 a ImageMagick.
 	provádí přibližné a fonetické porovnávání řetězců.
 \end{itemize}
 
-\todo{pozadavky: ruby 2 atd.}
-\todo{napsat}
+Následující gemy jsou vyžadovány pouze pro vývoj knihovny nebo pro balíčkování
+ze zdrojových kódů.
+\begin{itemize}
+\item \texttt{bundler}: správce závislostí Ruby gemů
+\item \texttt{rake}: Ruby obdoba GNU Make
+\end{itemize}
+
+\subsection{Instalace z RubyGems}
+Knihovna RCR je Ruby gem.
+\todo{napsat postup instalace a zverejnit to}
+
+\subsection{Lokální balíčkování a instalace}
+Druhá možnost, jak knihovnu nainstalovat, je vytvořit balíček ze zdrojových
+souborů v repozitáři. Lokální kopii repozitáře lze vytvořit spuštěním
+\texttt{\githuburl}.
+
+Po nainstalování gemů \texttt{rake} a \texttt{bundler} a spuštění
+\texttt{bundle install} se do systému nainstalují potřebné balíky. Poté
+stačí spustit \texttt{rake build} v libovolném podadresáři knihovny
+k zabalíčkování do adresáře \texttt{pkg}. Příkaz \texttt{rake install} pak
+umožňuje tento balík nainstalovat.
+
+\begin{lstlisting}
+~ $ git clone https://github.com/MichalPokorny/rcr.git
+Cloning into 'rcr'...
+remote: Counting objects: 1167, done.
+remote: Compressing objects: 100% (460/460), done.
+remote: Total 1167 (delta 621), reused 1144 (delta 602)
+Receiving objects: 100% (1167/1167), 190.61 KiB | 270.00 KiB/s, done.
+Resolving deltas: 100% (621/621), done.
+Checking connectivity... done.
+
+~ $ cd rcr
+
+~/rcr $ gem install rake bundler
+Fetching: rake-10.1.1.gem (100%)
+Successfully installed rake-10.1.1
+Parsing documentation for rake-10.1.1
+Installing ri documentation for rake-10.1.1
+Done installing documentation for rake after 5 seconds
+Fetching: bundler-1.5.3.gem (100%)
+Successfully installed bundler-1.5.3
+Parsing documentation for bundler-1.5.3
+Installing ri documentation for bundler-1.5.3
+Done installing documentation for bundler after 11 seconds
+2 gems installed
+
+~/rcr $ bundle install
+\end{lstlisting}
+\todo{otestovat ze to jde!!! (tady to v labu selhalo)}
+\todo{vypnout ruby syntaxi}
+
+\subsection{Automatické testy}
+Knihovna obsahuje sadu automatických testů používajících modul
+\texttt{Test::Unit} ze standartní knihovny jazyka Ruby.
+Testy se nachází v adresáři \texttt{test} a spouštějí se příkazem
+\texttt{rake} nebo \texttt{rake test}. Některá dodatečná data potřebná
+ke spuštění testů se nachází v adresáři \texttt{test-data}.
 
 \section{Konfigurace knihovny}
 \todo{napsat}
@@ -117,6 +180,22 @@ classifier = RCR.build_letter_classifier
 image = RCR.load_image("letter.png")
 puts "Detected letter: #{classifier.classify(image)}"
 \end{lstlisting}
+
+\subsection{Práce s obrazem}
+\todo{napsat}
+\subsubsection{\texttt{RCR::Data::Image}: základní reprezentace obrazu}
+\todo{napsat}
+\subsubsection{\texttt{RCR::Data::Imagelike}: líná reprezentace obrazu}
+\todo{napsat}
+
+\paragraph{\texttt{RCR::Data::MergedImagelike}}
+\todo{napsat}
+\paragraph{\texttt{RCR::Data::CroppedImagelike}}
+\todo{napsat}
+\paragraph{\texttt{RCR::Data::CairoImagelike}}
+\todo{napsat}
+\paragraph{\texttt{RCR::Data::PixmapImagelike}}
+\todo{napsat}
 
 \subsection{Neuronové sítě}
 \subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
@@ -427,7 +506,13 @@ E
 \section{Příklady}
 Adresář \texttt{examples/} obsahuje několik praktických příkladů použití knihovny.
 
-\subsection{Tester klasifikátoru písmen
-(\texttt{examples/letter-classifier-gui})}
+\subsection{Tester klasifikátoru písmen (\texttt{examples/letter-classifier-gui})}
+\todo{sepsat}
+
+\subsection{Hodnocení klasifikátoru písmen (\texttt{examples/evaluate-letter-classifier})}
+\todo{sepsat}
+
+\subsection{Jednoduché vyplňování formulářů (\texttt{examples/form-filling})}
+\todo{sepsat}
 
 \end{document}

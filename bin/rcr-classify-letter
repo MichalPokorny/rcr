@@ -57,8 +57,8 @@ ARGV.each do |filename|
 					EOM
 					exit 2
 				else
-					RCR.load_image_from_blob(STDIN.read)
 					stdin_read = true # Don't try to read STDIN again.
+					RCR.load_image_from_blob(STDIN.read)
 				end
 			when "--"
 				# Switch to verbatim
