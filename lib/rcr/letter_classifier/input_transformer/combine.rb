@@ -14,7 +14,7 @@ module RCR
 				end
 
 				def transform(image)
-					Data::NeuralNetInput.concat(@extractors.map { |e| e.transform(image) })
+					Data::NeuralNetInput.concat(*@extractors.map { |e| e.transform(image) })
 				end
 
 				MARSHAL_ID = self.name
