@@ -11,7 +11,7 @@ module RCR
 				}
 			end
 
-			def self.concat(inputs)
+			def self.concat(*inputs)
 				self.new(inputs.map(&:data).flatten)
 			end
 

@@ -12,10 +12,10 @@ module RCR
 					end
 					@content = content
 				when Hash
-					@content = content.flat_map { |key, values|
-						raise "Values of key #{key} are not an array" unless values.is_a? Array
-						values.map { |value|
-							[value, key]
+					@content = content.flat_map { |expected_output, inputs|
+						raise "Values of key #{key} are not an array" unless inputs.is_a? Array
+						inputs.map { |input|
+							[input, expected_output]
 						}
 					}
 				else raise "Don't know how to make Dataset from #{content.class}."
@@ -53,19 +53,28 @@ module RCR
 				[@content.map(&:first), @content.map(&:last)]
 			end
 
-			def restrict_keys(keys)
+			def restrict_expected_outputs(keys)
 				self.class.new(@content.select { |pair|
-					keys.include?(pair.first)
+					keys.include?(pair.last)
 				})
 			end
 
-			def transform_keys
+			def transform_expected_outputs
+				self.class.new(@content.map { |pair| [pair.first, yield(pair.last)] })
+			end
+
+			def transform_inputs
 				self.class.new(@content.map { |pair| [yield(pair.first), pair.last] })
 			end
 
 			def to_fann_dataset
 				xs, ys = to_xs_ys_arrays
 				RubyFann::TrainData.new(inputs: xs, desired_outputs: ys)
+			end
+
+			def ==(other)
+				return false unless other.is_a? Dataset
+				other.to_xs_ys_arrays == to_xs_ys_arrays
 			end
 		end
 	end

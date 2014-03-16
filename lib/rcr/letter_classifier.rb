@@ -1,4 +1,5 @@
 require 'rcr/data/image'
+require 'rcr/data/dataset'
 
 module RCR
 	module LetterClassifier
@@ -35,7 +36,7 @@ module RCR
 				end
 			end
 
-			data_by_letter
+			RCR::Data::Dataset.new(data_by_letter)
 		end
 	end
 end

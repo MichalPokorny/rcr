@@ -31,18 +31,12 @@ module RCR
 			xs, ys = data.to_xs_ys_arrays
 
 			train, test = data.split(threshold: 0.8)
-			xs_train, ys_train = train.to_xs_ys_arrays
-			xs_test, ys_test = test.to_xs_ys_arrays
-
-			assert xs_train.size == ys_train.size
-			assert xs_test.size == ys_test.size
-			assert xs_train.size + xs_test.size == xs.size
 
 			net = NeuralNet.create(num_inputs: INPUTS, hidden_neurons: SHAPE, num_outputs: OUTPUTS)
 			assert net.is_a?(NeuralNet)
 
 			GENERATIONS.times do
-				net.train_on_xys(xs_train, ys_train)
+				net.train(train)
 			end
 		end
 
@@ -64,7 +58,7 @@ module RCR
 			assert net.is_a?(NeuralNet)
 
 			GENERATIONS.times do
-				net.train_on_xys(xs_train, ys_train)
+				net.train(train)
 			end
 
 			path = File.join(TEST_DATA_PATH, "neural_net")
@@ -80,6 +74,24 @@ module RCR
 				# puts "Input: #{nice_dump(x)}, out before: #{nice_dump(net.run(x))}, out after: #{nice_dump(net2.run(x))}, expect: #{nice_dump(y)}"
 				assert_equal net.run(x), net2.run(x)
 			end
+		end
+
+		def test_train_xor
+			# XOR dataset
+			dataset = RCR::Data::Dataset.new([[[0, 0], 0], [[0, 1], 1], [[1, 0], 1], [[1, 1], 0]]).
+				transform_inputs { |x| RCR::Data::NeuralNetInput.new(x.map(&:to_f)) }.
+				transform_expected_outputs { |y| [y.to_f] }
+			net = RCR::NeuralNet.create(num_inputs: 2, num_outputs: 1,
+				hidden_neurons: [5, 5])
+			1000.times { net.train(dataset) }
+			output = net.run(RCR::Data::NeuralNetInput.new([0.9, 0.8]))
+			require 'pp'
+			pp output
+			assert output[0] < 0.1 # true
+
+			output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
+			pp output
+			assert output[0] > 0.9 # true
 		end
 	end
 end

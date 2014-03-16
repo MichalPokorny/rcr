@@ -44,16 +44,11 @@ module RCR
 		end
 
 		def train(dataset)
-			train_on_xys(*dataset.to_xs_ys_arrays)
-		end
-
-		# xs: array of NeuralNetInput-s, ys: array of arrays
-		def train_on_xys(xs, ys)
-			raise unless xs.length == ys.length
-
-			xs.each_index do |i|
-				x, y = xs[i], ys[i]
-				raise ArgumentError, "Expecting NeuralNetInput, got #{x.class} as given input" unless x.is_a?(Data::NeuralNetInput)
+			dataset.each do |pair|
+				x, y = pair
+				unless x.is_a?(Data::NeuralNetInput)
+					raise ArgumentError, "Expecting NeuralNetInput, got #{x.class} as given input" 
+				end
 				raise ArgumentError, "Expecting Array, got #{y.class} as expected output" unless y.is_a?(Array)
 
 				if x.size != @n_inputs

@@ -93,9 +93,7 @@ module RCR
 
 					train, test = dataset.shuffle!.split(threshold: dataset_split)
 
-					train = train.transform_keys { |key|
-						output_select(key)
-					}
+					train = train.transform_expected_outputs { |key| output_select(key) }
 
 					log "Training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
 
@@ -122,7 +120,7 @@ module RCR
 			#	with_logging_set(logging) {
 			#		train, test = dataset.shuffle!.split(threshold: dataset_split)
 
-			#		train = train.transform_keys { |key| output_select(key) }
+			#		train = train.transform_expected_outputs { |key| output_select(key) }
 
 			#		log "Cascade-training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
 

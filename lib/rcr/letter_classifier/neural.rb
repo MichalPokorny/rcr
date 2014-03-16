@@ -96,18 +96,18 @@ module RCR
 			end
 
 			def inputs_to_dataset(inputs)
-				Data::Dataset.new(inputs.map { |letter, values|
-					[values.map { |image| @transformer.transform(image) }, letter]
-				})
+				inputs.transform_inputs { |image| @transformer.transform(image) }
 			end
 
 			# dataset: hash of class => array of images
 			def train(inputs, generations: 1000, logging: false)
+				raise unless inputs.is_a? RCR::Data::Dataset
+
 				with_logging_set(logging) do
 					dataset = inputs_to_dataset(inputs)
 
 					log "Dataset before key restrictions has #{dataset.size} samples."
-					dataset = dataset.restrict_keys(@classifier.classes)
+					dataset = dataset.restrict_expected_outputs(@classifier.classes)
 					log "Dataset after key restriction has #{dataset.size} samples."
 
 					raise "Internal classifier not prepared." unless @classifier

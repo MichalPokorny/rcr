@@ -13,6 +13,10 @@ module RCR
 				# And allow loading.
 				assert Image.load(TEST_INPUT).is_a?(Image)
 			end
+
+			def test_blob_loading_works
+				assert Image.from_blob(File.read(TEST_INPUT)).is_a?(Image)
+			end
 		end
 	end
 end

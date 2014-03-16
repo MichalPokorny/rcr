@@ -11,7 +11,7 @@ module RCR
 			class EmptyImage < StandardError; end
 
 			def self.from_blob(blob)
-				self.new(Magick.from_blob(blob).first)
+				self.new(Magick::Image.from_blob(blob).first)
 			end
 
 			def self.load(path)

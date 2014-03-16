@@ -53,6 +53,26 @@ přesnost rozpoznávání.
 Knihovna RCR používá sémantické verzování.
 
 \section{Instalace}
+\subsection{Požadavky}
+Kromě níže popsaných Ruby gemů (softwarových balíků) požaduje knihovna RCR
+nainstalované Ruby verze aspoň 2, grafický toolkit GTK+ 2 a ImageMagick.
+
+\subsubsection{Ruby gemy}
+\begin{itemize}
+\item \texttt{chunky\_png}, \texttt{oily\_png}: knihovny pro práci s PNG soubory
+	a nativní varianty některých jejich metod (jako optimalizace).
+	% TODO: preformulovat?
+\item \texttt{ruby-fann}: Ruby rozhraní k C knihovně FANN, která implementuje
+	základní neuronové sítě. Obsahuje vlastní kopii této knihovny.
+\item \texttt{rmagick}: Ruby rozhraní k velmi rozšířené sadě nástrojů pro
+	manipulaci s grafikou ImageMagick.
+\item \texttt{gtk2}: Ruby bindingy pro GTK+ 2. Používají se v grafických
+	komponentách, které knihovna implementuje.
+% TODO: rubyfish??? chci ho?
+\item \texttt{rubyfish}: Ruby port Python knihovny \texttt{jellyfish}, která
+	provádí přibližné a fonetické porovnávání řetězců.
+\end{itemize}
+
 \todo{pozadavky: ruby 2 atd.}
 \todo{napsat}
 
@@ -63,11 +83,40 @@ Knihovna RCR používá sémantické verzování.
 
 \subsection{Zjednodušené rozhraní}
 Aby nebylo potřeba při každém použití knihovny složitě vytvářet klasifikátory,
-obsahuje knihovna i zjednodušené rozhraní. Toto rozhraní umožňuje jedním
-příkazem vytvořit komponenty knihovny podle základní konfigurace.
+obsahuje knihovna i zjednodušené rozhraní. Toto rozhraní umožňuje jednoduše
+používat obvyklé funkce a jedním příkazem vytvořit komponenty knihovny podle
+základní konfigurace.
 
 Toto rozhraní se importuje příkazem \texttt{require 'rcr/easy'}.
-\todo{priklad rychleho pouziti}
+
+\subsubsection{Načítání obrazu}
+K jednoduchému načítání obrazových dat k použití knihovnou RCR slouží metody
+\texttt{RCR.load\_image} a \texttt{RCR.load\_image\_from\_blob}. Metoda
+\texttt{RCR.load\_image} bere jako jediný parametr cestu k souboru k načtení.
+Metoda \texttt{RCR.load\_image\_from\_blob} oproti tomu bere jako svůj parametr
+obsah tohoto souboru.
+\begin{lstlisting}
+image = RCR.load_image("letter.png")
+image2 = RCR.load_image_from_blob(File.read("letter.png"))
+\end{lstlisting}
+
+\subsubsection{Vytváření komponent dle standartní konfigurace}
+Metody \texttt{RCR.build\_letter\_classifier} a
+\texttt{RCR.build\_language\_model} nahrají klasifikátor písmen, respektive jazykový model
+dle standartní konfigurace. Těmto metodám je možné předat jako argument
+\texttt{Hash}, kterým lze tuto konfiguraci upravit.
+\begin{lstlisting}
+classifier = RCR.build_letter_classifier(letter_classifier_path: "/tmp/classifier")
+model = RCR.build_language_model
+\end{lstlisting}
+
+Díky těmto metodám je jednoduché vyrobit a používat komponenty knihovny
+bez hluboké znalosti jejich funkcí:
+\begin{lstlisting}
+classifier = RCR.build_letter_classifier
+image = RCR.load_image("letter.png")
+puts "Detected letter: #{classifier.classify(image)}"
+\end{lstlisting}
 
 \subsection{Neuronové sítě}
 \subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
@@ -84,10 +133,12 @@ kdy by došlo k pokusu vytvořit \texttt{RCR::Data::NeuralNetInput} z pole,
 jehož položky nejsou pouze čísla.
 
 Veřejné rozhraní \texttt{RCR::Data::NeuralNetInput} se skládá z konstruktoru a
-metod \texttt{\#==}, \texttt{\#concat}, \texttt{\#size} a \texttt{\#data}.
+metod \texttt{\#==}, \texttt{NeuralNetInput.concat}, \texttt{\#size} a \texttt{\#data}.
 
 Konstruktor bere jako jediný parametr \texttt{Array}-like objekt obsahující
-prvky typu \texttt{Float}.
+prvky typu \texttt{Float}. Vložení jiných datových typů (včetně jiných číselných
+typů jako \texttt{BigDecimal} nebo \texttt{Integer}) je chyba.
+% NeuralNetInputTest#test_basic
 \begin{lstlisting}
 input = RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3])
 \end{lstlisting}
@@ -95,13 +146,15 @@ input = RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3])
 Metoda \texttt{\#==} podle své standartní sémantiky porovnává dva objekty typu
 \texttt{RCR::Data::NeuralNetInput}. Platí zde obvyklé problémy s aritmetikou
 v plovoucí čárce.
+% NeuralNetInputTest#test_basic
 \begin{lstlisting}
 input == RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3]) # true
 \end{lstlisting}
 
-Metoda \texttt{\#concat} spojuje dva vstupy za sebe:
+Metoda \texttt{NeuralNetInput.concat} spojuje dva nebo více vstupů za sebe:
+% NeuralNetInputTest#test_basic
 \begin{lstlisting}
-input.concat(RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
+NeuralNetInput.concat(input, RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
   RCR::Data::NeuralNetInput([0.1, 0.2, 0.3, 0.4, 0.5])
 \end{lstlisting}
 
@@ -110,13 +163,15 @@ input.concat(RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
 \subsubsection{\texttt{RCR::Data::Dataset}: abstrakce nad datasety}
 Třída \texttt{RCR::Data::Dataset} se importuje pomocí \texttt{require
 'rcr/data/dataset'}. Jedná se o abstrakci nad datasetem: uspořádanou
-množinou párů "vstup - očekávaný výstup".
+množinou párů "vstup - očekávaný výstup". Tato třída se nepoužívá jen
+při práci s neuronovými sítěmi, ale i například při práci s klasifikátory.
 
 Konstruktor této třídy přijímá buď parametr typu \texttt{Array}, nebo parametr
 typu \texttt{Hash}.
 
 Parametr typu \texttt{Array} se interpretuje jako seznam
 párů "vstup - očekávaný výstup":
+% TODO: test
 \begin{lstlisting}
 # Dataset pro funkci 'y = x0 + x1'
 dataset = RCR::Data::Dataset.new([
@@ -127,6 +182,7 @@ dataset = RCR::Data::Dataset.new([
 Předá-li se konstruktoru parametr typu \texttt{Hash}, jsou jeho
 klíče interpretovány jako očekávané výsledky a hodnoty jako
 pole vstupů, které mají dát daný výsledek:
+% TODO: test
 \begin{lstlisting}
 # Dataset pro funkci 'y = x0 + x1'
 dataset2 = RCR::Data::Dataset.new({
@@ -142,6 +198,7 @@ Třída implementuje funkce \texttt{\#empty?}, \texttt{\#shuffle!} a
 vstup-výstup).
 
 Funkce \texttt{\#each} iteruje přes všechny páry klíč-hodnota:
+% TODO: test
 \begin{lstlisting}
 # [-0.1, 0.1] -> 0.0, [0.0, 0.0] -> 0.0, ...
 text = ""
@@ -159,31 +216,159 @@ testovací data:
 train, test = dataset2.split(threshold: 0.75)
 \end{lstlisting}
 
-Metoda \texttt{\#restrict\_keys} je určena pro odstranění nechtěných klíčů
+Metoda \texttt{\#restrict\_expected\_outputs} je určena pro odstranění nechtěných klíčů
 z datasetu. Dá se použít například máme-li dataset obsahující správné klasifikace
 obrázků písmen a čísel, ale chceme-li trénovat pouze klasifikátor na čísla.
 Obsah původního datasetu zůstane nezměněný, dataset s méně klíči se pouze vrátí.
 \begin{lstlisting}
-number_dataset = whole_dataset.restrict_keys('0'..'9')
+number_dataset = whole_dataset.restrict_expected_outputs('0'..'9')
 \end{lstlisting}
 
-\todo{zbytek API}
+Pomocí metody \texttt{\#to\_xs\_ys\_arrays} lze z datasetu získat dvojici polí,
+kde první z nich obsahuje vstupy a druhé obsahuje na stejných indexech příslušné
+očekávané výstupy. Tato dvojice polí se hodí například pro předávání dat do
+knihovny FANN.
+
+Metody \texttt{\#transform\_inputs} a \texttt{\#transform\_expected\_outputs} transformují
+přes předaný blok všechny vstupy, respektive očekávané výstupy, a vrátí změněný
+objekt \texttt{Dataset}. Původní objekt zůstane nezměněný.
+% DatasetTest#test_transformations
+\begin{lstlisting}
+dataset = RCR::Data::Dataset.new([[1, 5], [2, 10], [3, 15]])
+dataset2 = dataset.transform_inputs { |x| x * 5 }.
+  transform_expected_outputs { |y| y / 5 }
+dataset2 == RCR::Data::Dataset.new([[5, 1], [10, 2], [15, 3]]) # true
+\end{lstlisting}
+
+Metoda \texttt{\#to\_fann\_dataset} vrací analogickou třídu typu
+\texttt{RubyFann::TrainData}. Tato metoda je použitelná pouze jsou-li vstupy i
+očekávané výstupy pole čísel. Výsledek lze předat k použití knihovně RubyFann.
 
 \subsubsection{\texttt{RCR::NeuralNet}: neuronové sítě}
-\todo{obal nad FANN}
+Knihovna RCR používá jednoduché feed-forward neuronové sítě. Samotná
+implementace algoritmů se nachází v knihovně FANN (Fast Artificial Neural % TODO: reference
+Network Library). RCR také používá RubyFann, což je rozhraní nad touto knihovnou
+pro jazyk Ruby (samotná knihovna FANN je v jazyce C). Kvůli menším závislostem
+na FANN a kvůli méně pohodlnému návrhu rozhraní RubyFann byla vytvořena další
+vrstva abstrakce.
+
+Příslušná třída se jmenuje \texttt{RCR::NeuralNet} a je možné ji naimportovat
+pomocí \texttt{require 'rcr/neural\_net'}.
+
+Konstruktor této třídy pouze obalí existující objekt reprezentující neuronovou
+síť v RubyFann:
+\begin{lstlisting}
+fann_net = RubyFann::Standard.new(num_inputs: 10, num_outputs: 5,
+  hidden_neurons: [8, 8, 8])
+net = RCR::NeuralNet.new(fann_net, 10, 5)
+\end{lstlisting}
+
+Zavolání \texttt{NeuralNet.create} je zkratka za vytvoření RubyFann neuronové
+sítě a její obalení:
+\begin{lstlisting}
+net = RCR::NeuralNet.create(num_inputs: 10, num_outputs: 5,
+  hidden_neurons: [8, 8, 8])
+\end{lstlisting}
+
+Metoda \texttt{train} natrénuje neuronovou síť na každém vzoru uloženém
+v předaném datasetu. Dataset musí mít typ vstupů \texttt{RCR::Data::NeuralNetInput} a
+výstupy musí být pole čísel. Tato metoda provede pouze jedno kolo tréningu.
+K získání použitelných výsledků je potřeba volání této metody opakovat.
+% NeuralNetTest#test_train_xor
+\begin{lstlisting}
+# dataset pro funkci XOR
+dataset = RCR::Data::Dataset.new([[[0, 0], 0], [[0, 1], 1], [[1, 0], 1], [[1, 1], 0]]).
+  transform_inputs { |x| RCR::Data::NeuralNetInput.new(x.map(&:to_f)) }.
+  transform_expected_outputs { |y| [y.to_f] }
+net = RCR::NeuralNet.create(num_inputs: 2, num_outputs: 1,
+  hidden_neurons: [4, 4])
+1000.times { net.train(dataset) }
+\end{lstlisting}
+
+Nejdůležitější metoda třídy \texttt{RCR::NeuralNet} se jmenuje \texttt{\#run}.
+Tato metoda předá neuronové síti vstup typu \texttt{RCR::Data::NeuralNetInput} a
+vrátí pole výstupů neuronů na poslední vrstvě.
+% NeuralNetTest#test_train_xor
+\begin{lstlisting}
+output = net.run(RCR::Data::NeuralNetInput.new([0.9, 0.8]))
+output[0] < 0.2 # true
+
+output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
+output[0] > 0.8 # true
+\end{lstlisting}
+
+\todo{cascade\_train}
+
+\todo{image transformery}
+\todo{marshal}
 
 \subsection{\texttt{RCR::Classifier}: klasifikátory}
+\todo{napsat}
 \subsubsection{\texttt{RCR::Classifier::Neural}: klasifikátory založené na
 neuronových sítích}
+\todo{napsat}
 
 \subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
+Knihovna RCR používá Markovské řetězce jako primitiva uvnitř jazykových modelů.
+Příslušná třída se nazývá \texttt{RCR::MarkovChain} a importuje se příkazem
+\texttt{require 'rcr/markov\_chain'}. Ačkoliv tento popis mluví o Markovských
+řetězcích nad písmeny, je tato třída naprogramována obecně -- může pracovat nad
+libovolnými objekty.
+
+Markovský řetězec je interně reprezentovaný jako \texttt{Hash}, ve kterém klíče
+jsou možné kontexty a hodnoty jsou \texttt{Hash}e, jejichž klíče jsou možná
+pokračování a hodnoty jsou jejich pravděpodobnosti. Součet pravděpodobností
+pokračování musí být 1.
+
+Konstruktor Markovského řetězce přijímá jako první parametr svou hloubku (0
+znamená triviální Markovský řetězec držící jenom relativní četnosti písmen, 1
+znamená počítání pravděpodobnosti podle jednoho předcházejícího písmena, atd.).
+Druhý volitelný parametr je interní \texttt{Hash}. Je-li uveden, bude tento
+řetězec inicializován do příslušného stavu.
+% TODO: test
+\begin{lstlisting}
+mc = MarkovChain.new(2)
+mc2 = MarkovChain.new(2, { "AB" => { "C" => 0.7, "A" => 0.3 }, ... })
+\end{lstlisting}
+
+Metoda \texttt{\#train} zahodí obsah Markovského řetězce a natrénuje jej na
+daném textu.
+% TODO: test
+\begin{lstlisting}
+mc.train("ABC ABD ABA ABC ABC")
+\end{lstlisting}
+
+Metoda \texttt{\#score} vrací relativní skóre (pravděpodobnost) daného
+pokračování dle kontextu, případně \texttt{nil} pokud tento Markovský řetězec
+na toto pokračování nebyl natrénován. První parametr je kontext a druhý parametr
+je pokračování k ohodnocení.
+% TODO: test
+\begin{lstlisting}
+mc.score("AB", "C") # 0.6
+\end{lstlisting}
+
+\todo{marshal + jde to ted marshalovat?}
+
 \subsection{\texttt{RCR::LanguageModel}: jazykové modely}
+Jazykové modely jsou komponenty, které umí klasifikátoru "radit"
+reálné šance, že jeho hypotézy jsou správné: text,
+který by mohl být po písmenech přečtený jako \texttt{T0PA2} (s číslem
+\texttt{0}), může být vhodným modelem opraven na \texttt{TOPAZ}, protože
+model může vědět, že je nepravděpodobné, aby se v jednom slově mixovaly
+číslice a písmena (nebo může například udržovat množinu slov, která
+přijímá).
+
+\todo{definice spolecneho API}
+
 \subsubsection{\texttt{RCR::LanguageModel::MarkovChain}: jazykové modely
 založené na Markovských řetězcích}
+\todo{napsat}
 
 \subsection{\texttt{RCR::GUI}: grafické komponenty}
+\todo{napsat}
 \subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
 písmene}
+\todo{napsat}
 
 \section{Rozhraní pro ostatní jazyky}
 Ke zjednodušení použití knihovny v jiných jazycích obsahuje balíček několik
@@ -244,6 +429,5 @@ Adresář \texttt{examples/} obsahuje několik praktických příkladů použit�
 
 \subsection{Tester klasifikátoru písmen
 (\texttt{examples/letter-classifier-gui})}
-
 
 \end{document}
