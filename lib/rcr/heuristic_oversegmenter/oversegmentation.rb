@@ -77,6 +77,7 @@ module RCR
 
 				# TODO: suboptimal: O(n^2) space complexity
 				for x0 in xs
+					next unless scores[x0]
 					edges_from_x(x0).each do |edge|
 						score = scores[x0] * edge.score
 

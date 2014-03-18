@@ -293,6 +293,12 @@ dataset2.each { |pair| text << "#{pair.first.inspect} -> #{pair.last}, " }
 puts text
 \end{lstlisting}
 
+Pomocí metody \texttt{#insert} lze vkládat nová data:
+% TODO: test
+\begin{lstlisting}
+dataset.insert([0.7, 0.2], 0.9)
+\end{lstlisting}
+
 Funkce \texttt{\#split} s volitelným pojmenovaným parametrem \texttt{threshold}
 rozdělí instanci na dva kusy v poměru daném tímto parametrem. Jeho standartní
 hodnota je \texttt{0.8}. Tato hodnota způsobí, že první vrácený poddataset bude
