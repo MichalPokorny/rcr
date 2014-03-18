@@ -3,6 +3,24 @@ require 'rcr/data/neural_net_input'
 module RCR
 	module Data
 		class Dataset
+			private
+			def check_input_type!
+				each do |pair|
+					unless pair.first.is_a?(input_type)
+						raise "Heterogenous Dataset input types: #{input_type} vs. #{pair.first.class}"
+					end
+				end
+			end
+
+			def check_expected_output_type!
+				each do |pair|
+					unless pair.last.is_a?(expected_output_type)
+						raise "Heterogenous Dataset input types: #{expected_output_type} vs. #{pair.last.class}"
+					end
+				end
+			end
+
+			public
 			def initialize(content)
 				# TODO: check same type of keys and values
 				case content
@@ -19,6 +37,11 @@ module RCR
 						}
 					}
 				else raise "Don't know how to make Dataset from #{content.class}."
+				end
+
+				unless empty?
+					check_input_type!
+					check_expected_output_type!
 				end
 			end
 
@@ -75,6 +98,20 @@ module RCR
 			def ==(other)
 				return false unless other.is_a? Dataset
 				other.to_xs_ys_arrays == to_xs_ys_arrays
+			end
+
+			def input_type
+				@content.first.first.class
+			end
+
+			def expected_output_type
+				@content.first.last.class
+			end
+
+			def check_types!(input, output)
+				unless input_type == input && expected_output_type == output # TODO: inheritance?
+					raise "Unexpected dataset types: #{input_type} => #{expected_output_type}, expected #{input} => #{output}"
+				end
 			end
 		end
 	end

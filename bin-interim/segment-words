@@ -1,9 +1,14 @@
 #!/usr/bin/ruby -w
 
 require 'rcr/config'
+require 'rcr/letter_classifier'
 require 'rcr/letter_classifier/neural'
 require 'rcr/data/image'
 require 'rcr/easy'
+require 'rcr/letter_classifier/input_transformer/combine'
+require 'rcr/feature_extractor/raw_image'
+require 'rcr/feature_extractor/content_aspect_ratio'
+require 'rcr/data/dataset'
 
 require 'rubyfish'
 
@@ -13,18 +18,29 @@ Dir["segmented_*.png"].each { |f| FileUtils.rm(f) }
 OUTPUT_DIR = "output-segmented-words"
 FileUtils.mkdir_p(OUTPUT_DIR)
 
-BATCH_SIZE = 10
+BATCH_SIZE = 2
 GENERATIONS = 30
 
 1000.times do |generation|
-	classifier = RCR::LetterClassifier::Neural.new # RCR.build_letter_classifier
-	dataset = RCR::LetterClassifier::Neural.load_dataset(RCR::Config.instance.prepared_letter_data_path)
-	classifier.start_anew(dataset, allowed_chars: ('A'..'Z'))
+	dataset = RCR::LetterClassifier.load_inputs(RCR::Config.letter_inputs_path)
+
+	transformers = []
+
+	# TODO: ukladat v datech "jakeho logickeho typu jsou"? Nechci prece
+	# na 1D data pripadne poustet konvolucni neuronovou sit...
+	transformers << RCR::LetterClassifier::InputTransformer::Basic.new(
+		RCR::FeatureExtractor::RawImage.new(16, 16, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
+	)
+
+	transformers << RCR::LetterClassifier::InputTransformer::Basic.new(
+		RCR::FeatureExtractor::ContentAspectRatio.new
+	)
+
+	classifier = RCR::LetterClassifier::Neural.new(RCR::LetterClassifier::InputTransformer::Combine.new(transformers)) # RCR.build_letter_classifier
+
+	classifier.start_anew(allowed_chars: ('A'..'Z'))
 
 	segmentator = RCR.build_word_segmentator
-
-	# Evaluation won't work!
-	# puts "== Classifier evaluation: %.2f" % classifier.evaluate(RCR::Config.prepared_letter_data_path)
 
 	bootstrap_dataset = {}
 	('A'..'Z').each do |l| bootstrap_dataset[l] = [] end
@@ -60,9 +76,8 @@ GENERATIONS = 30
 				crop = box.to_image
 				# TODO FUJ
 				letter = expect[j]
-				input = RCR::LetterClassifier::Neural.image_to_net_input(crop)
 
-				bootstrap_dataset[letter] << input
+				bootstrap_dataset[letter] << crop
 			end
 			puts "Best segmentation for #{expect} score: #{score}"
 		else
@@ -77,7 +92,7 @@ GENERATIONS = 30
 
 	puts "Total distance before: #{diff_sum}"
 
-	bootstrap_dataset = RCR::Data::IntegerRawDataset.new(Hash[bootstrap_dataset.map { |k, v| [k.ord, v] }])
+	bootstrap_dataset = RCR::Data::Dataset.new(bootstrap_dataset.map { |k, v| [v, k] })
 	classifier.train(bootstrap_dataset, generations: GENERATIONS, logging: true)
 	classifier.save(File.join(RCR::Config.trained_path, "letter-classifier-oversegmentation"))
 	puts "-----------"

@@ -8,7 +8,7 @@ module RCR
 	module Classifier
 		class NeuralFunctionalTest < Test::Unit::TestCase
 			private
-			CLASSES = [1,2,4,5,:xyzzy,5.5]
+			CLASSES = [1,2,4,5,7,105]
 			SAMPLES = 100
 			INPUTS = 4
 			HIDDEN_NEURONS = [5, 6, 7, 5]
@@ -16,17 +16,17 @@ module RCR
 			def create_sample(type, rnd)
 				a, b, c, d = *(1..4).map { rnd.rand }
 				array = case type
-				when 1
+				when CLASSES[0]
 					[a/4, b/4, c, d]
-				when 2
+				when CLASSES[1]
 					[0.25 + a/4, b/4, c, d]
-				when 4
+				when CLASSES[2]
 					[a, 0.25 + b/2, 0.5 + c/2, d/2]
-				when 5
+				when CLASSES[3]
 					[a, 0.25 + b/2, c/2, 0.5 + d/2]
-				when 5.5
+				when CLASSES[4]
 					[a/2 + 0.3, b/2 + 0.3, c/5, d/5]
-				when :xyzzy
+				when CLASSES[5]
 					[a, 0.7 + b/3, c, d]
 				end
 				Data::NeuralNetInput.new(array)
@@ -34,7 +34,11 @@ module RCR
 
 			def make_dataset
 				rnd = Random.new(12345)
-				Data::Dataset.new(Hash[CLASSES.map { |c| [c, (0..SAMPLES).map { create_sample(c, rnd) }] }])
+				Data::Dataset.new(Hash[
+					CLASSES.map { |c|
+						[c, SAMPLES.times.map { create_sample(c, rnd) }]
+					}
+				])
 			end
 
 			public

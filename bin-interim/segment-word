@@ -15,48 +15,52 @@ else
 	classifier = RCR.build_letter_classifier
 	segmentator = RCR.build_word_segmentator
 
-	i = 18
+	i = 13
 
-	image = RCR::Data::Image.load(ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i.to_s, "data.png"))
+	image_path = ARGV[0] || File.join(RCR::Config.segmentation_inputs_path, i.to_s, "data.png")
+
+	image, image2, image3 = 3.times.map { RCR::Data::Image.load(image_path) }
 	segmentation = segmentator.segment(image)
 
 	word_file = File.join(RCR::Config.segmentation_inputs_path, i.to_s, "expect.txt")
 	word = if File.exist?(word_file) then File.read(word_file).strip end
 
-	puts "Segmentation says: #{segmentation.detected_text(classifier)}"
+	puts "Segmentation says: #{segmentation.detected_text(classifier)} (should say #{word})"
 
 	word_segmentation = if word then segmentator.segment_for_word(image, word) end
 
-	filename = "segmented.png"
+	require 'pp'
+	result = segmentator.segment_with_lengths(image)
+	pp result
+	segmentator.path_to_segmentation(image2, result[word.length][0]).draw_on_image!(image2)
+	image2.save("segmented_length.png")
+
 	segmentator.show_oversegmentation(image) # Must be here.
 
 	if word
 		if word_segmentation
-			with_best_found = image.dup
-			word_segmentation.draw_on_image!(with_best_found)
-		
-			dataset = {}
-			('A'..'Z').each do |l| dataset[l] = [] end
-			word_segmentation.boxes.each.with_index do |box, j|
-				crop = box.to_image
-				# TODO FUJ
-				letter = word[j]
-				input = RCR::LetterClassifier::Neural.image_to_net_input(crop)
-
-				dataset[letter] << input
-			end
-
-			classifier.train(dataset)
-			puts "Training finished."
-
-			with_best_found.save("segmented_#{word}.png")
+			word_segmentation.draw_on_image!(image3)
+#		
+#			dataset = {}
+#			('A'..'Z').each do |l| dataset[l] = [] end
+#			word_segmentation.boxes.each.with_index do |box, j|
+#				crop = box.to_image
+#				# TODO FUJ
+#				letter = word[j]
+#				input = RCR::LetterClassifier::Neural.image_to_net_input(crop)
+#
+#				dataset[letter] << input
+#			end
+#
+#			classifier.train(dataset)
+#			puts "Training finished."
+#
+			image3.save("segmented_by_prior_knowledge.png")
 		else
 			puts "Best segmentation for #{word} not found."
 		end
 	end
 
 	segmentation.draw_on_image!(image)
-	image.save(filename)
-
-	puts "Segmented image saved in #{filename}"
+	image.save("segmented_best_found.png")
 end
