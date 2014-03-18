@@ -21,7 +21,7 @@ module RCR
 			end
 
 			public
-			def initialize(content)
+			def initialize(content = [])
 				# TODO: check same type of keys and values
 				case content
 				when Array
@@ -43,6 +43,13 @@ module RCR
 					check_input_type!
 					check_expected_output_type!
 				end
+			end
+
+			def insert(input, expected_output)
+				unless empty?
+					raise "Wrong types of new pair" unless input.is_a?(input_type) && expected_output.is_a?(expected_output_type)
+				end
+				@content << [input, expected_output]
 			end
 
 			def empty?
