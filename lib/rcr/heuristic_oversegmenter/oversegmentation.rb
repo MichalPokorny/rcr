@@ -29,6 +29,39 @@ module RCR
 				best_path_with_score[0]
 			end
 
+			def best_path_for_lengths
+				# Viterbi algorithm
+				scores = {} # x => { length => score }
+				paths = {} # x => { length => array }
+
+				scores[xs[0]] = { 0 => 1 }
+				paths[xs[0]] = { 0 => [] }
+
+				for x0 in xs
+					for prefix_length in scores[x0].keys
+						edges_from_x(x0).each do |edge|
+							score = scores[x0][prefix_length] * edge.score
+
+							scores[edge.x1] ||= {}
+							paths[edge.x1] ||= {}
+
+							if scores[edge.x1][prefix_length + 1].nil? ||
+								scores[edge.x1][prefix_length + 1] < score
+								scores[edge.x1][prefix_length + 1],
+									paths[edge.x1][prefix_length + 1] =
+										score, paths[edge.x0][prefix_length].dup << edge
+							end
+						end
+					end
+				end
+
+				Hash[
+					scores[xs.last].keys.map { |k|
+						[k, [paths[xs.last][k], scores[xs.last][k]]]
+					}
+				]
+			end
+
 			def best_path_with_score
 				# Viterbi algorithm
 				scores = {}
@@ -59,7 +92,7 @@ module RCR
 #						end
 
 						if scores[edge.x1].nil? || scores[edge.x1] < score
-							scores[edge.x1], path[edge.x1] = score, path[edge.x0] + [edge]
+							scores[edge.x1], path[edge.x1] = score, path[edge.x0].dup << edge
 							# context[edge.x1] = context[edge.x0] + [edge.letter]
 						end
 					end
@@ -141,8 +174,11 @@ module RCR
 							# TODO: settable. this takes top 5 candidates.
 							candidates = result.keys.sort { |a,b| result[b] <=> result[a] } #.take(5)
 							# puts "candidates #{xs[i]}..#{xs[j]}: #{candidates.map { |c| "#{c}(%.2f)" % result[c] }.join('; ')}"
+
+							# Normalize results
+							sum = candidates.map { |letter| result[letter] }.inject(&:+)
 							candidates.each do |letter|
-								edges << Oversegmentation::Edge.new(xs[i], xs[j], letter, result[letter])
+								edges << Oversegmentation::Edge.new(xs[i], xs[j], letter, result[letter] / sum)
 							end
 						end
 					end

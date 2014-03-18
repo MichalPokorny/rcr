@@ -102,6 +102,7 @@ module RCR
 			# dataset: hash of class => array of images
 			def train(inputs, generations: 1000, logging: false)
 				raise unless inputs.is_a? RCR::Data::Dataset
+				inputs.check_types!(RCR::Data::Image, String)
 
 				with_logging_set(logging) do
 					dataset = inputs_to_dataset(inputs)
