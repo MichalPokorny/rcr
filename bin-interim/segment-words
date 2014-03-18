@@ -9,6 +9,8 @@ require 'rcr/letter_classifier/input_transformer/combine'
 require 'rcr/feature_extractor/raw_image'
 require 'rcr/feature_extractor/content_aspect_ratio'
 require 'rcr/data/dataset'
+require 'rcr/heuristic_oversegmenter/local_minima'
+require 'rcr/word_segmentator/heuristic_oversegmentation'
 
 require 'rubyfish'
 
@@ -40,7 +42,9 @@ GENERATIONS = 30
 
 	classifier.start_anew(allowed_chars: ('A'..'Z'))
 
-	segmentator = RCR.build_word_segmentator
+	segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(
+		RCR::HeuristicOversegmenter::LocalMinima.new, classifier, RCR.build_language_model)
+	# XXX: CHYBA: segmentator = RCR.build_word_segmentator
 
 	bootstrap_dataset = RCR::Data::Dataset.new
 

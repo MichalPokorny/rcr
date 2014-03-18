@@ -59,3 +59,5 @@ Dalsi features k implementaci do RCR:
 - dat logger jako property pro tridu, takze pak bude funovat dependency injection
 
 - ukazat v prikladech ziskany vysledek nejak hezceji; asi mi nefunguji overlaye
+
+- ensemble classifier? (mozna jsem si ted moc jisty, kdyz nemam byt?)
