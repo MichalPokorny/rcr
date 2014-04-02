@@ -1,0 +1,47 @@
+#!/usr/bin/ruby -w
+
+require 'rcr/config'
+require 'rcr/marshal'
+require 'rcr/heuristic_oversegmenter/local_minima'
+require 'rcr/word_segmentator/heuristic_oversegmentation'
+
+if ARGV.size != 1
+	STDERR.puts <<-EOF
+Usage: best-word-match (word list) (image file)
+
+The word list should contain a list of words to match,
+one per line.
+
+Example usage: best-word-match tanzania.png
+EOF
+
+	exit 1
+end
+
+require 'rcr/easy'
+require 'rcr/data/image'
+
+classifier = RCR.build_letter_classifier
+segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(
+		RCR::HeuristicOversegmenter::LocalMinima.new, classifier, RCR.build_language_model)
+
+image_path = ARGV.first
+
+best_word, best_word_score = nil, nil
+
+image = RCR::Data::Image.load(File.join(image_path))
+
+require 'pp'
+results = []
+
+File.read("country_list.txt").each_line do |word|
+	word.strip!
+
+	result, score = segmentator.segment_for_word_with_score(image, word)
+	results << [word, score]
+end
+
+results.sort_by! { |pair| pair.last }
+results.each do |pair|
+	puts "#{pair.first} ==> #{pair.last}"
+end
