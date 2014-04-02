@@ -1,47 +1,44 @@
 #!/usr/bin/ruby -w
 
 require 'rcr/config'
-require 'rcr/marshal'
+require 'rcr/easy'
+require 'rcr/data/image'
 require 'rcr/heuristic_oversegmenter/local_minima'
 require 'rcr/word_segmentator/heuristic_oversegmentation'
 
-if ARGV.size != 1
-	STDERR.puts <<-EOF
-Usage: best-word-match (word list) (image file)
+@classifier = RCR.build_letter_classifier
+@segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(
+		RCR::HeuristicOversegmenter::LocalMinima.new, @classifier, RCR.build_language_model)
 
-The word list should contain a list of words to match,
-one per line.
+@country_list = File.read("country_list.txt").lines.map(&:strip)
 
-Example usage: best-word-match tanzania.png
-EOF
+def best_choices_for_image(path)
+	image = RCR::Data::Image.load(path)
 
-	exit 1
+	results = @segmentator.segment_for_words_with_scores(image, @country_list).to_a
+	results.sort_by { |pair| pair.last }.reverse.take(5)
 end
 
-require 'rcr/easy'
-require 'rcr/data/image'
+if ARGV.empty?
+	# Run on every country image.
+	Dir["countries/*.png"].sort.each do |filename|
+		raise unless filename =~ /countries\/([a-z]+)\.png$/
+		expect = $1.upcase
 
-classifier = RCR.build_letter_classifier
-segmentator = RCR::WordSegmentator::HeuristicOversegmentation.new(
-		RCR::HeuristicOversegmenter::LocalMinima.new, classifier, RCR.build_language_model)
+		choices = best_choices_for_image(filename)
 
-image_path = ARGV.first
-
-best_word, best_word_score = nil, nil
-
-image = RCR::Data::Image.load(File.join(image_path))
-
-require 'pp'
-results = []
-
-File.read("country_list.txt").each_line do |word|
-	word.strip!
-
-	result, score = segmentator.segment_for_word_with_score(image, word)
-	results << [word, score]
-end
-
-results.sort_by! { |pair| pair.last }
-results.each do |pair|
-	puts "#{pair.first} ==> #{pair.last}"
+		puts "#{expect.rjust(20)}: #{expect == choices.first.first ? "OK" : "ERR"}"
+		choices.each do |pair|
+			puts "#{pair.first.rjust(30)}: %.02f" % pair.last
+		end
+		puts
+	end
+else
+	ARGV.each do |filename|
+		puts "Best guesses for #{filename}:"
+		best_choices_for_image(filename).each do |pair|
+			puts "#{pair.first.rjust(30)}: %.02f" % pair.last
+		end
+		puts
+	end
 end

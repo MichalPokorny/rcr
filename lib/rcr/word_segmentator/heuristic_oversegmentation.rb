@@ -66,6 +66,17 @@ module RCR
 				end
 			end
 
+			def segment_for_words_with_scores(image, words)
+				oversegmentation = @oversegmenter.oversegment(image, @letter_classifier)
+
+				Hash[
+					words.map { |word|
+						_, score = oversegmentation.best_path_of_word_with_score(word)
+						[word, score]
+					}
+				]
+			end
+
 			def segment(image)
 				segment_with_score(image)[0]
 			end
