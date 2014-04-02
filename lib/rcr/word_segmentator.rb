@@ -70,7 +70,7 @@ module RCR
 
 					block = MaskedImagelike.new(image, marks, x0, x1, y0, y1)
 					box = Data::SegmentationBox.new(x0, y0, block)
-					
+
 					boxes << box
 				}
 			}
@@ -81,7 +81,7 @@ module RCR
 		def self.load_segmentation_from_sample(image, image_corrections)
 			# Red (#ff0000) means "not actually connected"
 			# Green (#00ff00) means "actually connected"
-			
+
 			pixel_passable = lambda do |x, y|
 				pixel = image_corrections[x, y]
 
@@ -98,7 +98,7 @@ module RCR
 					# puts "Red: #{x} #{y}"
 					return false
 				end
-				
+
 				pixel_active(*image[x, y])
 			end
 
