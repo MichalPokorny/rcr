@@ -17,6 +17,16 @@ module RCR
 			def test_blob_loading_works
 				assert Image.from_blob(File.read(TEST_INPUT)).is_a?(Image)
 			end
+
+			def test_pixel_array_loading_works
+				data = [
+					[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
+					[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
+				]
+				image = RCR::Data::Image.from_pixel_array
+				assert [image.width, image.height] == [3, 2]
+				assert image[1,2] == [32, 32, 32]
+			end
 		end
 	end
 end

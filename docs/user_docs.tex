@@ -67,9 +67,9 @@ Knihovna byla vytvářena s použitím verzovacího systému Git.
 
 \subsubsection{Ruby gemy}
 \begin{itemize}
-\item \texttt{chunky\_png}, \texttt{oily\_png}: knihovny pro práci s PNG soubory
-	a nativní varianty některých jejich metod (jako optimalizace).
-	% TODO: preformulovat?
+\item \texttt{chunky\_png} umožňuje práci s PNG soubory.
+	\texttt{oily\_png} k němu doplňuje optimalizované nativní varianty
+	některých operací.
 \item \texttt{ruby-fann}: Ruby rozhraní k C knihovně FANN, která implementuje
 	základní neuronové sítě. Obsahuje vlastní kopii této knihovny.
 \item \texttt{rmagick}: Ruby rozhraní k velmi rozšířené sadě nástrojů pro
@@ -183,8 +183,73 @@ puts "Detected letter: #{classifier.classify(image)}"
 \end{lstlisting}
 
 \subsection{Práce s obrazem}
-\todo{napsat}
+Knihovna RCR obsahuje několik tříd, které obalují různé zdroje obrazových dat
+společným rozhraním.
+
 \subsubsection{\texttt{RCR::Data::Image}: základní reprezentace obrazu}
+Obrázky uložené jako soubory jdou reprezentovat třídou
+\texttt{RCR::Data::Image}. Interně tato třída využívá obdobné třídy knihovny
+\texttt{chunky_png} nebo \texttt{RMagick}.
+Tato komponenta se načítá příkazem \texttt{require 'rcr/data/image'}.
+
+Způsoby vytváření instancí této třídy určené pro vnějšího uživatele jsou tři:
+\begin{itemize}
+\item \texttt{RCR::Data::Image.load} přijímá jeden parametr, který je cesta k
+	souboru:
+	% TODO: test
+	\begin{lstlisting}
+		image = RCR::Data::Image.load("image.png")
+	\end{lstlisting}
+\item \texttt{RCR::Data::Image.from_blob} umožňuje načtení obrázku přímo z
+	paměti:
+	% TODO: test
+	\begin{lstlisting}
+		data = File.read("image.png")
+		image = RCR::Data::Image.from_blob(data)
+	\end{lstlisting}
+\item \texttt{RCR::Data::Image.from_pixel_array} načítá obrázek reprezentovaný
+	jako dvourozměrné pole trojic osmibitových RGB hodnot:
+	% ImageTest#test_pixel_array_loading_works
+	\begin{lstlisting}
+		data = [
+			[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
+			[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
+		]
+		array_image = RCR::Data::Image.from_pixel_array
+		# [image.width, image.height] == [3, 2]
+	\end{lstlisting}
+\end{itemize}
+
+Samotný konstruktor je možné použít pouze s parametrem typu
+\texttt{ChunkyPNG::Canvas} nebo \texttt{Magick::Image}. Takto použitý
+konstruktor vytvoří instanci obalující předaný obrázek.
+
+Vlastnosti \texttt{width} a \texttt{height} udávají šířku a výšku obrázku.
+Indexování po souřadnicích umožňuje přistupovat k pixelům, které jsou přístupné
+jako osmibitové RGB trojice:
+% ImageTest#test_pixel_array_loading_works
+\begin{lstlisting}
+pixel = array_image[1,2]
+# pixel == [32, 32, 32]
+\end{lstlisting}
+
+Jako alternativní rozhraní k přístupu k pixelům se dá použít metoda
+\texttt{pixels}. Vrací enumerátor, který vrací RGB trojice v pořadí
+po řádcích. Na tomto objektu je možné používat obvyklé metody jako
+\texttt{each}, \texttt{map}, atd. aniž by bylo nutné bezpodmínečně
+vytvářet pole všech pixelů jako Ruby objekt.
+
+% TODO: crop
+% TODO: crop_by_columns
+% TODO: save
+% TODO: to_raw_data
+% TODO: from_raw_data
+% TODO: scale, scale!
+% TODO: guillotine, guillotine!
+% TODO: border_to_and_resize_to_fit!
+% TODO: mutate
+% TODO: draw_rectangle!
+
 \todo{napsat}
 \subsubsection{\texttt{RCR::Data::Imagelike}: líná reprezentace obrazu}
 \todo{napsat}
