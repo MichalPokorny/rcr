@@ -4,5 +4,5 @@ require 'rcr/letter_classifier'
 require 'rcr/marshal'
 
 classifier = RCR.build_letter_classifier
-dataset = classifier.inputs_to_dataset(RCR::LetterClassifier.load_inputs(RCR::Config.letter_inputs_path)).restrict_keys('A'..'Z')
+dataset = classifier.inputs_to_dataset(RCR::LetterClassifier.load_inputs(RCR::Config.letter_inputs_path)).restrict_expected_outputs('A'..'Z')
 puts "Letter classifier evaluation: %.2f%%" % classifier.evaluate(dataset)

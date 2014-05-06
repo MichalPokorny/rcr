@@ -9,7 +9,6 @@ module RCR
 			def initialize(net = nil, classes = nil)
 				super(classes)
 				@net = net
-				@classes = classes.to_a
 			end
 
 			def self.load(filename)
@@ -101,7 +100,7 @@ module RCR
 						raise ArgumentError, "Empty testing or training dataset given. Give me more data."
 					end
 
-					generations.times { |round|
+					(generations || 1000).times { |round|
 						@net.train(train.shuffle!)
 
 						e = evaluate(test)
@@ -115,27 +114,6 @@ module RCR
 					log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
 				}
 			end
-
-			#def cascade_train(dataset, max_neurons: nil, dataset_split: 0.8, logging: false)
-			#	with_logging_set(logging) {
-			#		train, test = dataset.shuffle!.split(threshold: dataset_split)
-
-			#		train = train.transform_expected_outputs { |key| output_select(key) }
-
-			#		log "Cascade-training neural classifier. #{train.size} training inputs, #{test.size} testing inputs."
-
-			#		if train.empty? || test.empty?
-			#			raise ArgumentError, "Empty testing or training dataset given. Give me more data."
-			#		end
-
-			#		@net.cascade_train(train, max_neurons: max_neurons, neurons_between_reports: 1, desired_error: 0.1)
-
-			#		#train_log.close
-
-			#		log "Final score on test dataset: %.2f%%" % evaluate(test)
-			#		log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
-			#	}
-			#end
 		end
 	end
 end

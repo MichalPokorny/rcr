@@ -99,8 +99,13 @@ module RCR
 					end
 				end
 
-				# TODO: mayhaps don't require oversegmenting the whole image?
-				[ path[xs.last], scores[xs.last] ] # .map { |edge| edge.letter }.join('')
+				if scores[xs.last].nil?
+					# No path found
+					nil
+				else
+					# TODO: mayhaps don't require oversegmenting the whole image?
+					[ path[xs.last], scores[xs.last] ] # .map { |edge| edge.letter }.join('')
+				end
 			end
 
 			def best_path_of_word_with_score(word)
@@ -154,7 +159,7 @@ module RCR
 				end
 
 				log "best path of word: #{paths[xs.last].inspect}"
-				[ paths[xs.last], scores[xs.last] ]
+				[ paths[xs.last], scores[xs.last] || 0 ]
 			end
 
 			# TODO: this shouldn't ever be used anywhere!

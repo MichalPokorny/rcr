@@ -25,9 +25,9 @@ module RCR
 
 			# pixels: 2D array of R-G-B pixels (0..256)
 			def self.from_pixel_array(pixels)
-				image = ChunkyPNG::Image.new(pixels.size, pixels.first.size, ChunkyPNG::Color::TRANSPARENT)
-				pixels.each_with_index { |row, x|
-					row.each_with_index { |pixel, y|
+				image = ChunkyPNG::Image.new(pixels.first.size, pixels.size, ChunkyPNG::Color::TRANSPARENT)
+				pixels.each_with_index { |row, y|
+					row.each_with_index { |pixel, x|
 						image[x, y] = ChunkyPNG::Color.rgb(*pixel)
 					}
 				}

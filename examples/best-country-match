@@ -16,23 +16,32 @@ def best_choices_for_image(path)
 	image = RCR::Data::Image.load(path)
 
 	results = @segmentator.segment_for_words_with_scores(image, @country_list).to_a
-	results.sort_by { |pair| pair.last }.reverse.take(5)
+	pp results
+	results.select(&:last).sort_by(&:last).reverse.take(5)
 end
 
 if ARGV.empty?
 	# Run on every country image.
-	Dir["countries/*.png"].sort.each do |filename|
+	inputs = Dir["countries/*.png"].sort
+	correct = 0
+
+	inputs.each do |filename|
 		raise unless filename =~ /countries\/([a-z]+)\.png$/
 		expect = $1.upcase
 
 		choices = best_choices_for_image(filename)
+		is_correct = expect == choices.first.first
 
-		puts "#{expect.rjust(20)}: #{expect == choices.first.first ? "OK" : "ERR"}"
+		correct += 1 if is_correct
+
+		puts "#{expect.rjust(20)}: #{is_correct ? "OK" : "ERR"}"
 		choices.each do |pair|
 			puts "#{pair.first.rjust(30)}: %.02f" % pair.last
 		end
 		puts
 	end
+
+	puts "Accuracy: %.2f%%" % (correct.to_f / inputs.size)
 else
 	ARGV.each do |filename|
 		puts "Best guesses for #{filename}:"

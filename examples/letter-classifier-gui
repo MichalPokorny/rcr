@@ -1,11 +1,10 @@
 #!/usr/bin/ruby -w
 
 require_relative 'drawing_window'
-require 'rcr/easy'
 
+require 'rcr/easy'
 require 'rcr/data/image'
 require 'rcr/data/pixmap_imagelike'
-require 'rcr/gui/drawing_window'
 
 # TODO: "make new sample" button?
 
@@ -22,15 +21,25 @@ module RCRExamples
 			end
 
 			def add_box_controls(box)
+				letter_label = Gtk::Label.new
+				letter_label.use_markup = true
+
 				button = Gtk::Button.new("Classify")
 				button.signal_connect :clicked do
 					@drawn_letter = @area.drawn_letter
-					log "#{@area.drawn_letter_variants.map { |k, v| "#{k} => %.2f" % v }.join(', ')}"
-					log "Drawn letter: #@drawn_letter"
+
+					best_5 = @area.drawn_letter_variants.to_a.sort_by { |pair| pair[1] }.reverse.take(5)
+					best_5_text = best_5.map { |pair| "#{pair[0]} (%.2f)" % pair[1] }.join("; ")
+
+					log "[#@drawn_letter] (best 5 candidates: #{best_5_text})"
+					letter_label.label = "<b>#@drawn_letter</b> (best 5 candidates: #{best_5_text})"
+
 					@area.queue_draw_area 0, 0, @area.allocation.width, @area.allocation.height
 				end
 				box.pack_end(button, false, false)
+				box.pack_end(letter_label, false, false)
 				button.show
+				letter_label.show
 			end
 
 			def title
@@ -53,7 +62,7 @@ module RCRExamples
 
 		def run
 			Gtk.init
-			window = RCR::GUI::ClassifyLetter::Window.new(@classifier)
+			window = RCRExamples::ClassifyLetter::Window.new(@classifier)
 			window.enable_logging = true
 			Gtk.main
 		end
@@ -61,13 +70,5 @@ module RCRExamples
 end
 
 classifier = RCR.build_letter_classifier
-
-if ARGV[0] == "-i" || ARGV[0] == "--interactive" || ARGV.empty?
-	require 'rcr/gui/classify_letter'
-	gui = RCRExamples::ClassifyLetter.new(classifier)
-	gui.run
-else
-	require 'rcr/data/image'
-	result = classifier.classify(RCR.load_image(ARGV[0]))
-	puts "Classifier result: #{result}"
-end
+gui = RCRExamples::ClassifyLetter.new(classifier)
+gui.run

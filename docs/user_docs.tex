@@ -1,5 +1,7 @@
 % TODO: train letter classifieru chce dataset z inputu, ktere jsou image
 % TODO: zvyraznit syntaxi?
+% TODO: best_path_of_word_with_score muze vratit 'nil', pokud zadna takova
+% cesta neexistuje. to same find_best_path_of_word_with_score a tranzitivne
 
 \documentclass[a4paper]{article}
 \usepackage{fullpage}
@@ -189,25 +191,25 @@ společným rozhraním.
 \subsubsection{\texttt{RCR::Data::Image}: základní reprezentace obrazu}
 Obrázky uložené jako soubory jdou reprezentovat třídou
 \texttt{RCR::Data::Image}. Interně tato třída využívá obdobné třídy knihovny
-\texttt{chunky_png} nebo \texttt{RMagick}.
+\texttt{chunky\_png} nebo \texttt{RMagick}.
 Tato komponenta se načítá příkazem \texttt{require 'rcr/data/image'}.
 
 Způsoby vytváření instancí této třídy určené pro vnějšího uživatele jsou tři:
 \begin{itemize}
 \item \texttt{RCR::Data::Image.load} přijímá jeden parametr, který je cesta k
 	souboru:
-	% TODO: test
+	% ImageTest#test_loading_works
 	\begin{lstlisting}
 		image = RCR::Data::Image.load("image.png")
 	\end{lstlisting}
-\item \texttt{RCR::Data::Image.from_blob} umožňuje načtení obrázku přímo z
+\item \texttt{RCR::Data::Image.from\_blob} umožňuje načtení obrázku přímo z
 	paměti:
-	% TODO: test
+	% ImageTest#test_blob_loading_works
 	\begin{lstlisting}
 		data = File.read("image.png")
 		image = RCR::Data::Image.from_blob(data)
 	\end{lstlisting}
-\item \texttt{RCR::Data::Image.from_pixel_array} načítá obrázek reprezentovaný
+\item \texttt{RCR::Data::Image.from\_pixel\_array} načítá obrázek reprezentovaný
 	jako dvourozměrné pole trojic osmibitových RGB hodnot:
 	% ImageTest#test_pixel_array_loading_works
 	\begin{lstlisting}
@@ -215,8 +217,9 @@ Způsoby vytváření instancí této třídy určené pro vnějšího uživatel
 			[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
 			[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
 		]
-		array_image = RCR::Data::Image.from_pixel_array
+		array_image = RCR::Data::Image.from_pixel_array(data)
 		# [image.width, image.height] == [3, 2]
+		# image[2, 1] == [32, 32, 32]
 	\end{lstlisting}
 \end{itemize}
 
@@ -326,7 +329,7 @@ dataset = RCR::Data::Dataset.new([
 
 Tato třída kontroluje konzistenci datových typů vstupů a očekávaných výstupů.
 K zjištění uloženého typu vstupů, respektive výstupů je možné použít metody
-\texttt{#input\_type} a \texttt{#expected\_output\_type}.
+\texttt{\#input\_type} a \texttt{\#expected\_output\_type}.
 % RCR::Data::DatasetTest#test_basic
 \begin{lstlisting}
 dataset.input_type == Array && dataset.expected_output_type == Float # true
@@ -359,7 +362,7 @@ dataset2.each { |pair| text << "#{pair.first.inspect} -> #{pair.last}, " }
 puts text
 \end{lstlisting}
 
-Pomocí metody \texttt{#insert} lze vkládat nová data:
+Pomocí metody \texttt{\#insert} lze vkládat nová data:
 % TODO: test
 \begin{lstlisting}
 dataset.insert([0.7, 0.2], 0.9)
@@ -463,10 +466,79 @@ output[0] > 0.8 # true
 \todo{marshal}
 
 \subsection{\texttt{RCR::Classifier}: klasifikátory}
-\todo{napsat}
+
+Klasifikace je úloha předpovídání diskrétní kategorie daného vstupu na základě
+trénovacích dat. Knihovny samotná je používá pouze k detekci napsaného písmena,
+ale je možné je použít i samostatně k jiným účelům. Implementován je pouze jeden
+typ klasifikátoru, a to klasifikátor založený na neuronových sítích
+(\texttt{RCR::NeuralNet}).
+
+Třída \texttt{RCR::Classifier::Base} je zamýšlena jako předek všech
+klasifikátorů. Aby byly následující příklady
+kódu spustitelné, používají \texttt{RCR::Classifier::Neural}. Jsou nicméně
+míněny jako specifikace společného rozhraní, které by měl splňovat i případný
+jiný typ klasifikátoru odvozený od \texttt{RCR::Classifier::Base}.
+
+Konstruktor třídy přijímá nejvýše jeden parametr, který je
+interpretován jako seznam tříd ke klasifikaci. Je však určený k tomu,
+aby byl zavolán konstruktorem odvozeného konkrétního klasifikátoru.
+Odvozený klasifikátor může vyžadovat další parametry.
+
+Tento seznam tříd je pak dostupný přes metodu \texttt{#classes}.
+Klasifikátor dále musí implementovat metody \texttt{#classify},
+\texttt{#classify\_with\_score}, \texttt{#classify\_with\_alternatives},
+\texttt{#train} a \texttt{#evaluate}.
+
+Klasifikátor očekává vstupy zformátované jako pole čísel.
+Metody \texttt{#classify}, \texttt{#classify\_with\_score} a
+\texttt{#classify\_with\_alternatives} vrací výsledky klasifikace
+na jednom vstupu a vrací různé druhy výsledků. Metoda \texttt{#classify}
+vrátí pouze předpovězenou kategorii, zatímco \texttt{classify\_with\_score}
+vrátí pár (předpovězená kategorie, její skóre).
+\texttt{classify\_with\_alternatives} nakonec vrátí \texttt{Hash}, jehož
+klíče jsou kategorie a hodnoty jsou relativní skóre daných kategorií.
+Všechna skóre musí být normalizována tak, aby součet skóre přes všechny
+vrácené alternativy byl 1. Metoda \texttt{classify\_with\_score} musí
+tuto podmínku také splňovat.
+
+Odvozené klasifikátory nemusí implementovat všechny tyto metody.
+Stačí doplnit \texttt{classify\_with\_alternatives} -- všechny ostatní
+klasifikační metody mají v \texttt{RCR::Classifier::Base} odvozenou
+standartní implementaci. Bylo-li by však určení skóre všech kategorií
+pomalé, může být užitečné poskytnout rychlejší implementaci v konkrétním
+klasifikátoru.
+
+Metody \texttt{#train} a \texttt{#evaluate} přijímají \texttt{Dataset}.
+\texttt{#train} natrénuje klasifikátor podle daných dat a \texttt{#evaluate}
+vrátí úspěšnost klasifikátoru (číslo mezi 0 a 1).
+
+% TODO: test a priklady kodu
 \subsubsection{\texttt{RCR::Classifier::Neural}: klasifikátory založené na
 neuronových sítích}
-\todo{napsat}
+Tato třída se nachází v modulu \texttt{'rcr/classifier/neural'}.
+Tyto klasifikátory obsahují uvnitř neuronovou síť, která přijímá stejné vstupy
+jako klasifikátor. Jejím výstupem je pro každou kategorii jedno číslo, které
+je interpretováno jako relativní skóre. Klasifikátor pak předpoví tu kategorii,
+která má toto skóre nejvyšší.
+
+% TODO: test a priklad
+Vyrábí se pomocí metody \texttt{RCR::Classifier::Neural.create}. Její parametry
+\texttt{num\_inputs} a \texttt{hidden\_neurons} odpovídají příslušným parametrům
+metody \texttt{RCR::NeuralNet.create}. Parametr \texttt{classes} obsahuje seznam
+kategorií.
+% NeuralFunctionalTest#test_create
+\begin{lstlisting}
+classifier = RCR::Classifier::Neural.create(
+  num_inputs: 3,
+  hidden_neurons: [3, 3],
+  classes: [1, 2, 3]
+)
+\end{lstlisting}
+
+Metoda \texttt{#train} kromě datasetu obsahuje přijímá také jako parametr
+\texttt{generations} počet iterací trénování (není-li uveden, použije se 1000),
+\texttt{dataset\_split}
+% TODO: dopsat tenhle kus
 
 \subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
 Knihovna RCR používá Markovské řetězce jako primitiva uvnitř jazykových modelů.
@@ -588,12 +660,37 @@ E
 Adresář \texttt{examples/} obsahuje několik praktických příkladů použití knihovny.
 
 \subsection{Tester klasifikátoru písmen (\texttt{examples/letter-classifier-gui})}
-\todo{sepsat}
+Tento příklad ukazuje použití klasifikátoru písmen a widgetu pro kreslení
+jednotlivých písmen. Umožňuje nakreslit písmeno, které se po kliknutí na
+tlačítko \textit{Classify} předá klasifikátoru. Nejlepších 5 vybraných kandidátů
+se pak vypíše společně se svým skóre. Tlačítkem \textit{Clear} jde vymazat obsah
+kreslící oblasti.
 
 \subsection{Hodnocení klasifikátoru písmen (\texttt{examples/evaluate-letter-classifier})}
-\todo{sepsat}
+Tento krátký program pouze načte dataset s písmeny a klasifikátor písmen podle
+konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
 
 \subsection{Jednoduché vyplňování formulářů (\texttt{examples/form-filling})}
 \todo{sepsat}
+
+\subsection{Použití pro klasifikaci slov (\texttt{examples/best-country-match})}
+Jak ilustruje tento příklad, za poměrně silných předpokladů je možné knihovnu
+použít pro klasifikaci celých slov. Konkrétně vybírají-li se slova pouze z
+malého slovníku, je možné pro každé slovo slovníku odhadnout pravděpodobnost,
+že se nachází na vstupu. Tento odhad pro celý slovník najednou provádí funkce
+\texttt{segment\_for\_words\_with\_scores} třídy
+\texttt{RCR::WordSegmentator::HeuristicOversegmentation}.
+Segmentace však provádí mnoho grafických operací, proto je to pomalý proces.
+
+Program \texttt{examples/best-country-match} načte soubor
+\texttt{examples/country\_list.txt}, který obsahuje 163 názvů zemí.
+Následně pro každý název země načte odpovídající vstupní obrázek z adresáře
+\texttt{examples/countries/} a pokusí se nezávisle odhadnout, co je v něm
+napsáno. Výstup pro každý název země zahrnuje, jestli se odhad povedl, a
+5 nejvýše oskórovaných hypotéz.
+
+\begin{lstlisting}
+\todo{ilustrovat jak to krasne funguje}
+\end{lstlisting}
 
 \end{document}

@@ -23,9 +23,9 @@ module RCR
 					[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
 					[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
 				]
-				image = RCR::Data::Image.from_pixel_array
+				image = RCR::Data::Image.from_pixel_array(data)
 				assert [image.width, image.height] == [3, 2]
-				assert image[1,2] == [32, 32, 32]
+				assert image[2,1] == [32, 32, 32]
 			end
 		end
 	end
