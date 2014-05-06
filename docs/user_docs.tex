@@ -484,15 +484,15 @@ interpretován jako seznam tříd ke klasifikaci. Je však určený k tomu,
 aby byl zavolán konstruktorem odvozeného konkrétního klasifikátoru.
 Odvozený klasifikátor může vyžadovat další parametry.
 
-Tento seznam tříd je pak dostupný přes metodu \texttt{#classes}.
-Klasifikátor dále musí implementovat metody \texttt{#classify},
-\texttt{#classify\_with\_score}, \texttt{#classify\_with\_alternatives},
-\texttt{#train} a \texttt{#evaluate}.
+Tento seznam tříd je pak dostupný přes metodu \texttt{\#classes}.
+Klasifikátor dále musí implementovat metody \texttt{\#classify},
+\texttt{\#classify\_with\_score}, \texttt{\#classify\_with\_alternatives},
+\texttt{\#train} a \texttt{\#evaluate}.
 
 Klasifikátor očekává vstupy zformátované jako pole čísel.
-Metody \texttt{#classify}, \texttt{#classify\_with\_score} a
-\texttt{#classify\_with\_alternatives} vrací výsledky klasifikace
-na jednom vstupu a vrací různé druhy výsledků. Metoda \texttt{#classify}
+Metody \texttt{\#classify}, \texttt{\#classify\_with\_score} a
+\texttt{\#classify\_with\_alternatives} vrací výsledky klasifikace
+na jednom vstupu a vrací různé druhy výsledků. Metoda \texttt{\#classify}
 vrátí pouze předpovězenou kategorii, zatímco \texttt{classify\_with\_score}
 vrátí pár (předpovězená kategorie, její skóre).
 \texttt{classify\_with\_alternatives} nakonec vrátí \texttt{Hash}, jehož
@@ -508,8 +508,8 @@ standartní implementaci. Bylo-li by však určení skóre všech kategorií
 pomalé, může být užitečné poskytnout rychlejší implementaci v konkrétním
 klasifikátoru.
 
-Metody \texttt{#train} a \texttt{#evaluate} přijímají \texttt{Dataset}.
-\texttt{#train} natrénuje klasifikátor podle daných dat a \texttt{#evaluate}
+Metody \texttt{\#train} a \texttt{\#evaluate} přijímají \texttt{Dataset}.
+\texttt{\#train} natrénuje klasifikátor podle daných dat a \texttt{\#evaluate}
 vrátí úspěšnost klasifikátoru (číslo mezi 0 a 1).
 
 % TODO: test a priklady kodu
@@ -535,10 +535,45 @@ classifier = RCR::Classifier::Neural.create(
 )
 \end{lstlisting}
 
-Metoda \texttt{#train} kromě datasetu obsahuje přijímá také jako parametr
-\texttt{generations} počet iterací trénování (není-li uveden, použije se 1000),
+Metoda \texttt{\#train} kromě datasetu obsahuje přijímá také jako parametr
+\texttt{generations} počet iterací trénování (není-li uveden, použije se 1000).
+
 \texttt{dataset\_split}
 % TODO: dopsat tenhle kus
+
+\subsection{\texttt{RCR::FeatureExtractor}}
+Třídy ve jmenném prostoru \texttt{RCR::FeatureExtractor} převádí obraz (objekty
+typu \texttt{RCR::Data::Image}) na data vhodná jako vstup ostatních komponent
+knihovny (klasifikátorů, neuronových sítí atd.).
+Všechny tyto třídy implementují metody \texttt{\#extract\_features} a
+\texttt{\#output\_size}. Metoda \texttt{\#extract\_features} jako parametr
+přijímá obraz a vrací pole čísel velikosti \texttt{\#output\_size}.
+Velikost výstupu není závislá na vstupním obrazu.
+
+% TODO: vsechno to je marshallable
+
+Třída \texttt{RCR::FeatureExtractor::ContentAspectRatio} převádí obraz na jediné
+číslo, které vyjadřuje poměr stran neprázdné části obrazu. Vstupní obraz se
+ořízne na neprázdnou část a vrátí se poměr šířky a součtu šířky a výšky výsledku.
+
+Druhá třída v tomto jmenném prostoru je \texttt{RCR::FeatureExtractor::RawImage}.
+Její výstup je vyjádření samotného obsahu obrazu. Obraz se před převedením na
+čísla volitelně ořízne na neprázdnou část, pak se vždy zmenší na jednotnou velikost
+(buď se zachováním poměru stran, nebo bez něj) a nakonec se volitelně může
+normalizovat kontrast obrazu. (Normalizace kontrastu znamená přepočítání
+výsledku tak, aby se rozkládal přes celý interval $[0;1]$.)
+
+První dva parametry konstruktoru vyjadřují šířku a výšku, na kterou se bude
+vstup zmenšovat. Další volitelné parametry \texttt{guillotine},
+\texttt{forget\_aspect\_ratio} a \texttt{normalize\_contrast} určují, má-li
+se provádět oříznutí na neprázdný obsah, má-li se vstup zmenšovat bez zachování
+poměru stran a má-li být nakonec vykonána normalizace kontrastu.
+
+\subsection{\texttt{RCR::HeuristicOversegmenter}}
+\todo{napsat}
+
+\subsection{\texttt{RCR::WordSegmentator}}
+\todo{napsat}
 
 \subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
 Knihovna RCR používá Markovské řetězce jako primitiva uvnitř jazykových modelů.
@@ -602,12 +637,15 @@ založené na Markovských řetězcích}
 písmene}
 \todo{napsat}
 
-\section{Rozhraní pro ostatní jazyky}
+\section{Rozhraní pro ostatní jazyky a pomocné programy}
 Ke zjednodušení použití knihovny v jiných jazycích obsahuje balíček několik
 samostatně spustitelných programů. Všechny tyto utility používají globální
 konfiguraci RCR.
 
-\subsection{\texttt{rcr-classify-letter}}
+\subsection{\texttt{rcr-train} - trénování knihovny}
+\todo{vyrobit}
+
+\subsection{\texttt{rcr-classify-letter} - klasifikace písmen}
 Tento program je určený ke klasifikaci obrázků obsahujících samostatná písmena.
 Tato písmena očekává v libovolném formátu přijímaném knihovnou ImageMagick,
 mimo jiné tedy akceptuje široce rozšířené formáty PNG a JPG.
