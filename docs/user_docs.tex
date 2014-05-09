@@ -32,7 +32,7 @@
 \pgfsetlayers{background,main,foreground}
 
 \def\datum{15. března 2014}
-\def\githuburl{git clone https://github.com/MichalPokorny/rcr.git}
+\def\githuburl{https://github.com/MichalPokorny/rcr.git}
 
 \begin{document}
 \title{Uživatelská dokumentace \\ RCR -- OCR knihovna pro Ruby}
@@ -56,7 +56,7 @@ přesnost rozpoznávání.
 
 Knihovna RCR používá sémantické verzování.
 
-Vývoj probíhá přes verzovací systém Git. Hlavní repozitář se nachází
+Vývoj probíhá přes verzovací systém Git. Repozitář se nachází
 na adrese \texttt{\githuburl}.
 
 Používání tohoto softwaru je povoleno pod MIT licencí (viz \texttt{LICENSE.txt}).
@@ -80,7 +80,7 @@ Knihovna byla vytvářena s použitím verzovacího systému Git.
 	komponentách, které knihovna implementuje.
 \end{itemize}
 
-Následující gemy jsou vyžadovány pouze pro vývoj knihovny nebo pro balíčkování
+Následující gemy jsou vyžadovány pouze pro vývoj knihovny nebo pro instalaci
 ze zdrojových kódů.
 \begin{itemize}
 \item \texttt{bundler}: správce závislostí Ruby gemů
@@ -94,7 +94,7 @@ Knihovna RCR je Ruby gem.
 \subsection{Lokální balíčkování a instalace}
 Druhá možnost, jak knihovnu nainstalovat, je vytvořit balíček ze zdrojových
 souborů v repozitáři. Lokální kopii repozitáře lze vytvořit spuštěním
-\texttt{\githuburl}.
+\texttt{git clone \githuburl}.
 
 Po nainstalování gemů \texttt{rake} a \texttt{bundler} a spuštění
 \texttt{bundle install} se do systému nainstalují potřebné balíky. Poté
@@ -194,30 +194,29 @@ Tato komponenta se načítá příkazem \texttt{require 'rcr/data/image'}.
 Způsoby vytváření instancí této třídy určené pro vnějšího uživatele jsou tři:
 \begin{itemize}
 \item \texttt{RCR::Data::Image.load} přijímá jeden parametr, který je cesta k
-	souboru:
-	% ImageTest#test_loading_works
-	\begin{lstlisting}
-		image = RCR::Data::Image.load("image.png")
-	\end{lstlisting}
+souboru:
+% ImageTest#test_loading_works
+\begin{lstlisting}
+image = RCR::Data::Image.load("image.png")
+\end{lstlisting}
 \item \texttt{RCR::Data::Image.from\_blob} umožňuje načtení obrázku přímo z
-	paměti:
-	% ImageTest#test_blob_loading_works
-	\begin{lstlisting}
-		data = File.read("image.png")
-		image = RCR::Data::Image.from_blob(data)
-	\end{lstlisting}
+paměti:
+% ImageTest#test_blob_loading_works
+\begin{lstlisting}
+data = File.read("image.png")
+image = RCR::Data::Image.from_blob(data)
+\end{lstlisting}
 \item \texttt{RCR::Data::Image.from\_pixel\_array} načítá obrázek reprezentovaný
-	jako dvourozměrné pole trojic osmibitových RGB hodnot:
-	% ImageTest#test_pixel_array_loading_works
-	\begin{lstlisting}
-		data = [
-			[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
-			[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
-		]
-		array_image = RCR::Data::Image.from_pixel_array(data)
-		# [image.width, image.height] == [3, 2]
-		# image[2, 1] == [32, 32, 32]
-	\end{lstlisting}
+jako dvourozměrné pole trojic osmibitových RGB hodnot:
+% ImageTest#test_pixel_array_loading_works
+\begin{lstlisting}
+data = [
+	[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
+	[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
+]
+array_image = RCR::Data::Image.from_pixel_array(data)
+# [image.width, image.height] == [3, 2]
+\end{lstlisting}
 \end{itemize}
 
 Samotný konstruktor je možné použít pouze s parametrem typu
@@ -229,7 +228,7 @@ Indexování po souřadnicích umožňuje přistupovat k pixelům, které jsou p
 jako osmibitové RGB trojice:
 % ImageTest#test_pixel_array_loading_works
 \begin{lstlisting}
-pixel = array_image[1,2]
+pixel = array_image[2, 1]
 # pixel == [32, 32, 32]
 \end{lstlisting}
 
@@ -536,7 +535,7 @@ Metoda \texttt{\#train} kromě datasetu obsahuje přijímá také jako parametr
 \texttt{generations} počet iterací trénování (není-li uveden, použije se 1000).
 
 \texttt{dataset\_split}
-% TODO: dopsat tenhle kus
+\todo{dopsat tenhle kus}
 
 \subsection{\texttt{RCR::FeatureExtractor}}
 Třídy ve jmenném prostoru \texttt{RCR::FeatureExtractor} převádí obraz (objekty
@@ -547,7 +546,7 @@ Všechny tyto třídy implementují metody \texttt{\#extract\_features} a
 přijímá obraz a vrací pole čísel velikosti \texttt{\#output\_size}.
 Velikost výstupu není závislá na vstupním obrazu.
 
-% TODO: vsechno to je marshallable
+\todo{vsechno to je marshallable}
 
 Třída \texttt{RCR::FeatureExtractor::ContentAspectRatio} převádí obraz na jediné
 číslo, které vyjadřuje poměr stran neprázdné části obrazu. Vstupní obraz se
@@ -596,8 +595,8 @@ mc2 = MarkovChain.new(2, { "AB" => { "C" => 0.7, "A" => 0.3 }, ... })
 \end{lstlisting}
 
 Metoda \texttt{\#train} zahodí obsah Markovského řetězce a natrénuje jej na
-daném textu.
-% TODO: test
+daném textu nebo poli.
+% MarkovChainTest#test_docs
 \begin{lstlisting}
 mc.train("ABC ABD ABA ABC ABC")
 \end{lstlisting}
@@ -605,8 +604,8 @@ mc.train("ABC ABD ABA ABC ABC")
 Metoda \texttt{\#score} vrací relativní skóre (pravděpodobnost) daného
 pokračování dle kontextu, případně \texttt{nil} pokud tento Markovský řetězec
 na toto pokračování nebyl natrénován. První parametr je kontext a druhý parametr
-je pokračování k ohodnocení.
-% TODO: test
+je pokračování k ohodnocení. Kontext může být jak pole, tak řetězec.
+% MarkovChainTest#test_docs
 \begin{lstlisting}
 mc.score("AB", "C") # 0.6
 \end{lstlisting}

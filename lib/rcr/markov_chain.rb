@@ -8,6 +8,8 @@ module RCR
 		attr_reader :dict
 
 		def train(data)
+			data = data.chars if data.is_a?(String)
+
 			@dict = {}
 			((@depth)...data.length).each do |i|
 				context = data[(i - @depth)...i]
@@ -26,6 +28,7 @@ module RCR
 		end
 
 		def score(context, continuation)
+			context = context.chars if context.is_a?(String)
 			context = context.last(@depth)
 			raise ArgumentError if context.length != @depth
 
