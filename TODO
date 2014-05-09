@@ -61,3 +61,6 @@ Dalsi features k implementaci do RCR:
 - ukazat v prikladech ziskany vysledek nejak hezceji; asi mi nefunguji overlaye
 
 - ensemble classifier? (mozna jsem si ted moc jisty, kdyz nemam byt?)
+
+- ukladat v datech "jakeho logickeho typu jsou"? (aby existoval type checking, ze se napriklad
+	nepousti konvolucni neuronova sit na 1D datech)

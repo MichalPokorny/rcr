@@ -39,12 +39,6 @@ module RCR
 				Hash[continuations.map { |c| [c, 1.0 / continuations.size] }]
 			end
 
-			def self.train_from_corpus(depth, path)
-				model = self.new(depth)
-				model.train(File.read(path).each_char.select { |c| c =~ /[a-zA-Z0-9]/ }.map(&:upcase)) # TODO: bad position.
-				model
-			end
-
 			MARSHAL_ID = self.name
 			include Marshal
 

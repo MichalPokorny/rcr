@@ -16,7 +16,6 @@ def best_choices_for_image(path)
 	image = RCR::Data::Image.load(path)
 
 	results = @segmentator.segment_for_words_with_scores(image, @country_list).to_a
-	pp results
 	results.select(&:last).sort_by(&:last).reverse.take(5)
 end
 

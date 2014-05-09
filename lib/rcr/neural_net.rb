@@ -2,16 +2,10 @@ require 'ruby-fann'
 require 'rcr/data/neural_net_input'
 require 'rcr/logging'
 
-#@fann.cascadetrain_on_data(train_data, (16*16), 10, 0.05)
-
-# data, pocet epoch, kazdych X delej vypis, target error
-#@fann.train_on_data(train_data, 100, 10, 0.05)
-
 module RCR
 	class NeuralNet
 		include Logging
 
-		# TODO: contrast normalization
 		def self.create(num_inputs: nil, hidden_neurons: [], num_outputs: nil)
 			raise ArgumentError if num_inputs.nil? || hidden_neurons.empty? ||
 				num_outputs.nil? || num_outputs < 1 || hidden_neurons.any? { |n| n <= 0 } ||
@@ -21,10 +15,6 @@ module RCR
 
 			fann = RubyFann::Standard.new(num_inputs: num_inputs, hidden_neurons: hidden_neurons, num_outputs: num_outputs)
 
-			# TODO: try different training algorithm, activation function, etc.
-
-			# This tries some smart algorithm, but it seems to initialize nonsense.
-			# @fann.init_weights(train_data)
 			fann.randomize_weights(-1.0, 1.0)
 			fann.set_train_error_function(:linear)
 
@@ -38,10 +28,6 @@ module RCR
 		end
 
 		attr_reader :n_inputs
-
-		def cascade_train(dataset, max_neurons: nil, neurons_between_reports: 1, desired_error: 0.1)
-			@fann.cascadetrain_on_data(dataset.to_fann_dataset, max_neurons, neurons_between_reports, desired_error) # TODO
-		end
 
 		def train(dataset)
 			dataset.each do |pair|
@@ -66,9 +52,6 @@ module RCR
 		def save(filename)
 			log "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
 
-			# pp @fann.get_neurons
-			# @fann.print_connections
-
 			@fann.save(filename + ".fann")
 			File.open "#{filename}.net-params", "w" do |file|
 				YAML.dump({
@@ -82,7 +65,6 @@ module RCR
 			fann_file = "#{filename}.fann"
 			log "FANN file: #{fann_file}"
 			raise ArgumentError, "FANN file doesn't exist: #{fann_file}" unless File.exist?(fann_file)
-			# ??? fann = RubyFann::Standard::new(filename: fann_file)
 			fann = RubyFann::Standard.new(filename: fann_file)
 
 			yaml_file = "#{filename}.net-params"
@@ -92,13 +74,9 @@ module RCR
 
 			log "Loaded neural net with #{params[:n_inputs]} inputs and #{params[:n_outputs]} outputs"
 
-			# pp fann.get_neurons
-			# fann.print_connections
-
 			self.new(fann, params[:n_inputs], params[:n_outputs])
 		end
 
-		# x: NeuralNetInput
 		def run(x)
 			raise ArgumentError, "Expecting NeuralNetInput, got #{x.class}" unless x.is_a? Data::NeuralNetInput
 			@fann.run(x.data)

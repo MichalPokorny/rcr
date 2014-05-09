@@ -7,15 +7,11 @@ module RCR
 		module Train
 			def self.run(argv)
 				if argv.empty?
-					puts "Nothing to do."
+					puts "Nothing to do. Pass 'letter' or 'language_model' to train RCR components."
 					exit
 				end
 
-				until argv.empty?
-					task = argv.shift
-
-					# trained_dir = RCR::Config.trained_path
-
+				while task = argv.shift
 					case task.downcase
 					when "letter"
 						require 'rcr/letter_classifier/neural'
@@ -25,8 +21,6 @@ module RCR
 
 						transformers = []
 
-						# TODO: ukladat v datech "jakeho logickeho typu jsou"? Nechci prece
-						# na 1D data pripadne poustet konvolucni neuronovou sit...
 						transformers << LetterClassifier::InputTransformer::Basic.new(
 							FeatureExtractor::RawImage.new(16, 16, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
 						)
@@ -41,17 +35,13 @@ module RCR
 
 						lc.train(LetterClassifier.load_inputs(Config.letter_inputs_path), generations: 1000, logging: true)
 						lc.save(Config.letter_classifier_path)
-					when "language_model"
+					when "language-model"
 						require 'rcr/language_model/markov_chains'
-						LanguageModel::MarkovChains.train_from_corpus(3, Config.language_corpus_path).save(Config.language_model_path)
+						corpus = File.read(Config.language_corpus_path).each_char.select { |c| c =~ /[a-zA-Z]/ }.map(&:upcase)
 
-					# when "segment" then
-						# TODO: doesn't work!
-						# require 'rcr/word_segmentator/default'
-						# ws = WordSegmentator::Default.new
-						# ws.train(File.join(prepared_dir, "segment.data"))
-						# ws.save(File.join(trained_dir, "word-segmentator"))
-					# TODO: more
+						lm = LanguageModel::MarkovChains.new(3)
+						lm.train(corpus)
+						lm.save(Config.language_model_path)
 					else
 						puts "Don't know how to train '#{task}'."
 					end

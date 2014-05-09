@@ -51,8 +51,13 @@ se nepoužívají další informace, jako třeba tlak na pero, pořadí kreslen�
 šum kolem rozpoznávaného písmena. Tento předpoklad se používá k předávání
 lepších dat rozpoznávací neuronové síti, avšak to způsobuje problémy,
 když se takový šum ve vstupu vyskytne. Je možné knihovnu nastavit tak, aby
-tento předpoklad nepoužívala. Takové nastavení však může podstatně snížit
+tento předpoklad nepoužívala, ale takové nastavení může podstatně snížit
 přesnost rozpoznávání.
+
+Testováno bylo pouze rozpoznávání textu složeného z velkých písmen anglické
+abecedy. Zdrojový kód knihovny na některých místech implicitně používá tento
+předpoklad -- například nástroj \texttt{rcr-train} zatím neumožňuje zadat
+jiné povolené znaky.
 
 Knihovna RCR používá sémantické verzování.
 
@@ -639,7 +644,28 @@ samostatně spustitelných programů. Všechny tyto utility používají globál
 konfiguraci RCR.
 
 \subsection{\texttt{rcr-train} - trénování knihovny}
-\todo{vyrobit}
+Tato utilita je určena ke trénování komponent knihovny.
+Jako svůj parametr přijímá seznam komponent k natrénování.
+Všechna data se ukládají a načítají ze standartních míst daných konfigurací
+knihovny.
+
+S parametrem \texttt{letter} se natrénuje klasifikátor
+písmen (typu \texttt{RCR::LetterClassifier::Neural}). Jako
+vstup jeho neuronové sítě se použije jednak samotný vstupní obraz,
+který se ořízne na nejmenší oblast obsahující jiné než bílé pixely,
+zmenší na velikost $16\times 16$ pixelů a na němž se provede normalizace
+kontrastu, a druhak také poměr stran oblasti, na kterou se obraz ořízl.
+Experimentálně bylo zjištěno, že tento údaj pomáhá neuronové síti správně
+určovat napsaná písmena.
+
+Při budování klasifikátoru se předpokládádá, že vstup se skládá jenom
+z velkých písmen anglické abecedy.
+
+Parametr \texttt{markov\_chains} natrénuje standartní jazykový model --
+\texttt{RCR::LanguageModel::MarkovChains} s hloubkou 3. Jako korpus se použije
+standartní korpus. Z tohoto souboru se vyberou pouze písmena, která se pak změní
+na velká. Výsledný jazykový model tedy bude natrénován pouze na velkých
+písmenech.
 
 \subsection{\texttt{rcr-classify-letter} - klasifikace písmen}
 Tento program je určený ke klasifikaci obrázků obsahujících samostatná písmena.

@@ -1,4 +1,4 @@
-require "rcr/version"
+require 'rcr/version'
 
 module RCR
 end
