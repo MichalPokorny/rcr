@@ -47,17 +47,6 @@ module RCR
 				end
 			end
 
-			def to_raw_data
-				[ x, y ].pack("QQ") + image.to_raw_data
-			end
-
-			def self.from_raw_data(data)
-				x, y = data[0...16].unpack("QQ")
-				data = data[16...data.size]
-
-				self.new(x, y, Data::Image.from_raw_data(data))
-			end
-
 			def self.merge(box1, box2)
 				image = MergedImagelike.new(box1, box2).to_image
 				self.new(x0, y0, image)

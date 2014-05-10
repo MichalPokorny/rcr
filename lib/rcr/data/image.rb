@@ -94,19 +94,6 @@ module RCR
 				@image.save(file)
 			end
 
-			def to_raw_data
-				bytes = [width, height].pack("QQ")
-				bytes += @image.to_rgba_stream
-				bytes
-			end
-
-			def self.from_raw_data(data)
-				bytes = data[0...16]
-				width, height = bytes.unpack("QQ")
-				data = data[16...data.length]
-				self.new(ChunkyPNG::Image.from_rgba_stream(width, height, data))
-			end
-
 			def scale!(new_width, new_height)
 				new_width, new_height = [new_width, new_height].map(&:to_i)
 				raise ArgumentError unless new_width.is_a? Fixnum and new_height.is_a? Fixnum

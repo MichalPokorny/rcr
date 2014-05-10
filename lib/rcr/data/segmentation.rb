@@ -62,42 +62,6 @@ module RCR
 
 			attr_reader :image, :boxes
 
-			def to_raw_data
-				bytes = [ @boxes.length ].pack("Q")
-				@boxes.each { |box|
-					box_data = box.to_raw_data
-
-					bytes += [ box_data.length ].pack("Q")
-					bytes += box_data
-				}
-				bytes += @image.to_raw_data
-				bytes
-			end
-
-			def self.from_raw_data(data)
-				bytes = data[0...8]
-				ary = bytes.unpack("Q")
-			
-				data = data[8...data.size]
-
-				boxes = []
-
-				ary[0].times do
-					bytes = data[0...8]
-					ary = bytes.unpack("Q")
-
-					data = data[8...data.size]
-
-					boxes << Data::SegmentationBox.from_raw_data(data[0...ary.first])
-
-					data = data[ary.first...data.size]
-				end
-
-				image = Data::Image.from_raw_data(data)
-
-				self.new(image, boxes)
-			end
-
 			def active_pixels
 				pixels = []
 				(0...width).each do |x|
