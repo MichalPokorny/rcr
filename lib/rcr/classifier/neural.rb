@@ -11,14 +11,17 @@ module RCR
 				@net = net
 			end
 
-			def self.load(filename)
-				opts = YAML.load_file "#{filename}.classifier-opts"
-				self.new(NeuralNet.load(filename), opts[:classes])
+			MARSHAL_ID = self.name
+			include Marshal
+
+			def self.load_internal(filename)
+				opts = YAML.load_file("#{filename}.classifier-opts")
+				self.new(Marshal.load("#{filename}.net"), opts[:classes])
 			end
 
-			def save(filename)
-				@net.save(filename)
-				File.open "#{filename}.classifier-opts", "w" do |file|
+			def save_internal(filename)
+				@net.save("#{filename}.net")
+				File.open("#{filename}.classifier-opts", "w") do |file|
 					YAML.dump({
 						classes: @classes
 					}, file)

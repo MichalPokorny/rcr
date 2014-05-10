@@ -29,9 +29,10 @@ module RCR
 							FeatureExtractor::ContentAspectRatio.new
 						)
 
-						lc = LetterClassifier::Neural.new(LetterClassifier::InputTransformer::Combine.new(transformers))
+						transformer = LetterClassifier::InputTransformer::Combine.new(transformers)
+						lc = LetterClassifier::Neural.new
 
-						lc.start_anew(allowed_chars: 'A'..'Z')
+						lc.start_anew(transformer: transformer, allowed_chars: 'A'..'Z', hidden_neurons: [14*14, 9*9])
 
 						lc.train(LetterClassifier.load_inputs(Config.letter_inputs_path), generations: 1000, logging: true)
 						lc.save(Config.letter_classifier_path)

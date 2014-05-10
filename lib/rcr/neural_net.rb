@@ -49,11 +49,13 @@ module RCR
 			end
 		end
 
-		def save(filename)
-			log "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
+		MARSHAL_ID = self.name
+		include Marshal
 
+		def save_internal(filename)
+			log "Saving neural net with #@n_inputs inputs and #@n_outputs outputs"
 			@fann.save(filename + ".fann")
-			File.open "#{filename}.net-params", "w" do |file|
+			File.open("#{filename}.net-params", "w") do |file|
 				YAML.dump({
 					n_inputs: @n_inputs,
 					n_outputs: @n_outputs
@@ -61,7 +63,7 @@ module RCR
 			end
 		end
 
-		def self.load(filename)
+		def self.load_internal(filename)
 			fann_file = "#{filename}.fann"
 			log "FANN file: #{fann_file}"
 			raise ArgumentError, "FANN file doesn't exist: #{fann_file}" unless File.exist?(fann_file)

@@ -384,6 +384,7 @@ Metoda \texttt{\#restrict\_expected\_outputs} je určena pro odstranění necht�
 z datasetu. Dá se použít například máme-li dataset obsahující správné klasifikace
 obrázků písmen a čísel, ale chceme-li trénovat pouze klasifikátor na čísla.
 Obsah původního datasetu zůstane nezměněný, dataset s méně klíči se pouze vrátí.
+Varianta \texttt{\#restrict\_expected\_outputs!} naopak původní objekt změní.
 \begin{lstlisting}
 number_dataset = whole_dataset.restrict_expected_outputs('0'..'9')
 \end{lstlisting}
@@ -396,6 +397,8 @@ knihovny FANN.
 Metody \texttt{\#transform\_inputs} a \texttt{\#transform\_expected\_outputs} transformují
 přes předaný blok všechny vstupy, respektive očekávané výstupy, a vrátí změněný
 objekt \texttt{Dataset}. Původní objekt zůstane nezměněný.
+Varianty těchto metod s vykřičníkem (\texttt{\#transform\_inputs!} a
+\texttt{\#transform\_expected\_outputs!}) oproti tomu změní původní objekt.
 % DatasetTest#test_transformations
 \begin{lstlisting}
 dataset = RCR::Data::Dataset.new([[1, 5], [2, 10], [3, 15]])
@@ -460,8 +463,6 @@ output[0] < 0.2 # true
 output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
 output[0] > 0.8 # true
 \end{lstlisting}
-
-\todo{cascade\_train}
 
 \todo{image transformery}
 \todo{marshal}
@@ -570,6 +571,48 @@ vstup zmenšovat. Další volitelné parametry \texttt{guillotine},
 se provádět oříznutí na neprázdný obsah, má-li se vstup zmenšovat bez zachování
 poměru stran a má-li být nakonec vykonána normalizace kontrastu.
 
+\subsection{\texttt{RCR::LetterClassifier}}
+Tento jmenný prostor obsahuje třídy, které obalují klasifikátory pro potřeby
+OCR jednotlivých písmen. Tyto třídy implementují API analogické k obecným
+klasifikátorům (tedy metody \texttt{\#train}, \texttt{\#evaluate}, \texttt{\#classify},
+\texttt{\#classify\_with\_score} a \texttt{\#classify\_with\_alternatives}),
+ale očekávají jako své vstupy instance \texttt{RCR::Data::Image}, případně
+datasety obsahující tyto instance.
+
+Třída \texttt{RCR::LetterClassifier::Base} je předek všech ostatních tříd
+tohoto jmenného prostoru.
+
+\subsubsection{\texttt{RCR::LetterClassifierNeural}}
+Tento klasifikátor písmen používá \texttt{RCR::Classifier::Neural}.
+Před předáním obrazu neuronové síti se nad nimi provede nastavitelná
+transformace (například lze síti volitelně předat poměr stran obsahu
+obrazu).
+
+Před natrénováním této třídy je potřeba nejdříve zavolat metodu
+\texttt{\#start\_anew} a předat ji v parametrech \texttt{transformer},
+\texttt{allowed\_chars} a \texttt{hidden\_neurons} převodník obrazu
+na data (popsáno níže), množinu povolených znaků a velikosti skrytých
+vrstev neuronové sítě.
+
+Metoda \texttt{\#train} přijímá navíc parametr \texttt{generations},
+kterým je možné měnit dobu trénování neuronové sítě. Standartní hodnota
+je 1000.
+
+Příklad použití včetně vyrobení převodníku obrazu na data:
+\begin{lstlisting}
+input_transformer = LetterClassifier::InputTransformer::Basic.new(
+	FeatureExtractor::RawImage.new(
+		8, 8, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true
+	)
+)
+classifier = Neural.new
+# inputs = ...
+dataset = LetterClassifier.load_inputs(inputs)
+classifier.start_anew(transformer: input_transformer, allowed_chars: ('0'..'9'))
+classifier.train(dataset, generations: 20)
+classifier
+\end{lstlisting}
+
 \subsection{\texttt{RCR::HeuristicOversegmenter}}
 \todo{napsat}
 
@@ -658,6 +701,9 @@ kontrastu, a druhak také poměr stran oblasti, na kterou se obraz ořízl.
 Experimentálně bylo zjištěno, že tento údaj pomáhá neuronové síti správně
 určovat napsaná písmena.
 
+Vytvořená neuronová síť má $16\times 16$ vstupů a její skryté vrstvy mají
+velikosti $14\times 14$ a $9\times 9$.
+
 Při budování klasifikátoru se předpokládádá, že vstup se skládá jenom
 z velkých písmen anglické abecedy.
 
@@ -735,7 +781,7 @@ konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
 
 \subsection{Použití pro klasifikaci slov (\texttt{examples/best-country-match})}
 Jak ilustruje tento příklad, za poměrně silných předpokladů je možné knihovnu
-použít pro klasifikaci celých slov. Konkrétně vybírají-li se slova pouze z
+použít i pro čtení celých slov. Konkrétně vybírají-li se slova pouze z
 malého slovníku, je možné pro každé slovo slovníku odhadnout pravděpodobnost,
 že se nachází na vstupu. Tento odhad pro celý slovník najednou provádí funkce
 \texttt{segment\_for\_words\_with\_scores} třídy
@@ -749,8 +795,47 @@ Následně pro každý název země načte odpovídající vstupní obrázek z a
 napsáno. Výstup pro každý název země zahrnuje, jestli se odhad povedl, a
 5 nejvýše oskórovaných hypotéz.
 
+\todo{figure napravo}
+\todo{uvest, jak dobre skore z toho dostavam}
+\begin{figure}[!hr]
 \begin{lstlisting}
-\todo{ilustrovat jak to krasne funguje}
+AFGANISTAN: ERR
+            PAKISTAN: 0.04
+              PANAMA: 0.01
+         AFGHANISTAN: 0.01
+                IRAN: 0.01
+                OMAN: 0.01
+
+   ALBANIA: OK
+             ALBANIA: 0.28
+               INDIA: 0.13
+              RWANDA: 0.09
+                NIUE: 0.01
+                GUAM: 0.01
+
+   ALGERIA: ERR
+                IRAQ: 0.44
+             ALGERIA: 0.18
+             JAMAICA: 0.04
+             NIGERIA: 0.02
+               INDIA: 0.01
+
+   ANDORRA: OK
+             ANDORRA: 0.44
+               INDIA: 0.15
+               ARUBA: 0.00
+               GHANA: 0.00
+               HAITI: 0.00
+
+    ANGOLA: OK
+              ANGOLA: 0.35
+                MALI: 0.28
+              MALAWI: 0.03
+               PALAU: 0.01
+               HAITI: 0.01
+
+            .....
 \end{lstlisting}
+\end{figure}
 
 \end{document}

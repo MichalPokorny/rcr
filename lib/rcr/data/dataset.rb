@@ -97,6 +97,10 @@ module RCR
 				self.class.new(@content.map { |pair| [yield(pair.first), pair.last] })
 			end
 
+			def transform_inputs!
+				@content = @content.map { |pair| [yield(pair.first), pair.last] }.to_h
+			end
+
 			def to_fann_dataset
 				xs, ys = to_xs_ys_arrays
 				RubyFann::TrainData.new(inputs: xs, desired_outputs: ys)
@@ -119,6 +123,10 @@ module RCR
 				unless input_type == input && expected_output_type == output # TODO: inheritance?
 					raise "Unexpected dataset types: #{input_type} => #{expected_output_type}, expected #{input} => #{output}"
 				end
+			end
+
+			def dup
+				self.new(@content.dup)
 			end
 		end
 	end

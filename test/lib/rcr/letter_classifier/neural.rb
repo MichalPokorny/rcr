@@ -26,9 +26,9 @@ module RCR
 				input_transformer = LetterClassifier::InputTransformer::Basic.new(
 					FeatureExtractor::RawImage.new(8, 8, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true)
 				)
-				classifier = Neural.new(input_transformer)
+				classifier = Neural.new
 				dataset = LetterClassifier.load_inputs(INPUTS)
-				classifier.start_anew(allowed_chars: RANGE)
+				classifier.start_anew(transformer: input_transformer, allowed_chars: RANGE)
 				classifier.train(dataset, generations: 5)
 				classifier
 			end

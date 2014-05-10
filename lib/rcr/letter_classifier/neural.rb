@@ -14,110 +14,37 @@ module RCR
 			MARSHAL_ID = self.name
 			include Marshal
 
-#			def self.convert_data_for_torch(source_dir)
-#				indexes = {}
-#
-#				Dir["#{source_dir}/*"].each do |sample_dir|
-#					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
-#
-#					# Create list of letter codes contained in the file.
-#					letters = []
-#					desc["segments"].each do |segment|
-#						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
-#					end
-#
-#					image = Data::Image.load(File.join(sample_dir, "data.png"))
-#
-#					data = image.crop_by_columns(letters.count, desc["cell_height"])
-#
-#					# Make it so that the data is indexed by letter.
-#					data.each_index do |index|
-#						letter = letters[index].chr
-#
-#						images = data[index]
-#
-#						images.each do |img|
-#							indexes[letter] ||= 0
-#							FileUtils.mkdir_p(File.join(target_dir, letter))
-#							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
-#							indexes[letter] += 1
-#
-#							img.save(path)
-#						end
-#					end
-#				end
-#			end
-#
-#			def self.convert_data_for_eblearn(source_dir, target_dir)
-#				indexes = {}
-#
-#				Dir["#{source_dir}/*"].each do |sample_dir|
-#					desc = YAML.load_file(File.join(sample_dir, "data.yml"))
-#
-#					# Create list of letter codes contained in the file.
-#					letters = []
-#					desc["segments"].each do |segment|
-#						letters += (segment["first"]..segment["last"]).to_a.map(&:ord)
-#					end
-#
-#					image = Data::Image.load(File.join(sample_dir, "data.png"))
-#
-#					data = image.crop_by_columns(letters.count, desc["cell_height"])
-#
-#					# Make it so that the data is indexed by letter.
-#					data.each_index do |index|
-#						letter = letters[index].chr
-#
-#						images = data[index]
-#
-#						images.each do |img|
-#							indexes[letter] ||= 0
-#							FileUtils.mkdir_p(File.join(target_dir, letter))
-#							path = File.join(target_dir, letter, "#{indexes[letter]}.png")
-#							indexes[letter] += 1
-#
-#							img.save(path)
-#						end
-#					end
-#				end
-#			end
-#
-			def start_anew(allowed_chars: nil)
-				raise unless allowed_chars
+			def start_anew(transformer: nil, allowed_chars: nil, hidden_neurons: nil)
+				raise ArgumentError unless allowed_chars && hidden_neurons && transformer
+
+				@transformer = transformer
+				raise "No image-to-input transformer specified." unless @transformer
 
 				log "Starting letter classifier anew (#{allowed_chars.size} classes)"
-				raise "You forgot to specify an image-to-input transformer." unless @transformer
 				num_inputs = @transformer.output_size
-				@classifier = Classifier::Neural.create(num_inputs: num_inputs, hidden_neurons: [14*14, 9*9], classes: allowed_chars)
+				@classifier = Classifier::Neural.create(
+					num_inputs: num_inputs,
+					hidden_neurons: hidden_neurons,
+					classes: allowed_chars
+				)
 			end
 
 			def evaluate(dataset)
-				@classifier.evaluate(dataset)
+				@classifier.evaluate(dataset.transform_inputs { |image| @transformer.transform(image) })
 			end
 
-			def inputs_to_dataset(inputs)
-				inputs.transform_inputs { |image| @transformer.transform(image) }
-			end
+			def train(dataset, generations: 1000, logging: false)
+				raise "Internal classifier not prepared." unless @classifier
+				raise "Internal transformer not prepared." unless @transformer
+				raise ArgumentError unless dataset.is_a? RCR::Data::Dataset
 
-			# dataset: hash of class => array of images
-			def train(inputs, generations: 1000, logging: false)
-				raise unless inputs.is_a? RCR::Data::Dataset
-				inputs.check_types!(RCR::Data::Image, String)
+				dataset = dataset.dup
+				dataset.check_types!(RCR::Data::Image, String)
+				dataset.transform_inputs! { |image| @transformer.transform(image) }
+				dataset.restrict_expected_outputs!(@classifier.classes)
 
 				with_logging_set(logging) do
-					dataset = inputs_to_dataset(inputs)
-
-					log "Dataset before key restrictions has #{dataset.size} samples."
-					dataset = dataset.restrict_expected_outputs(@classifier.classes)
-					log "Dataset after key restriction has #{dataset.size} samples."
-
-					raise "Internal classifier not prepared." unless @classifier
-					log "Training neural net for letters (#{generations} generations)"
-
-					# TODO: Pridej normalizaci kontrastu. Pridej dalsi parametry?
-
-					log "Training neural classifier of #{@transformer.output_size} inputs"
-					#@classifier.cascade_train(dataset, max_neurons: 1000, logging: logging)
+					log "Training neural classifier of #{@transformer.output_size} inputs for #{generations} generations"
 					@classifier.train(dataset, generations: generations, logging: logging)
 				end
 			end

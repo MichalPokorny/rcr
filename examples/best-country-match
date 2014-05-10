@@ -40,7 +40,7 @@ if ARGV.empty?
 		puts
 	end
 
-	puts "Accuracy: %.2f%%" % (correct.to_f / inputs.size)
+	puts "Accuracy: %.2f%%" % (correct * 100.0 / inputs.size)
 else
 	ARGV.each do |filename|
 		puts "Best guesses for #{filename}:"
