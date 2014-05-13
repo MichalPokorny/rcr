@@ -2,13 +2,18 @@ require 'oily_png'
 require 'chunky_png/rmagick'
 require 'RMagick'
 require 'rcr/logging'
+require 'rcr/data/imagelike'
 
 module RCR
 	module Data
-		class Image
+		class Image < Imagelike
 			include Logging
 
 			class EmptyImage < StandardError; end
+
+			def to_image
+				self
+			end
 
 			def self.from_blob(blob)
 				self.new(Magick::Image.from_blob(blob).first)
@@ -67,14 +72,19 @@ module RCR
 				ChunkyPNG::Color.to_truecolor_bytes(pixel)
 			end
 
-			def crop(x, y, width, height)
-				raise ArgumentError, "negative cropped part size" if width < 0 or height < 0
-				img = @image.crop(x, y, width, height) or raise EmptyImage
-				self.class.new(img)
+			def crop(x, y, width, height, lazy: true)
+				raise ArgumentError, "negative cropped part size" if width <= 0 || height <= 0
+
+				if lazy
+					CroppedImagelike.new(self, x, y, x + width, y + height)
+				else
+					img = @image.crop(x, y, width, height) or raise EmptyImage
+					self.class.new(img)
+				end
 			end
 
 			# Crops the image by columns
-			def crop_by_columns(n_columns, cell_height = nil)
+			def crop_by_columns(n_columns, cell_height = nil, lazy: true)
 				raise ArgumentError if n_columns <= 0
 				column_width = width / n_columns
 				raise ArgumentError unless width % column_width
@@ -85,7 +95,7 @@ module RCR
 
 				(0...n_columns).map { |column|
 					(0...height).step(cell_height).map { |y_start|
-						crop(column * column_width, y_start, column_width, cell_height)
+						crop(column * column_width, y_start, column_width, cell_height, lazy: lazy)
 					}
 				}
 			end

@@ -17,12 +17,6 @@ module RCR
 				log "Converted image filled."
 				Image.new(image)
 			end
-
-			[:guillotine].each do |symbol|
-				define_method symbol do |*args|
-					to_image.send(symbol, *args)
-				end
-			end
 		end
 	end
 end

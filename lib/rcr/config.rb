@@ -63,10 +63,6 @@ module RCR
 			expand_or(:segmentation_inputs_path) { File.join(input_path, "segment") }
 		end
 
-		def word_segmenter_path
-			expand_or(:word_segmented_path) { File.join(trained_path, "word-segmenter") }
-		end
-
 		# TODO: allow using more classifiers for different purposes
 		def letter_classifier_path
 			expand_or(:letter_classifier_path) { File.join(trained_path, "letter-classifier") }

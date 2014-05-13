@@ -4,6 +4,7 @@ module RCR
 	module Data
 		class ImageTest < Test::Unit::TestCase
 			TEST_INPUT = File.join(TEST_DATA_PATH, "letter", "letter.png")
+			TMP_IMAGE_PATH = File.join(TEST_DATA_PATH, "array_image.png")
 
 			def test_loading_works
 				# Handle both ChunkyPNG and RMagick images
@@ -26,6 +27,11 @@ module RCR
 				image = RCR::Data::Image.from_pixel_array(data)
 				assert [image.width, image.height] == [3, 2]
 				assert image[2,1] == [32, 32, 32]
+
+				FileUtils.rm_f(TMP_IMAGE_PATH)
+				image.save(TMP_IMAGE_PATH)
+				assert File.exist?(TMP_IMAGE_PATH)
+				FileUtils.rm_f(TMP_IMAGE_PATH)
 			end
 		end
 	end
