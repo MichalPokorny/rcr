@@ -28,7 +28,7 @@ module RCR
 				)
 				classifier = Neural.new
 				dataset = LetterClassifier.load_inputs(INPUTS)
-				classifier.start_anew(transformer: input_transformer, allowed_chars: RANGE)
+				classifier.start_anew(transformer: input_transformer, allowed_chars: RANGE, hidden_neurons: [10*10, 5*5])
 				classifier.train(dataset, generations: 5)
 				classifier
 			end
@@ -51,7 +51,7 @@ module RCR
 			end
 
 			def test_can_load_classifier
-				classifier = Neural.load_internal(CLASSIFIER)
+				classifier = Marshal.load(CLASSIFIER)
 				assert classifier
 			end
 

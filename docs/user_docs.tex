@@ -688,8 +688,8 @@ Tento jmenný prostor obsahuje třídy, které obalují klasifikátory pro potř
 OCR jednotlivých písmen. Tyto třídy implementují API analogické k obecným
 klasifikátorům (tedy metody \texttt{\#train}, \texttt{\#evaluate}, \texttt{\#classify},
 \texttt{\#classify\_with\_score} a \texttt{\#classify\_with\_alternatives}),
-ale očekávají jako své vstupy instance \texttt{RCR::Data::Image}, případně
-datasety obsahující tyto instance.
+ale očekávají jako své vstupy instance \texttt{RCR::Data::Image} (nebo línou
+reprezentaci obrazu), případně datasety obsahující tyto instance.
 
 Třída \texttt{RCR::LetterClassifier::Base} je předek všech ostatních tříd
 tohoto jmenného prostoru.

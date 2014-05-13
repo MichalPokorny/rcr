@@ -3,6 +3,7 @@ require 'chunky_png/rmagick'
 require 'RMagick'
 require 'rcr/logging'
 require 'rcr/data/imagelike'
+require 'rcr/data/lazy_image'
 
 module RCR
 	module Data
@@ -10,10 +11,6 @@ module RCR
 			include Logging
 
 			class EmptyImage < StandardError; end
-
-			def to_image
-				self
-			end
 
 			def self.from_blob(blob)
 				self.new(Magick::Image.from_blob(blob).first)
@@ -72,13 +69,13 @@ module RCR
 				ChunkyPNG::Color.to_truecolor_bytes(pixel)
 			end
 
-			def crop(x, y, width, height, lazy: true)
-				raise ArgumentError, "negative cropped part size" if width <= 0 || height <= 0
+			def crop(x, y, window_width, window_height, lazy: true)
+				raise ArgumentError, "Empty crop window (#{window_width}x#{window_height})" if window_width <= 0 || window_height <= 0
 
 				if lazy
-					CroppedImagelike.new(self, x, y, x + width, y + height)
+					LazyImage.new(CroppedImagelike.new(self, x, y, window_width, window_height))
 				else
-					img = @image.crop(x, y, width, height) or raise EmptyImage
+					img = @image.crop(x, y, window_width, window_height) or raise EmptyImage
 					self.class.new(img)
 				end
 			end
@@ -87,7 +84,7 @@ module RCR
 			def crop_by_columns(n_columns, cell_height = nil, lazy: true)
 				raise ArgumentError if n_columns <= 0
 				column_width = width / n_columns
-				raise ArgumentError unless width % column_width
+				raise ArgumentError unless width % column_width == 0
 
 				cell_height ||= column_width
 
@@ -125,7 +122,7 @@ module RCR
 				unless box.width == 0 or box.height == 0
 					rmagick_image.crop! box.x, box.y, box.width, box.height
 				else
-					puts "Warning: empty image"
+					log "Warning: empty image"
 				end
 
 				ChunkyPNG::RMagick.import(rmagick_image)

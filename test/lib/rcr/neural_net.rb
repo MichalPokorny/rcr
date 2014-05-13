@@ -66,7 +66,7 @@ module RCR
 
 			assert File.exist?(path + ".fann") && File.exist?(path + ".net-params")
 
-			net2 = NeuralNet.load(path)
+			net2 = Marshal.load(path)
 
 			xs_test.zip(ys_test).each do |xy|
 				x, _ = *xy

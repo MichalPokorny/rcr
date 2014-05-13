@@ -11,15 +11,6 @@ module RCR
 			end
 
 			public
-			def test_raw_data_itempotence
-				input = mock_input
-				data = input.to_raw_data
-
-				output = NeuralNetInput.from_raw_data(data)
-
-				assert input.data == output.data
-			end
-
 			def test_basic
 				input = NeuralNetInput.new([0.1, 0.2, 0.3])
 				assert input == NeuralNetInput.new([0.1, 0.2, 0.3])

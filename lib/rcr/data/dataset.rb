@@ -84,9 +84,11 @@ module RCR
 			end
 
 			def restrict_expected_outputs(keys)
-				self.class.new(@content.select { |pair|
-					keys.include?(pair.last)
-				})
+				self.class.new(@content.select { |pair| keys.include?(pair.last) })
+			end
+
+			def restrict_expected_outputs!(keys)
+				@content.select! { |pair| keys.include?(pair.last) }
 			end
 
 			def transform_expected_outputs
@@ -98,7 +100,7 @@ module RCR
 			end
 
 			def transform_inputs!
-				@content = @content.map { |pair| [yield(pair.first), pair.last] }.to_h
+				@content.map! { |pair| [yield(pair.first), pair.last] }
 			end
 
 			def to_fann_dataset
@@ -126,7 +128,7 @@ module RCR
 			end
 
 			def dup
-				self.new(@content.dup)
+				self.class.new(@content.dup)
 			end
 		end
 	end

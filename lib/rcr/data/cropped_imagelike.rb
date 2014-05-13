@@ -3,12 +3,15 @@ require 'rcr/data/imagelike'
 module RCR
 	module Data
 		class CroppedImagelike < Imagelike
-			def initialize(image, x0, x1, y0, y1)
-				@image, @x0, @x1, @y0, @y1 = image, x0, x1, y0, y1
+			def initialize(image, x0, y0, width, height)
+				raise ArgumentError if width <= 0 || height <= 0
+				@image, @x0, @y0 = image, x0, y0
+				@x1 = x0 + width
+				@y1 = y0 + height
 			end
 
 			def to_image
-				Image.new(@image.crop(@x0, @y0, width, height, lazy: false))
+				@image.crop(@x0, @y0, width, height, lazy: false)
 			end
 
 			def [](x, y)

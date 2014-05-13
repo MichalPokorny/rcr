@@ -15,7 +15,9 @@ module RCR
 			include Marshal
 
 			def start_anew(transformer: nil, allowed_chars: nil, hidden_neurons: nil)
-				raise ArgumentError unless allowed_chars && hidden_neurons && transformer
+				raise ArgumentError, "No allowed_chars specified" unless allowed_chars
+				raise ArgumentError, "You must supply the network topology in hidden_neurons" unless hidden_neurons
+				raise ArgumentError, "No input transformer specified" unless transformer
 
 				@transformer = transformer
 				raise "No image-to-input transformer specified." unless @transformer
@@ -39,7 +41,6 @@ module RCR
 				raise ArgumentError unless dataset.is_a? RCR::Data::Dataset
 
 				dataset = dataset.dup
-				dataset.check_types!(RCR::Data::Image, String)
 				dataset.transform_inputs! { |image| @transformer.transform(image) }
 				dataset.restrict_expected_outputs!(@classifier.classes)
 
@@ -62,7 +63,7 @@ module RCR
 
 			def self.load_internal(filename)
 				log "Loading neural letter classifier from #{filename}"
-				self.new(Marshal.load("#{filename}.transformer"), Classifier::Neural.load("#{filename}.classifier"))
+				self.new(Marshal.load("#{filename}.transformer"), Marshal.load("#{filename}.classifier"))
 			end
 
 			def classify(image)

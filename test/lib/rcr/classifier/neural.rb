@@ -80,7 +80,7 @@ module RCR
 				path = File.join(TEST_DATA_PATH, "neural_classifier")
 				classifier.save(path)
 
-				classifier2 = Neural.load(path)
+				classifier2 = Marshal.load(path)
 				assert classifier2 && classifier2.is_a?(RCR::Classifier::Neural)
 
 				rnd = Random.new(123)
