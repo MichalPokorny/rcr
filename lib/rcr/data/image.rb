@@ -169,8 +169,8 @@ module RCR
 
 				max_rot = Math::PI / 8
 
-				rx = (max_rot / 2) - rand() * max_rot
-				ry = (max_rot / 2) - rand() * max_rot
+				rx = (max_rot / 2) - rand * max_rot
+				ry = (max_rot / 2) - rand * max_rot
 
 				tx, ty = 0, 0
 

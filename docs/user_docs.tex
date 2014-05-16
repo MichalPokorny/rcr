@@ -153,6 +153,7 @@ a jiných společných nastavení používá knihovna RCR globální soubor
 s konfigurací. Jeho formát je YAML a jeho umístění je \texttt{~/.rcr-config.yml}
 na Linuxu, případně obdobný soubor na jiných systémech.
 Umožnuje nastavit následující vlastnosti:
+
 \begin{itemize}
 \item \texttt{debug}: Booleovská hodnota udávající má-li knihovna vypisovat
 	všechna ladící hlášení. Toto se standartně neprovádí.
@@ -176,13 +177,39 @@ Umožnuje nastavit následující vlastnosti:
 			písmennými datasety. Formát písmenných datasetů je
 			popsán níže. Standartní hodnota je
 			\texttt{(input\_path)/letter}.
-		% TODO: segmentation_inputs_path
+
 		\item \texttt{language\_corpus\_path}: Cesta ke korpusu,
 			na kterém se trénují jazykové modely.
 			Standartně \texttt{(input\_path)/corpus.txt}.
+
+		\item
+			\texttt{segmentation\_inputs\_path}: Toto nastavení
+			je připraveno pro případné testování a trénování
+			segmentace slov na písmena. Protože však nebyl
+			žádný testovaný způsob segmentace nedosáhl uspokojivých
+			výsledků, není tato možnost v současné verzi knihovny využita.
+			Standartní hodnota je \texttt{(input\_path)/segment}.
+			Zamýšlený obsah tohoto adresáře jsou jednotlivé příklady
+			správně osegmentovaných slov uložené v podadresářích.
+			Soubor \texttt{data.png} uvnitř příslušného podadresáře
+			by zahrnoval nesegmentované vstupní slovo, zatímto
+			soubor \texttt{divided.png} by obsahoval slovo, jehož
+			písmena jsou oddělena červenými pixely v místech, kde
+			splývají a mají být oddělena, a zelenými pixely v
+			místech, kde jedno písmeno netvoří souvislou komponentu
+			bitmapy.
 		\end{itemize}
 	\end{itemize}
 \end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.4\textwidth]{divided_sample}
+	\caption{Příklad zamýšleného obsahu souboru
+	\texttt{divided.png}. Splývající písmena R a O jsou
+	oddělena červenými pixely, zatímco dvě komponenty
+	písmena D jsou spojeny zelenými pixely.}
+\end{figure}
 
 Následuje příklad jednoduchého konfiguračního souboru.
 \begin{lstlisting}
@@ -194,9 +221,9 @@ debug: false
 \subsection{Formát trénovacích dat}
 \subsubsection{Písmenné datasety}
 Písmenné vstupy knihovny RCR jsou uloženy v podadresářích
-cesty \texttt{letter\_inputs\_path}. Každý podadresář obsahuje jeden "datový
-blok". Data takového bloku jsou uložena v jednom obrázku ve formátu PNG,
-který je uložen v podadresáři "datového bloku" pod jménem \texttt{data.png}.
+cesty \texttt{letter\_inputs\_path}. Každý podadresář obsahuje jeden \uv{datový
+blok}. Data takového bloku jsou uložena v jednom obrázku ve formátu PNG,
+který je uložen v podadresáři \uv{datového bloku} pod jménem \texttt{data.png}.
 Každý takový obrázek se skládá ze stejně velkých obdélníkových buněk. Buňka
 obsahuje jedno vstupní písmeno. Stejná písmena jsou v jednom sloupci.
 
@@ -360,24 +387,33 @@ buňky každého sloupce (pro sloupce obsahující písmena A, B a C například
 % TODO: scale, scale!
 % TODO: guillotine, guillotine!
 % TODO: border_to_and_resize_to_fit!
-% TODO: mutate
+
+Metoda \texttt{\#mutate} je určena pro umělé zvětšování datasetu. Vrátí obrázek
+po drobné náhodné afinní transformaci (změna velikosti obou rozměrů na 90--110\%,
+otočení o -11,25 až $11,25^\circ$).
+
 % TODO: draw_rectangle!
 
 \todo{napsat}
-\subsubsection{\texttt{RCR::Data::Imagelike}: líná reprezentace obrazu}
+\subsubsection{\texttt{RCR::Data::LazyImage}: líná reprezentace obrazu}
 Aby se omezil čas strávený kopírováním obrazových dat, která jsou od sebe
 odvozena jednoduchými transformacemi, obsahuje knihovna několik tříd, které
 se chovají podobně jako \texttt{RCR::Data::Image}, ale přitom reprezentují
 jenom nějakou jednoduchou transformaci provedenou nad jiným obrazovým objektem.
 
-\paragraph{\texttt{RCR::Data::MergedImagelike}}
-\todo{napsat}
-\paragraph{\texttt{RCR::Data::CroppedImagelike}}
-\todo{napsat}
-\paragraph{\texttt{RCR::Data::CairoImagelike}}
-\todo{napsat}
-\paragraph{\texttt{RCR::Data::PixmapImagelike}}
-\todo{napsat}
+K používání uživatelem je určena třída \texttt{RCR::Data::LazyImage}.
+Obaluje buď línou reprezentaci obrazu, nebo obraz, a zjistí-li, že uložená
+líná reprezentace obrazu neimplementuje nějakou z volaných metod, automaticky
+převede vnitřní objekt na obraz. Tím pádem je možné nad touto třídou používat
+libovolné metody třídy \texttt{RCR::Data::Image}, i když se jedná ve skutečnosti
+jenom o objekt reprezentující \uv{recept na výrobu obrazu}.
+
+Mezi tyto \uv{recepty na výrobu obrazu} patří třídy
+\texttt{RCR::Data::MergedImagelike} (ze dvou vstupních obrázků vrátí pixel
+s nižší světlostí), \texttt{RCR::Data::CroppedImagelike} (chová se jako
+oříznutá oblast z jiného obrázku) a \texttt{RCR::Data::CairoImagelike}
+(reprezentuje obraz importovaný z grafické knihovny Cairo).
+Všechny tyto třídy dědí od \texttt{RCR::Data::Imagelike}.
 
 \subsection{Neuronové sítě}
 \subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
@@ -386,7 +422,7 @@ Třída \texttt{RCR::Data::NeuralNetInput} se importuje pomocí \texttt{require
 je se pracuje s daty, která půjdou na vstup neuronové síti. Účelem třídy
 je omezit málo restriktivní rozhraní, které by nabízelo použití jiných datových
 typů (například pole). Tato třída znesnadňuje svým uživatelům provádět operace,
-které by mohly porušit invariant "jedná se o validní vstup neuronové sítě".
+které by mohly porušit invariant \uv{jedná se o validní vstup neuronové sítě}.
 Pokud by například chyba v kódu způsobila, že se neuronové síti předá pole
 obsahující kromě čísel také položky typu \texttt{String}, mohla by se projevit
 velice hluboko v kódu RCR. Takto se tato logická chyba objeví dříve: ve chvíli,
@@ -419,19 +455,24 @@ NeuralNetInput.concat(input, RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
   RCR::Data::NeuralNetInput([0.1, 0.2, 0.3, 0.4, 0.5])
 \end{lstlisting}
 
-\todo{chci zachovat metodu data???}
+% NeuralNetInputTest#test_basic
+Obsah této třídy je možné získat jako pole pomocí metody \texttt{\#data}.
+Tato metoda je však určena především pro vnitřní účely knihovny RCR.
+\begin{lstlisting}
+input.data == [0.1, 0.2, 0.3] # true
+\end{lstlisting}
 
 \subsubsection{\texttt{RCR::Data::Dataset}: abstrakce nad datasety}
 Třída \texttt{RCR::Data::Dataset} se importuje pomocí \texttt{require
 'rcr/data/dataset'}. Jedná se o abstrakci nad datasetem: uspořádanou
-množinou párů "vstup - očekávaný výstup". Tato třída se nepoužívá jen
+množinou párů \uv{vstup - očekávaný výstup}. Tato třída se nepoužívá jen
 při práci s neuronovými sítěmi, ale i například při práci s klasifikátory.
 
 Konstruktor této třídy přijímá buď parametr typu \texttt{Array}, nebo parametr
 typu \texttt{Hash}.
 
 Parametr typu \texttt{Array} se interpretuje jako seznam
-párů "vstup - očekávaný výstup":
+párů \uv{vstup - očekávaný výstup}:
 % RCR::Data::DatasetTest#test_basic
 \begin{lstlisting}
 # Dataset pro funkci 'y = x0 + x1'
@@ -773,7 +814,7 @@ mc.score("AB", "C") # 0.6
 \todo{marshal + jde to ted marshalovat?}
 
 \subsection{\texttt{RCR::LanguageModel}: jazykové modely}
-Jazykové modely jsou komponenty, které umí klasifikátoru "radit"
+Jazykové modely jsou komponenty, které umí klasifikátoru \uv{radit}
 reálné šance, že jeho hypotézy jsou správné: text,
 který by mohl být po písmenech přečtený jako \texttt{T0PA2} (s číslem
 \texttt{0}), může být vhodným modelem opraven na \texttt{TOPAZ}, protože
@@ -836,7 +877,7 @@ $ rcr-classify-letter [--show-alternatives] (filename1) (filename2) ...
 \end{lstlisting}
 
 Parametry \texttt{filenameX} jsou názvy souborů, ze kterých se mají přečíst
-obrazová data. Je-li některý z názvů souborů pouze "\texttt{-}", pak se data
+obrazová data. Je-li některý z názvů souborů pouze \uv{\texttt{-}}, pak se data
 pro toto písmeno přečtou ze standartního vstupu. Ze standartního vstupu
 není možné číst vstup více než jednou za spuštění.
 

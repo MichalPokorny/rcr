@@ -15,6 +15,7 @@ module RCR
 				input = NeuralNetInput.new([0.1, 0.2, 0.3])
 				assert input == NeuralNetInput.new([0.1, 0.2, 0.3])
 				assert NeuralNetInput.concat(input, NeuralNetInput.new([0.4, 0.5])) == NeuralNetInput.new([0.1, 0.2, 0.3, 0.4, 0.5])
+				assert input.data == [0.1, 0.2, 0.3]
 			end
 		end
 	end

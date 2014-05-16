@@ -1,18 +1,16 @@
-Dalsi features k implementaci do RCR:
+Napady na budouci vstupy pro klasifikatory:
 	- procento cernych pixelu
 	- pomery cernych pixelu v jednotlivych castech obrazu
-	- konvoluce s filtrem na detekci hran?
+	- konvoluce s filtrem na detekci hran
 
-	- serializace vystupu v lepsim formatu? (LeNeT 7)
+- format vystupu v lepsim formatu (podobne jako LeNeT 7)
 
-	- citlivost na tlak?
+- citlivost na tlak
 
-	- datasety MNIST, dalsi?
-	- alternativni klasifikatory: SVM, deep network?
+- datasety MNIST a jine
+- alternativni klasifikatory: SVM, deep network
 
 	- special widget na slovo (s oriznutim prazdnych kusu)
-
-	- napad: pomohlo by mi v oversegmentation vedet, jak dlouhy je ten string?
 
 	- heuristic oversegmentation: zacit s nenaucenou siti?
 		- davat vetsi boxiky siti, at se lip uci?
@@ -20,9 +18,6 @@ Dalsi features k implementaci do RCR:
 			  to to mozna hodne zhorsuje.
 		=> to by pak chtelo davat siti konzistentne za vstup ctvercove okoli...
 			==> NESLO by to udelat s orezavanim.
-
-	- vyzkouset, co se tomu stane, kdyz s temi vecmi budu soupat.
-
 
 - optimalizovat segmentaci
 
@@ -44,23 +39,14 @@ Dalsi features k implementaci do RCR:
 
 - segmentace posuvnym okenkem?
 
-- vice korupci?
+- nahrazeni orezavani obrazu na neprazdnou cast lepsim klasifikatorem
 
-- vytvorit vice trenovacich dat?
+- bootstrapove uceni
 
-- heuristic oversegmentation: nekde je neco blbe...
-
-- mel bych asi odebrat z klasifikace pismen to orezavani a mel bych to nahradit chytrejsim klasifikatorem...
-
-- napsat aplikacku ktera bude rozpoznavat pismena psana na tabletu
-
-- pri bootstrapovem uceni bych mel i ODTRENOVAVAT SPATNE MATCHE!
-
-- dat logger jako property pro tridu, takze pak bude funovat dependency injection
+- logger jako property tridy, aby slo dependency injection
 
 - ukazat v prikladech ziskany vysledek nejak hezceji; asi mi nefunguji overlaye
 
 - ensemble classifier? (mozna jsem si ted moc jisty, kdyz nemam byt?)
 
-- ukladat v datech "jakeho logickeho typu jsou"? (aby existoval type checking, ze se napriklad
-	nepousti konvolucni neuronova sit na 1D datech)
+- ukladat v datech "jakeho logickeho typu jsou"? (aby existoval type checking, ze se treba nepousti konvolucni neuronova sit na 1D datech)
