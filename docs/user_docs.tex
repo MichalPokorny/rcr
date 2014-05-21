@@ -648,7 +648,6 @@ output[0] > 0.8 # true
 \end{lstlisting}
 
 \todo{image transformery}
-\todo{marshal}
 
 \subsection{\texttt{RCR::Classifier}: klasifikátory}
 
@@ -734,8 +733,6 @@ Všechny tyto třídy implementují metody \texttt{\#extract\_features} a
 \texttt{\#output\_size}. Metoda \texttt{\#extract\_features} jako parametr
 přijímá obraz a vrací pole čísel velikosti \texttt{\#output\_size}.
 Velikost výstupu není závislá na vstupním obrazu.
-
-\todo{vsechno to je marshallable}
 
 Třída \texttt{RCR::FeatureExtractor::ContentAspectRatio} převádí obraz na jediné
 číslo, které vyjadřuje poměr stran neprázdné části obrazu. Vstupní obraz se
@@ -847,8 +844,6 @@ je pokračování k ohodnocení. Kontext může být jak pole, tak řetězec.
 \begin{lstlisting}
 mc.score("AB", "C") # 0.6
 \end{lstlisting}
-
-\todo{marshal + jde to ted marshalovat?}
 
 \subsection{\texttt{RCR::LanguageModel}: jazykové modely}
 Jazykové modely jsou komponenty, které umí klasifikátoru \uv{radit}
