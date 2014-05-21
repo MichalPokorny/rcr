@@ -1,5 +1,6 @@
 require 'gtk2'
 require 'rcr/logging'
+require 'rcr/data/lazy_image'
 require 'rcr/data/cairo_imagelike'
 
 module RCR
@@ -66,7 +67,7 @@ module RCR
 			end
 
 			def drawn_imagelike
-				Data::CairoImagelike.new(@image)
+				Data::LazyImage.new(Data::CairoImagelike.new(@image))
 			end
 
 			def drawn_letter_variants

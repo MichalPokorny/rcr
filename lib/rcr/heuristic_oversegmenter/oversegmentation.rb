@@ -81,20 +81,8 @@ module RCR
 					edges_from_x(x0).each do |edge|
 						score = scores[x0] * edge.score
 
-#						if edge.score < 0.01
-#							puts "hack"
-#							next
-#						end
-#
-#						# XXX HACK HACK
-#						if edge.x1 - edge.x0 > @image.height
-#							puts "hackety hack"
-#							score /= ((edge.x1 - edge.x0) / @image.height) ** 2
-#						end
-
 						if scores[edge.x1].nil? || scores[edge.x1] < score
 							scores[edge.x1], path[edge.x1] = score, path[edge.x0].dup << edge
-							# context[edge.x1] = context[edge.x0] + [edge.letter]
 						end
 					end
 				end
@@ -162,24 +150,23 @@ module RCR
 				[ paths[xs.last], scores[xs.last] || 0 ]
 			end
 
-			# TODO: this shouldn't ever be used anywhere!
-			def self.build_from_xs(image, letter_classifier, xs, y0 = nil, y1 = nil)
+			def self.build_from_xs(image, letter_classifier, xs, y0 = nil, y1 = nil, top_candidates = 10)
 				xs = xs.sort
 				log "building from xs: #{xs}"
-				y0 ||= 0
-				y1 ||= image.height
+
+				parts = WordSegmentator.segment_into_contiguous_parts(image)
+				y0 ||= parts.map(&:y0).min
+				y1 ||= parts.map(&:y1).max
+
 				edges = []
 				xs.each_index do |i|
 					for j in (i+1)...xs.length
 						if xs[j] - xs[i] < (y1 - y0) * 2
 							width = xs[j] - xs[i]
 							height = y1 - y0
-							# puts "cropping: #{xs[i]} through #{xs[j]}: width #{width}, height #{height}, original size #{image.width}x#{image.height}"
 							result = letter_classifier.classify_with_alternatives(image.crop(xs[i], y0, width, height))
 
-							# TODO: settable. this takes top 5 candidates.
-							candidates = result.keys.sort { |a,b| result[b] <=> result[a] } #.take(5)
-							# puts "candidates #{xs[i]}..#{xs[j]}: #{candidates.map { |c| "#{c}(%.2f)" % result[c] }.join('; ')}"
+							candidates = result.keys.sort { |a,b| result[b] <=> result[a] }.take(top_candidates)
 
 							# Normalize results
 							sum = candidates.map { |letter| result[letter] }.inject(&:+)
@@ -189,8 +176,6 @@ module RCR
 						end
 					end
 				end
-
-				#puts "built edges: #{edges.map { |e| "#{e.x0}->#{e.x1}" }.join(" ")}"
 
 				Oversegmentation.new(image, xs, edges)
 			end

@@ -6,6 +6,7 @@
 \documentclass[a4paper]{article}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
+\usepackage[nottoc,numbib]{tocbibind}
 % \usepackage{amssymb}
 % \usepackage{amsmath}
 \usepackage[czech]{babel}
@@ -249,7 +250,7 @@ ASCII. Každý takový blok je daný svým začátkem (\texttt{first}) a koncem
         \end{subfigure}%
         ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc.
           %(or a blank line to force the subfigure onto a new line)
-        \begin{subfigure}[b]{0.5\textwidth}
+        \begin{subfigure}[b]{0.4\textwidth}
 \begin{lstlisting}
 segments:
         -
@@ -302,7 +303,8 @@ image = RCR.load_image("letter.png")
 puts "Detected letter: #{classifier.classify(image)}"
 \end{lstlisting}
 
-Metoda \texttt{RCR.build\_word\_segmentator} zatím vždy vyrábí instanci
+\texttt{RCR.build\_word\_segmentator} je metoda vyhrazená k budoucímu načítání
+segmentátoru slov podle konfigurace. Zatím však vždy vyrábí instanci
 \texttt{RCR::WordSegmentator::HeuristicOversegmentation} založenou na
 oversegmenteru \texttt{RCR::HeuristicOversegmenter::LocalMinima}. Jazykový model
 a klasifikátor písmen je do tohoto segmentátoru dodaný podle standartní
@@ -347,7 +349,7 @@ array_image = RCR::Data::Image.from_pixel_array(data)
 \end{itemize}
 
 Samotný konstruktor je možné použít pouze s parametrem typu
-\texttt{ChunkyPNG::Canvas} nebo \texttt{Magick::Image}. Takto použitý
+\texttt{ChunkyPNG::Canvas}, nebo \texttt{Magick::Image}. Takto použitý
 konstruktor vytvoří instanci obalující předaný obrázek.
 
 Vlastnosti \texttt{width} a \texttt{height} udávají šířku a výšku obrázku.
@@ -413,6 +415,7 @@ obraz nakreslí obdélník. Pořadí parametrů je následující: X, Y souřadn
 horního rohu, X, Y souřadnice pravého dolního rohu, barva okraje, barva vnitřku.
 Standartní barva okraje je černá a standartní barva vnitřku je průhledná
 (vnitřek se tedy nevykreslí). Barvy jsou objekty typu \texttt{ChunkyPNG::Color}.
+
 Modul \texttt{RCR::Data::Image::Color} obsahuje zkratky \texttt{BLACK},
 \texttt{RED}, \texttt{GREEN}, \texttt{BLUE} a \texttt{TRANSPARENT}.
 % ImageTest#test_pixel_array_loading_works
@@ -596,8 +599,8 @@ očekávané výstupy pole čísel. Výsledek lze předat k použití knihovně 
 
 \subsubsection{\texttt{RCR::NeuralNet}: neuronové sítě}
 Knihovna RCR používá jednoduché feed-forward neuronové sítě. Samotná
-implementace algoritmů se nachází v knihovně FANN (Fast Artificial Neural % TODO: reference
-Network Library). RCR také používá RubyFann, což je rozhraní nad touto knihovnou
+implementace algoritmů se nachází v knihovně FANN (Fast Artificial Neural
+Network Library\cite{nissen03}). RCR také používá RubyFann, což je rozhraní nad touto knihovnou
 pro jazyk Ruby (samotná knihovna FANN je v jazyce C). Kvůli menším závislostem
 na FANN a kvůli méně pohodlnému návrhu rozhraní RubyFann byla vytvořena další
 vrstva abstrakce.
@@ -793,9 +796,6 @@ classifier.train(dataset, generations: 20)
 classifier
 \end{lstlisting}
 
-\subsection{\texttt{RCR::HeuristicOversegmenter}}
-\todo{napsat}
-
 \subsection{\texttt{RCR::WordSegmentator}}
 Tento modul obsahuje dva jednoduché rozdělovače slov na písmena.
 Jejich základní API tvoří metoda \texttt{\#segment}, která přijímá obraz k
@@ -805,6 +805,36 @@ rozdělení a vrací jeho segmentaci (instanci \texttt{RCR::Data::Segmentation})
 \subsubsection{\texttt{RCR::WordSegmentator::SimpleContiguousParts}}
 Tato třída vstup rozděluje na souvislé komponenty.
 \todo{dopsat}
+
+\subsubsection{\texttt{RCR::WordSegmentator::HeuristicOversegmentation}}
+\todo{dopsat}
+
+\subsection{\texttt{RCR::HeuristicOversegmenter}}
+Účelem tříd v modulu \texttt{RCR::HeuristicOversegmenter} je vytvářet z obrazu
+instanci třídy \texttt{RCR::HeuristicOversegmenter::Oversegmentation}
+reprezentující potenciální segmentace obrazu. Jedná se uvnitř o orientovaný
+souvislý acyklický graf, jehož vrcholy jsou jednotlivé X souřadnice v obrázku.
+Každá hrana reprezentuje jednu hypotézu, jakou vrátí klasifikátor spuštěný na
+výřezu mezi dvěma X souřadnicemi a je ohodnocená podle skóre, které klasifikátor
+dané hypotéze přisoudí. Tento graf se v anglické literatuře označuje jako
+\textit{oversegmentation graph}.\todo{reference?}
+Všechny třídy tohoto modulu vytváří tento graf po zavolání metody
+\texttt{\#oversegment}, jejíž první parametr je obraz a druhý parametr je
+klasifikátor písmen. Klasifikátor písmen je potřeba k vybudování hran včetně
+konkrétních hypotéz.
+
+% TODO: test
+\texttt{RCR::HeuristicOversegmenter::NaiveRegular} tento graf vytváří tím, že
+rozdělí neprázdnou část obrázku na pravidelné intervaly široké jako jedna
+čtvrtina výšky neprázdné části obrázku. Hrany se budou nacházet mezi těmi
+vrcholy, které jsou od sebe vzdáleny nejvýše dvojnásobek výšky neprázdné části
+obrázku.
+
+\texttt{RCR::HeuristicOversegmenter::LocalMinima} používá heuristiku, která
+jako slibná místa k rozdělení písmen označuje lokální minima v počtu
+černých pixelů ve vertikálním průřezu. Lokální minima ležící příliž blízko
+sebe slévá do jednoho, které leží v jejich průměru. Hrany taktéž umisťuje
+mezi vrcholy s vzdáleností nejvýše dvojnásobek výšky neprázdné části obrázku.
 
 \subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
 Knihovna RCR používá Markovské řetězce jako primitiva uvnitř jazykových modelů.
@@ -861,10 +891,28 @@ založené na Markovských řetězcích}
 \todo{napsat}
 
 \subsection{\texttt{RCR::GUI}: grafické komponenty}
-\todo{napsat}
 \subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
 písmene}
-\todo{napsat}
+Pro praktické využití knihovny může být užitečné mít připravenou komponentu,
+do níž lze nakreslit písmeno a přečíst jeho strojově čitelnou reprezentaci.
+\texttt{RCR::GUI::LetterDrawingArea} je tato komponenta pro GUI framework GTK2.
+Stiskem levého tlačítka a pohybem myší (případně použítím tabletu) v ní lze
+nakreslit písmeno. Kliknutím pravým tlačítkem myši se toto písmeno smaže.
+Komponenta může volitelně mít v případě, že do ní doposud nebylo nic nakresleno,
+speciální stav, který je odlišený speciálním vzhledem komponenty.
+
+Konstruktor této komponenty přijímá jako první parametr klasifikátor písmen.
+Je-li volitelný parametr \texttt{no\_empty\_state} nastavený na \texttt{true},
+nebude v komponentě vyhrazen speciální stav pro případ, že do ní doposud nebylo
+nic nakresleno.
+Metoda \texttt{\#clear} vymaže nakreslené písmeno. Výsledek je možné přečíst
+metodami \texttt{\#drawn\_letter} a \texttt{\#drawn\_letter\_variants}.
+Obě z nich vrací \texttt{nil}, pokud je komponenta ve speciálním prázdném stavu.
+V neprázdném stavu vrací \texttt{\#drawn\_letter} nejvýše oskórované písmeno,
+zatímco \texttt{\#drawn\_letter\_variants} vrací \texttt{Hash}, jehož klíče jsou
+písmena a hodnoty jsou jejich skóre.
+
+Příklad použití této komponenty se nachází v \texttt{examples/letter-classifier-gui}.
 
 \subsection{\texttt{RCR::Marshal}: ukládání a načítání}
 Všechny komponenty knihovny umožňující ukládání a načítání z disku jsou odvozeny
@@ -977,6 +1025,12 @@ tlačítko \textit{Classify} předá klasifikátoru. Nejlepších 5 vybraných k
 se pak vypíše společně se svým skóre. Tlačítkem \textit{Clear} jde vymazat obsah
 kreslící oblasti.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{letter_classifier_gui}
+\caption{Příklad \texttt{examples/letter-classifier-gui}. Písmeno R může být také čteno jako A.}
+\end{figure}
+
 \subsection{Hodnocení klasifikátoru písmen (\texttt{examples/evaluate-letter-classifier})}
 Tento krátký program pouze načte dataset s písmeny a klasifikátor písmen podle
 konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
@@ -1042,5 +1096,7 @@ Následně pro každý název země načte odpovídající vstupní obrázek z a
 napsáno. Výstup pro každý název země zahrnuje, jestli se odhad povedl, a
 5 nejvýše oskórovaných hypotéz.
 
+\bibliographystyle{plain}
+\bibliography{bibliography}
 
 \end{document}

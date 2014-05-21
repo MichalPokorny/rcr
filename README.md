@@ -21,9 +21,9 @@ on systems that have ImageMagick built with enabled HDR. If you
 encounter problems with RMagick installation, try building ImageMagick
 without HDR.
 
-## Usage
+## Documentation
 
-TODO: Write usage instructions here
+Look into `docs/`. To build a PDF of the docs, run `make` in the directory.
 
 ## Contributing
 

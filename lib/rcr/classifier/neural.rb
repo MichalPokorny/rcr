@@ -48,7 +48,7 @@ module RCR
 					min_nonzero = result.select { |i| i > 0 }.min / 100
 
 					@classes.each.with_index do |c, i|
-						alts[c] = min_nonzero + result[i] # Stupid smoothing.
+						alts[c] = min_nonzero + result[i] # Simple output smoothing.
 					end
 				end
 

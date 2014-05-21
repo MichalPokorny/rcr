@@ -50,7 +50,7 @@ module RCR
 
 				log "building from good minima: #{good_minima}"
 
-				Oversegmentation.build_from_xs(image, letter_classifier, good_minima, y0, y1)
+				Oversegmentation.build_from_xs(image, letter_classifier, good_minima)
 			end
 		end
 	end

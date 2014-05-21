@@ -4,7 +4,6 @@ require_relative 'drawing_window'
 
 require 'rcr/easy'
 require 'rcr/data/image'
-require 'rcr/data/pixmap_imagelike'
 
 # TODO: "make new sample" button?
 

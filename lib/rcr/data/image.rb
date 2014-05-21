@@ -73,6 +73,7 @@ module RCR
 
 				if lazy
 					require 'rcr/data/lazy_image'
+					require 'rcr/data/cropped_imagelike'
 					LazyImage.new(CroppedImagelike.new(self, x, y, window_width, window_height))
 				else
 					img = @image.crop(x, y, window_width, window_height) or raise EmptyImage

@@ -35,9 +35,11 @@ module RCR
 			end
 
 			Image.instance_methods(false).each do |method|
-				define_method(method) do |*args|
-					convert_to_image unless @content.respond_to?(method) || @content.is_a?(Image)
-					@content.send(method, *args)
+				unless instance_methods.include?(method)
+					define_method(method) do |*args|
+						convert_to_image unless @content.respond_to?(method) || @content.is_a?(Image)
+						@content.send(method, *args)
+					end
 				end
 			end
 		end
