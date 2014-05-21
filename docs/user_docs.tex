@@ -384,9 +384,20 @@ buňky každého sloupce (pro sloupce obsahující písmena A, B a C například
 \texttt{[ [A1, A2], [B1, B2], [C1, C2] ]}).
 % TODO: ukazka?
 
-% TODO: scale, scale!
-% TODO: guillotine, guillotine!
-% TODO: border_to_and_resize_to_fit!
+Obrázek jde zmenšit na danou velikost metodou \texttt{\#scale}, případně
+\texttt{\#scale!}. Její parametry jsou šířka a výška výsledku.
+% ImageTest#test_pixel_array_loading_works
+\begin{lstlisting}
+array_image.scale(10, 10)
+\end{lstlisting}
+Metoda \texttt{\#border\_to\_and\_resize\_to\_fit!} provádí podobnou operaci,
+avšak zachovává přitom poměr stran. Obraz se zvětší tak, aby byl co největší,
+a přitom obsažený v obdélníku dané velikosti. Zbylé místo se doplní bílou
+barvou.
+
+Metody \texttt{\#guillotine} a \texttt{\#guillotine!} z obrázku ořezávají
+bílé okraje. Nepřijímají žádné parametry.
+
 
 Metoda \texttt{\#mutate} je určena pro umělé zvětšování datasetu. Vrátí obrázek
 po drobné náhodné afinní transformaci (změna velikosti obou rozměrů na 90--110\%,

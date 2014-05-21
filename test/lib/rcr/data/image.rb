@@ -32,6 +32,9 @@ module RCR
 				image.save(TMP_IMAGE_PATH)
 				assert File.exist?(TMP_IMAGE_PATH)
 				FileUtils.rm_f(TMP_IMAGE_PATH)
+
+				scaled = image.scale(10, 10)
+				assert scaled.width == 10 && scaled.height == 10
 			end
 		end
 	end
