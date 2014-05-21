@@ -3,7 +3,6 @@ require 'chunky_png/rmagick'
 require 'RMagick'
 require 'rcr/logging'
 require 'rcr/data/imagelike'
-require 'rcr/data/lazy_image'
 
 module RCR
 	module Data
@@ -73,6 +72,7 @@ module RCR
 				raise ArgumentError, "Empty crop window (#{window_width}x#{window_height})" if window_width <= 0 || window_height <= 0
 
 				if lazy
+					require 'rcr/data/lazy_image'
 					LazyImage.new(CroppedImagelike.new(self, x, y, window_width, window_height))
 				else
 					img = @image.crop(x, y, window_width, window_height) or raise EmptyImage

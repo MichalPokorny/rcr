@@ -33,8 +33,13 @@ module RCR
 				assert File.exist?(TMP_IMAGE_PATH)
 				FileUtils.rm_f(TMP_IMAGE_PATH)
 
-				scaled = image.scale(10, 10)
-				assert scaled.width == 10 && scaled.height == 10
+				scaled = image.scale(20, 20)
+				assert scaled.width == 20 && scaled.height == 20
+
+				scaled.draw_rectangle!(
+					5, 5, 15, 15,
+					RCR::Data::Image::Color::RED, RCR::Data::Image::Color::BLUE
+				)
 			end
 		end
 	end

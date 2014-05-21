@@ -302,6 +302,12 @@ image = RCR.load_image("letter.png")
 puts "Detected letter: #{classifier.classify(image)}"
 \end{lstlisting}
 
+Metoda \texttt{RCR.build\_word\_segmentator} zatím vždy vyrábí instanci
+\texttt{RCR::WordSegmentator::HeuristicOversegmentation} založenou na
+oversegmenteru \texttt{RCR::HeuristicOversegmenter::LocalMinima}. Jazykový model
+a klasifikátor písmen je do tohoto segmentátoru dodaný podle standartní
+konfigurace.
+
 \subsection{Práce s obrazem}
 Knihovna RCR obsahuje několik tříd, které obalují různé zdroje obrazových dat
 společným rozhraním.
@@ -388,7 +394,7 @@ Obrázek jde zmenšit na danou velikost metodou \texttt{\#scale}, případně
 \texttt{\#scale!}. Její parametry jsou šířka a výška výsledku.
 % ImageTest#test_pixel_array_loading_works
 \begin{lstlisting}
-array_image.scale(10, 10)
+scaled = array_image.scale(20, 20)
 \end{lstlisting}
 Metoda \texttt{\#border\_to\_and\_resize\_to\_fit!} provádí podobnou operaci,
 avšak zachovává přitom poměr stran. Obraz se zvětší tak, aby byl co největší,
@@ -398,14 +404,25 @@ barvou.
 Metody \texttt{\#guillotine} a \texttt{\#guillotine!} z obrázku ořezávají
 bílé okraje. Nepřijímají žádné parametry.
 
-
 Metoda \texttt{\#mutate} je určena pro umělé zvětšování datasetu. Vrátí obrázek
 po drobné náhodné afinní transformaci (změna velikosti obou rozměrů na 90--110\%,
 otočení o -11,25 až $11,25^\circ$).
 
-% TODO: draw_rectangle!
+Především k ladícím účelům slouží metoda \texttt{\#draw\_rectangle!}, která na
+obraz nakreslí obdélník. Pořadí parametrů je následující: X, Y souřadnice levého
+horního rohu, X, Y souřadnice pravého dolního rohu, barva okraje, barva vnitřku.
+Standartní barva okraje je černá a standartní barva vnitřku je průhledná
+(vnitřek se tedy nevykreslí). Barvy jsou objekty typu \texttt{ChunkyPNG::Color}.
+Modul \texttt{RCR::Data::Image::Color} obsahuje zkratky \texttt{BLACK},
+\texttt{RED}, \texttt{GREEN}, \texttt{BLUE} a \texttt{TRANSPARENT}.
+% ImageTest#test_pixel_array_loading_works
+\begin{lstlisting}
+scaled.draw_rectangle!(
+  5, 5, 15, 15,
+  RCR::Data::Image::Color::RED, RCR::Data::Image::Color::BLUE
+)
+\end{lstlisting}
 
-\todo{napsat}
 \subsubsection{\texttt{RCR::Data::LazyImage}: líná reprezentace obrazu}
 Aby se omezil čas strávený kopírováním obrazových dat, která jsou od sebe
 odvozena jednoduchými transformacemi, obsahuje knihovna několik tříd, které
@@ -422,8 +439,10 @@ jenom o objekt reprezentující \uv{recept na výrobu obrazu}.
 Mezi tyto \uv{recepty na výrobu obrazu} patří třídy
 \texttt{RCR::Data::MergedImagelike} (ze dvou vstupních obrázků vrátí pixel
 s nižší světlostí), \texttt{RCR::Data::CroppedImagelike} (chová se jako
-oříznutá oblast z jiného obrázku) a \texttt{RCR::Data::CairoImagelike}
-(reprezentuje obraz importovaný z grafické knihovny Cairo).
+oříznutá oblast z jiného obrázku), \texttt{RCR::Data::CairoImagelike}
+(reprezentuje obraz importovaný z grafické knihovny Cairo) a nakonec
+\texttt{RCR::Data::MaskedImagelike} (pixely obrazu vybrané upravitelnou
+bitmapovou maskou ukazuje jako bílé).
 Všechny tyto třídy dědí od \texttt{RCR::Data::Imagelike}.
 
 \subsection{Neuronové sítě}
@@ -781,7 +800,14 @@ classifier
 \todo{napsat}
 
 \subsection{\texttt{RCR::WordSegmentator}}
-\todo{napsat}
+Tento modul obsahuje dva jednoduché rozdělovače slov na písmena.
+Jejich základní API tvoří metoda \texttt{\#segment}, která přijímá obraz k
+rozdělení a vrací jeho segmentaci (instanci \texttt{RCR::Data::Segmentation}).
+\todo{zdokumentovat RCR::Data::Segmentation}
+
+\subsubsection{\texttt{RCR::WordSegmentator::SimpleContiguousParts}}
+Tato třída vstup rozděluje na souvislé komponenty.
+\todo{dopsat}
 
 \subsection{\texttt{RCR::MarkovChain}: Markovské řetězce}
 Knihovna RCR používá Markovské řetězce jako primitiva uvnitř jazykových modelů.
@@ -844,6 +870,26 @@ založené na Markovských řetězcích}
 \subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
 písmene}
 \todo{napsat}
+
+\subsection{\texttt{RCR::Marshal}: ukládání a načítání}
+Všechny komponenty knihovny umožňující ukládání a načítání z disku jsou odvozeny
+od modulu \texttt{RCR::Marshal}. Každá instance takové třídy má instanční metodu
+\texttt{\#save}, která přijímá cestu, do které se má obsah třídy uložit. Opakem
+této metody je statická metoda \texttt{Marshal.load} -- jejím výsledkem je
+ekvivalent uloženého objektu. Při načítání není potřeba znát typ uložené třídy.
+
+Následující třídy implementují toto API:
+\begin{itemize}
+\item \texttt{RCR::NeuralNet}
+\item \texttt{RCR::Classifier::Neural}
+\item \texttt{RCR::LetterClassifier::Neural}
+\item \texttt{RCR::LetterClassifier::InputTransformer::Basic}
+\item \texttt{RCR::LetterClassifier::InputTransformer::Combine}
+\item \texttt{RCR::MarkovChain}
+\item \texttt{RCR::LanguageModel::MarkovChains}
+\item \texttt{RCR::FeatureExtractor::RawImage}
+\item \texttt{RCR::FeatureExtractor::ContentAspectRatio}
+\end{itemize}
 
 \section{Rozhraní pro ostatní jazyky a pomocné programy}
 Ke zjednodušení použití knihovny v jiných jazycích obsahuje balíček několik

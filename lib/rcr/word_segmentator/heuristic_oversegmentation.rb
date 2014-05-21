@@ -10,15 +10,6 @@ module RCR
 		class HeuristicOversegmentation
 			include Logging
 
-			def save(filename)
-				# stub
-			end
-
-			def self.load(filename)
-				# stub
-				self.new
-			end
-
 			def initialize(oversegmenter, letter_classifier, language_model)
 				@oversegmenter = oversegmenter
 				@letter_classifier = letter_classifier

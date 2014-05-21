@@ -2,7 +2,6 @@ require 'rcr/markov_chain'
 require 'rcr/language_model/base'
 
 # TODO: don't ignore character size?
-# TODO: use Marshal
 module RCR
 	module LanguageModel
 		class MarkovChains < Base

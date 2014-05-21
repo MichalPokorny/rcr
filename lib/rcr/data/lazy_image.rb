@@ -1,3 +1,5 @@
+require 'rcr/data/image'
+
 module RCR
 	module Data
 		class LazyImage

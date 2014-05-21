@@ -15,13 +15,15 @@ module RCR::Marshal
 	end
 
 	def self.register_all_classes
+		require 'rcr/neural_net'
+		require 'rcr/classifier/neural'
 		require 'rcr/letter_classifier/neural'
 		require 'rcr/letter_classifier/input_transformer/basic'
 		require 'rcr/letter_classifier/input_transformer/combine'
+		require 'rcr/markov_chain'
+		require 'rcr/language_model/markov_chains'
 		require 'rcr/feature_extractor/raw_image'
 		require 'rcr/feature_extractor/content_aspect_ratio'
-		require 'rcr/language_model/markov_chains'
-		require 'rcr/markov_chain'
 	end
 
 	register_all_classes

@@ -25,9 +25,6 @@ module RCR
 	def self.build_word_segmentator(opts = {})
 		require 'rcr/word_segmentator/heuristic_oversegmentation'
 		require 'rcr/heuristic_oversegmenter/local_minima'
-		# TODO: load the segmentator we should actually load!
-		#
-		# Old: Stupid instead of LocalMinima
 		RCR::WordSegmentator::HeuristicOversegmentation.new(RCR::HeuristicOversegmenter::LocalMinima.new, build_letter_classifier, build_language_model)
 	end
 
