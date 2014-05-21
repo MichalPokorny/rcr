@@ -76,22 +76,38 @@ module RCR
 			end
 		end
 
+		private
+		def xor_fn(a, b)
+			boolean_a, boolean_b = a > 0.5, b > 0.5
+
+			da, db = (a-0.5).abs, (b-0.5).abs
+			(boolean_a ^ boolean_b) ? (0.5 + (da + db) / 2) : (0.5 - (da + db) / 2)
+		end
+
+		public
 		def test_train_xor
 			# XOR dataset
-			dataset = RCR::Data::Dataset.new([[[0, 0], 0], [[0, 1], 1], [[1, 0], 1], [[1, 1], 0]]).
+			data = 1000.times.map {
+				a, b = rand, rand
+				[[a, b], xor_fn(a, b)]
+			}
+
+			dataset = RCR::Data::Dataset.new(data).
 				transform_inputs { |x| RCR::Data::NeuralNetInput.new(x.map(&:to_f)) }.
 				transform_expected_outputs { |y| [y.to_f] }
+
 			net = RCR::NeuralNet.create(num_inputs: 2, num_outputs: 1,
-				hidden_neurons: [5, 5])
-			1000.times { net.train(dataset) }
-			output = net.run(RCR::Data::NeuralNetInput.new([0.9, 0.8]))
+				hidden_neurons: [4, 4])
+
+			100.times { net.train(dataset) }
+
 			require 'pp'
-			pp output
-			assert output[0] < 0.1 # true
+
+			output = net.run(RCR::Data::NeuralNetInput.new([0.9, 0.8]))
+			assert output[0] < 0.3 # true
 
 			output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
-			pp output
-			assert output[0] > 0.9 # true
+			assert output[0] > 0.7 # true
 		end
 	end
 end

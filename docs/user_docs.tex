@@ -629,13 +629,28 @@ výstupy musí být pole čísel. Tato metoda provede pouze jedno kolo tréningu
 K získání použitelných výsledků je potřeba volání této metody opakovat.
 % NeuralNetTest#test_train_xor
 \begin{lstlisting}
-# dataset pro funkci XOR
-dataset = RCR::Data::Dataset.new([[[0, 0], 0], [[0, 1], 1], [[1, 0], 1], [[1, 1], 0]]).
+# funkce k natrenovani: spojity ekvivalent funkce XOR
+def xor_fn(a, b)
+  boolean_a, boolean_b = a > 0.5, b > 0.5
+
+  da, db = (a-0.5).abs, (b-0.5).abs
+  (boolean_a ^ boolean_b) ? (0.5 + (da + db) / 2) : (0.5 - (da + db) / 2)
+end
+
+# vygeneruje dataset z nahodnych bodu
+data = 1000.times.map {
+  a, b = rand, rand
+  [[a, b], xor_fn(a, b)]
+}
+
+dataset = RCR::Data::Dataset.new(data).
   transform_inputs { |x| RCR::Data::NeuralNetInput.new(x.map(&:to_f)) }.
   transform_expected_outputs { |y| [y.to_f] }
+
 net = RCR::NeuralNet.create(num_inputs: 2, num_outputs: 1,
   hidden_neurons: [4, 4])
-1000.times { net.train(dataset) }
+
+100.times { net.train(dataset) }
 \end{lstlisting}
 
 Nejdůležitější metoda třídy \texttt{RCR::NeuralNet} se jmenuje \texttt{\#run}.
@@ -644,10 +659,10 @@ vrátí pole výstupů neuronů na poslední vrstvě.
 % NeuralNetTest#test_train_xor
 \begin{lstlisting}
 output = net.run(RCR::Data::NeuralNetInput.new([0.9, 0.8]))
-output[0] < 0.2 # true
+output[0] < 0.3 # true; ocekavana hodnota: 0.15
 
 output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
-output[0] > 0.8 # true
+output[0] > 0.7 # true; ocekavana hodnota: 0.9
 \end{lstlisting}
 
 \todo{image transformery}
