@@ -1,5 +1,0 @@
-#!/usr/bin/ruby -w
-
-require 'rcr/tasks/generate-data'
-
-RCR::Tasks::GenerateData.run(ARGV)

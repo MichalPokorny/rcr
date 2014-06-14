@@ -1,5 +1,6 @@
 neural_net.fann
 neural_net.net-params
-neural_classifier.fann
-neural_classifier.net-params
-neural_classifier.classifier-opts
+*.fann
+*.net-params
+*.classifier-opts
+*.type

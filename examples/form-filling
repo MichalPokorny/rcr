@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -w
+#!/usr/bin/ruby
 require 'gtk2'
 require 'rcr'
 require 'rcr/easy'
@@ -9,7 +9,7 @@ class MyWindow < Gtk::Window
 		pack_row = Gtk::HBox.new(false, 10)
 		areas = (0...n).map {
 			area = RCR::GUI::LetterDrawingArea.new(@classifier)
-			area.enable_logging = true
+			# area.enable_logging = true
 			area.set_size_request 50, 40
 			pack_row.pack_start(area, false, false)
 			area.show
@@ -19,7 +19,7 @@ class MyWindow < Gtk::Window
 		[pack_row, areas]
 	end
 
-	def construct_name_box(title, n = 10)
+	def build_box_array(title, n = 10)
 		name_box = Gtk::VBox.new(false, 10)
 		label = Gtk::Label.new(title)
 		name_box.pack_start(label, false, false)
@@ -57,39 +57,37 @@ class MyWindow < Gtk::Window
 
 		@form_rows = Gtk::VBox.new(false, 10)
 
-		# @first_name_box = construct_name_box
-		# add @first_name_box
-		# @first_name_box.show
-
-		first_name_box, @first_name_areas = construct_name_box("Jméno:", 10)
+		first_name_box, @first_name_areas = build_box_array("Jméno:", 10)
 		first_name_box.show
 		@form_rows.pack_start(first_name_box)
 
-		last_name_box, @last_name_areas = construct_name_box("Příjmení:", 10)
+		last_name_box, @last_name_areas = build_box_array("Příjmení:", 10)
 		last_name_box.show
 		@form_rows.pack_start(last_name_box)
 
-		phone_number_box, @phone_number_areas = construct_name_box("Telefonní číslo:", 10)
-		phone_number_box.show
-		@form_rows.pack_start(phone_number_box)
+		street_box, @street_areas = build_box_array("Ulice:", 10)
+		street_box.show
+		@form_rows.pack_start(street_box)
 
-		phone_number_box, @phone_number_areas = construct_name_box("Datum narození:", 10)
-		phone_number_box.show
-		@form_rows.pack_start(phone_number_box)
-
-		phone_number_box, @phone_number_areas = construct_name_box("Ulice:", 10)
-		phone_number_box.show
-		@form_rows.pack_start(phone_number_box)
+		city_box, @city_areas = build_box_array("Město:", 10)
+		city_box.show
+		@form_rows.pack_start(city_box)
 
 		@language_model = RCR.build_language_model
 
-		button = Gtk::Button.new("Precist vysledky")
+		button = Gtk::Button.new("Přečíst výsledky")
 		button.signal_connect :clicked do
-			hypotheses = @first_name_areas.map(&:drawn_letter_variants).compact # compact: empties
-			p hypotheses.inspect
+			{
+				"Jmeno" => @first_name_areas,
+				"Prijmeni" => @last_name_areas,
+				"Ulice" => @street_areas,
+				"Mesto" => @city_areas
+			}.each do |field, areas|
+				puts "#{field} (bez jazykoveho modelu): " << areas.map(&:drawn_letter).join('')
 
-			puts "Rovnou uvideno (Jmeno): " << @first_name_areas.map(&:drawn_letter).join('')
-			puts "Jmeno: " << @language_model.most_likely_word(hypotheses)
+				hypotheses = areas.map(&:drawn_letter_variants).compact # compact: empties
+				puts "#{field} (s jazykovym modelem): " << @language_model.most_likely_word(hypotheses)
+			end
 		end
 		@form_rows.pack_end(button, false, false)
 		button.show

@@ -37,8 +37,6 @@ module RCR
 					good_enough = best_now.keys.sort.reverse.take(want_words)
 					keep = good_enough.last
 					last_most_likely_words = best_now.delete_if { |key, value| key < keep }
-
-					pp last_most_likely_words
 				end
 
 				last_most_likely_words

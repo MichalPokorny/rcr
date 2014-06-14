@@ -219,6 +219,9 @@ data_path: /home/prvak/rocnikac/rcr-data/
 debug: false
 \end{lstlisting}
 
+\subsection{Instalace trénovacích dat}
+\todo{popsat}
+
 \subsection{Formát trénovacích dat}
 \subsubsection{Písmenné datasety}
 Písmenné vstupy knihovny RCR jsou uloženy v podadresářích
@@ -629,7 +632,7 @@ výstupy musí být pole čísel. Tato metoda provede pouze jedno kolo tréningu
 K získání použitelných výsledků je potřeba volání této metody opakovat.
 % NeuralNetTest#test_train_xor
 \begin{lstlisting}
-# funkce k natrenovani: spojity ekvivalent funkce XOR
+# funkce k natrenovani: spojitejsi obdoba funkce XOR
 def xor_fn(a, b)
   boolean_a, boolean_b = a > 0.5, b > 0.5
 
@@ -1050,8 +1053,11 @@ kreslící oblasti.
 Tento krátký program pouze načte dataset s písmeny a klasifikátor písmen podle
 konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
 
-\subsection{Jednoduché vyplňování formulářů (\texttt{examples/form-filling})}
-\todo{sepsat}
+\subsection{Příklad použití pro vyplňování formulářů (\texttt{examples/form-filling})}
+Jedno z možných použití OCR knihoven spočívá ve čtení textu, který uživatel
+kreslí po písmenech. Tento příklad ilustruje použití GUI komponenty
+\texttt{RCR::GUI::LetterDrawingArea} k tomuto účelu. Také ukazuje, jak zlepšit
+úspěšnost klasifikace přes jazykový model.
 
 \subsection{Použití pro klasifikaci slov (\texttt{examples/best-country-match})}
 \begin{wrapfigure}{r}{0.4\textwidth}
