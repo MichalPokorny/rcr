@@ -4,7 +4,7 @@
 % cesta neexistuje. to same find_best_path_of_word_with_score a tranzitivne
 
 \documentclass[a4paper]{article}
-\usepackage{fullpage}
+% \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
 \usepackage[nottoc,numbib]{tocbibind}
 % \usepackage{amssymb}
@@ -48,8 +48,8 @@
 \tableofcontents
 
 \section{Základní informace o knihovně}
-Účelem knihovny RCR je provádění OCR (Optical Character recognition) nad
-předanými obrazovými daty. Jedná se tedy o offline rozpoznávání, neboť
+Účelem knihovny RCR je provádění OCR (Optical Character Recognition) nad
+předanými obrazovými daty. Jedná se o offline rozpoznávání, neboť
 se nepoužívají další informace, jako třeba tlak na pero, pořadí kreslených
 čar a podobné. Knihovna dále předpokládá, že vstupní data neobsahují
 šum kolem rozpoznávaného písmena. Tento předpoklad se používá k předávání
@@ -66,7 +66,10 @@ jiné povolené znaky.
 Knihovna RCR používá sémantické verzování.
 
 Vývoj probíhá přes verzovací systém Git. Repozitář se nachází
-na adrese \texttt{\githuburl}.
+na adrese:
+\begin{center}
+	\texttt{\githuburl}
+\end{center}
 
 Používání tohoto softwaru je povoleno pod MIT licencí (viz \texttt{LICENSE.txt}).
 
@@ -96,17 +99,25 @@ ze zdrojových kódů.
 \item \texttt{rake}: Ruby obdoba GNU Make
 \end{itemize}
 
-\subsection{Instalace z RubyGems}
-Knihovna RCR je Ruby gem.
-\todo{napsat postup instalace a zverejnit to}
+\subsection{Instalace}
+Knihovna RCR je Ruby gem, ale kvůli málo stabilnímu API zatím není umístěna
+v databázi RubyGems. Lze nainstalovat naklonováním repozitáře a zabalíčkováním
+a instalací na vlastním stroji.
 
-\subsection{Lokální balíčkování a instalace}
-Druhá možnost, jak knihovnu nainstalovat, je vytvořit balíček ze zdrojových
-souborů v repozitáři. Lokální kopii repozitáře lze vytvořit spuštěním
-\texttt{git clone \githuburl}.
+Repozitář lze naklonovat příkazem:
+\begin{center}
+	\texttt{git clone \githuburl}
+\end{center}
 
 Po nainstalování gemů \texttt{rake} a \texttt{bundler} a spuštění
-\texttt{bundle install} se do systému nainstalují potřebné balíky. Poté
+\texttt{bundle install} se do systému nainstalují závislosti RCR.
+Ruby gem \texttt{rmagick} bohužel v době psaní tohoto dokumentu
+může způsobit potíže kvůli nekompatibilitě se zapnutou podporou HDRI
+v knihovně ImageMagick. Vyskytnou-li se potíže při jeho instalaci,
+jejich řešení může spočívat v nainstalování verze ImageMagick s vypnutým
+HDRI.
+
+Když jsou nainstalovány všechny závislosti,
 stačí spustit \texttt{rake build} v libovolném podadresáři knihovny
 k zabalíčkování do adresáře \texttt{pkg}. Příkaz \texttt{rake install} pak
 umožňuje tento balík nainstalovat.
@@ -141,9 +152,22 @@ Done installing documentation for bundler after 11 seconds
 \todo{otestovat ze to jde!!! (tady to v labu selhalo)}
 \todo{vypnout ruby syntaxi}
 
+\subsection{Instalace trénovacích dat}
+Knihovna ke své funkci potřebuje některé své komponenty natrénovat.
+Vstupní data nejsou kvůli své velikosti zahrnuta v knihovně samotné.
+Jako jejich zdroj může sloužit repozitář:
+\begin{center}
+	\texttt{https://github.com/MichalPokorny/rcr-training-data.git}
+\end{center}
+Je určen k naklonování do adresáře \texttt{input\_path}, který je popsaný
+níže v sekci Konfigurace knihovny.
+
+Kromě instalace vstupních dat je také před použitím potřeba natrénovat
+komponenty knihovny nástrojem \texttt{rcr-train}.
+
 \subsection{Automatické testy}
 Knihovna obsahuje sadu automatických testů používajících modul
-\texttt{Test::Unit} ze standartní knihovny jazyka Ruby.
+\texttt{Test::Unit} ze standardní knihovny jazyka Ruby.
 Testy se nachází v adresáři \texttt{test} a spouštějí se příkazem
 \texttt{rake} nebo \texttt{rake test}. Některá dodatečná data potřebná
 ke spuštění testů se nachází v adresáři \texttt{test-data}.
@@ -157,39 +181,40 @@ Umožnuje nastavit následující vlastnosti:
 
 \begin{itemize}
 \item \texttt{debug}: Booleovská hodnota udávající má-li knihovna vypisovat
-	všechna ladící hlášení. Toto se standartně neprovádí.
+	všechna ladící hlášení. Tato volba není implicitně zapnutá.
 \item \texttt{data\_path}: Cesta k datům knihovny. Od této cesty se odvozují
-	standartní nastavení jiných cest:
+	standardní nastavení jiných cest:
 	\begin{itemize}
-	\item \texttt{trained\_path}: Cesta k natrénovaným modelům - standartně
-		\texttt{(data\_path)/trained}.
+	\item \texttt{trained\_path}: Cesta k natrénovaným modelům. \\
+		Standardně \texttt{(data\_path)/trained}.
 		\begin{itemize}
 		\item \texttt{letter\_classifier\_path}: Cesta k natrénovanému
-			klasifikátoru písmen - standartně
+			klasifikátoru písmen. \\ Standardně
 			\texttt{(trained\_path)/letter-classifier}.
 		\item \texttt{language\_model\_path}: Cesta k natrénovanému
-			jazykovému modelu - standartně
+			jazykovému modelu. \\
+			Standardně
 			\texttt{(trained\_path)/language-model}.
 		\end{itemize}
-	\item \texttt{input\_path}: Cesta ke vstupním datům - standartně
+	\item \texttt{input\_path}: Cesta ke vstupním datům - standardně
 		\texttt{(data\_path)/input}.
 		\begin{itemize}
 		\item \texttt{letter\_inputs\_path}: Cesta ke vstupům s
 			písmennými datasety. Formát písmenných datasetů je
-			popsán níže. Standartní hodnota je
+			popsán níže. Standardní hodnota je
 			\texttt{(input\_path)/letter}.
 
 		\item \texttt{language\_corpus\_path}: Cesta ke korpusu,
 			na kterém se trénují jazykové modely.
-			Standartně \texttt{(input\_path)/corpus.txt}.
+			Standardně \texttt{(input\_path)/corpus.txt}.
 
 		\item
 			\texttt{segmentation\_inputs\_path}: Toto nastavení
 			je připraveno pro případné testování a trénování
-			segmentace slov na písmena. Protože však nebyl
-			žádný testovaný způsob segmentace nedosáhl uspokojivých
-			výsledků, není tato možnost v současné verzi knihovny využita.
-			Standartní hodnota je \texttt{(input\_path)/segment}.
+			segmentace slov na písmena. Žádný
+			testovaný způsob segmentace však nedosáhl uspokojivých
+			výsledků, proto není tato možnost v současné verzi knihovny využita.
+			Standardní hodnota je \texttt{(input\_path)/segment}.
 			Zamýšlený obsah tohoto adresáře jsou jednotlivé příklady
 			správně osegmentovaných slov uložené v podadresářích.
 			Soubor \texttt{data.png} uvnitř příslušného podadresáře
@@ -219,13 +244,10 @@ data_path: /home/prvak/rocnikac/rcr-data/
 debug: false
 \end{lstlisting}
 
-\subsection{Instalace trénovacích dat}
-\todo{popsat}
-
 \subsection{Formát trénovacích dat}
 \subsubsection{Písmenné datasety}
-Písmenné vstupy knihovny RCR jsou uloženy v podadresářích
-cesty \texttt{letter\_inputs\_path}. Každý podadresář obsahuje jeden \uv{datový
+Podadresáře \texttt{letter\_inputs\_path} obsahují písmenné vstupy knihovny RCR.
+Každý podadresář obsahuje jeden \uv{datový
 blok}. Data takového bloku jsou uložena v jednom obrázku ve formátu PNG,
 který je uložen v podadresáři \uv{datového bloku} pod jménem \texttt{data.png}.
 Každý takový obrázek se skládá ze stejně velkých obdélníkových buněk. Buňka
@@ -278,9 +300,10 @@ základní konfigurace.
 Toto rozhraní se importuje příkazem \texttt{require 'rcr/easy'}.
 
 \subsubsection{Načítání obrazu}
-K jednoduchému načítání obrazových dat k použití knihovnou RCR slouží metody
+K jednoduchému načítání obrazových dat pro použití knihovnou RCR slouží metody
 \texttt{RCR.load\_image} a \texttt{RCR.load\_image\_from\_blob}. Metoda
 \texttt{RCR.load\_image} bere jako jediný parametr cestu k souboru k načtení.
+
 Metoda \texttt{RCR.load\_image\_from\_blob} oproti tomu bere jako svůj parametr
 obsah tohoto souboru.
 \begin{lstlisting}
@@ -288,13 +311,15 @@ image = RCR.load_image("letter.png")
 image2 = RCR.load_image_from_blob(File.read("letter.png"))
 \end{lstlisting}
 
-\subsubsection{Vytváření komponent dle standartní konfigurace}
+\subsubsection{Vytváření komponent dle standardní konfigurace}
 Metody \texttt{RCR.build\_letter\_classifier} a
 \texttt{RCR.build\_language\_model} nahrají klasifikátor písmen, respektive jazykový model
-dle standartní konfigurace. Těmto metodám je možné předat jako argument
+dle standardní konfigurace. Těmto metodám je možné předat jako argument
 \texttt{Hash}, kterým lze tuto konfiguraci upravit.
 \begin{lstlisting}
-classifier = RCR.build_letter_classifier(letter_classifier_path: "/tmp/classifier")
+classifier = RCR.build_letter_classifier(
+  letter_classifier_path: "/tmp/classifier"
+)
 model = RCR.build_language_model
 \end{lstlisting}
 
@@ -308,9 +333,10 @@ puts "Detected letter: #{classifier.classify(image)}"
 
 \texttt{RCR.build\_word\_segmentator} je metoda vyhrazená k budoucímu načítání
 segmentátoru slov podle konfigurace. Zatím však vždy vyrábí instanci
+segmentátoru
 \texttt{RCR::WordSegmentator::HeuristicOversegmentation} založenou na
 oversegmenteru \texttt{RCR::HeuristicOversegmenter::LocalMinima}. Jazykový model
-a klasifikátor písmen je do tohoto segmentátoru dodaný podle standartní
+a klasifikátor písmen je do tohoto segmentátoru dodaný podle standardní
 konfigurace.
 
 \subsection{Práce s obrazem}
@@ -343,8 +369,8 @@ jako dvourozměrné pole trojic osmibitových RGB hodnot:
 % ImageTest#test_pixel_array_loading_works
 \begin{lstlisting}
 data = [
-	[ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
-	[ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
+  [ [11, 11, 11], [21, 21, 21], [31, 31, 31] ],
+  [ [12, 12, 12], [22, 22, 22], [32, 32, 32] ],
 ]
 array_image = RCR::Data::Image.from_pixel_array(data)
 # [image.width, image.height] == [3, 2]
@@ -407,7 +433,7 @@ a přitom obsažený v obdélníku dané velikosti. Zbylé místo se doplní bí
 barvou.
 
 Metody \texttt{\#guillotine} a \texttt{\#guillotine!} z obrázku ořezávají
-bílé okraje. Nepřijímají žádné parametry.
+bílé okraje. Nemají žádné parametry.
 
 Metoda \texttt{\#mutate} je určena pro umělé zvětšování datasetu. Vrátí obrázek
 po drobné náhodné afinní transformaci (změna velikosti obou rozměrů na 90--110\%,
@@ -416,7 +442,7 @@ otočení o -11,25 až $11,25^\circ$).
 Především k ladícím účelům slouží metoda \texttt{\#draw\_rectangle!}, která na
 obraz nakreslí obdélník. Pořadí parametrů je následující: X, Y souřadnice levého
 horního rohu, X, Y souřadnice pravého dolního rohu, barva okraje, barva vnitřku.
-Standartní barva okraje je černá a standartní barva vnitřku je průhledná
+Standardní barva okraje je černá a standardní barva vnitřku je průhledná
 (vnitřek se tedy nevykreslí). Barvy jsou objekty typu \texttt{ChunkyPNG::Color}.
 
 Modul \texttt{RCR::Data::Image::Color} obsahuje zkratky \texttt{BLACK},
@@ -442,19 +468,23 @@ převede vnitřní objekt na obraz. Tím pádem je možné nad touto třídou po
 libovolné metody třídy \texttt{RCR::Data::Image}, i když se jedná ve skutečnosti
 jenom o objekt reprezentující \uv{recept na výrobu obrazu}.
 
-Mezi tyto \uv{recepty na výrobu obrazu} patří třídy
-\texttt{RCR::Data::MergedImagelike} (ze dvou vstupních obrázků vrátí pixel
-s nižší světlostí), \texttt{RCR::Data::CroppedImagelike} (chová se jako
-oříznutá oblast z jiného obrázku), \texttt{RCR::Data::CairoImagelike}
-(reprezentuje obraz importovaný z grafické knihovny Cairo) a nakonec
-\texttt{RCR::Data::MaskedImagelike} (pixely obrazu vybrané upravitelnou
-bitmapovou maskou ukazuje jako bílé).
-Všechny tyto třídy dědí od \texttt{RCR::Data::Imagelike}.
+Mezi tyto \uv{recepty na výrobu obrazu} patří následující třídy, které všechny
+dědí od \texttt{RCR::Data::Imagelike}:
+\begin{itemize}
+\item \texttt{RCR::Data::MergedImagelike}: ze dvou vstupních obrázků vrátí pixel
+	s nižší světlostí
+\item \texttt{RCR::Data::CroppedImagelike}: chová se jako
+	oříznutá oblast z jiného obrázku
+\item \texttt{RCR::Data::CairoImagelike}: reprezentuje obraz importovaný z grafické knihovny Cairo
+\item \texttt{RCR::Data::MaskedImagelike}: odkrývá pouze ty pixely obrazu, které
+	jsou odkryty upravitelnou bitmapovou maskou
+\end{itemize}
 
 \subsection{Neuronové sítě}
 \subsubsection{\texttt{RCR::Data::NeuralNetInput}: vstup pro neuronovou síť}
-Třída \texttt{RCR::Data::NeuralNetInput} se importuje pomocí \texttt{require
-'rcr/data/neural\_net\_input'}. Tato třída se používá všude v knihovně, kde
+Třída \texttt{RCR::Data::NeuralNetInput} lze použít po importování pomocí
+příkazu
+\hbox{\texttt{require 'rcr/data/neural\_net\_input'}}. Tato třída se používá všude v knihovně, kde
 je se pracuje s daty, která půjdou na vstup neuronové síti. Účelem třídy
 je omezit málo restriktivní rozhraní, které by nabízelo použití jiných datových
 typů (například pole). Tato třída znesnadňuje svým uživatelům provádět operace,
@@ -476,7 +506,7 @@ typů jako \texttt{BigDecimal} nebo \texttt{Integer}) je chyba.
 input = RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3])
 \end{lstlisting}
 
-Metoda \texttt{\#==} podle své standartní sémantiky porovnává dva objekty typu
+Metoda \texttt{\#==} podle své standardní sémantiky porovnává dva objekty typu
 \texttt{RCR::Data::NeuralNetInput}. Platí zde obvyklé problémy s aritmetikou
 v plovoucí čárce.
 % NeuralNetInputTest#test_basic
@@ -487,8 +517,10 @@ input == RCR::Data::NeuralNetInput.new([0.1, 0.2, 0.3]) # true
 Metoda \texttt{NeuralNetInput.concat} spojuje dva nebo více vstupů za sebe:
 % NeuralNetInputTest#test_basic
 \begin{lstlisting}
-NeuralNetInput.concat(input, RCR::Data::NeuralNetInput.new([0.4, 0.5])) ==
-  RCR::Data::NeuralNetInput([0.1, 0.2, 0.3, 0.4, 0.5])
+add = RCR::Data::NeuralNetInput.new([0.4, 0.5])
+
+NeuralNetInput.concat(input, add) ==
+  RCR::Data::NeuralNetInput([0.1, 0.2, 0.3, 0.4, 0.5]) # true
 \end{lstlisting}
 
 % NeuralNetInputTest#test_basic
@@ -513,7 +545,8 @@ párů \uv{vstup - očekávaný výstup}:
 \begin{lstlisting}
 # Dataset pro funkci 'y = x0 + x1'
 dataset = RCR::Data::Dataset.new([
-  [[0.1, 0.1], 0.2], [[0.3, 0.5], 0.8], [[-0.5, 0.5], 0.0], [[0.1, -0.3], -0.2]
+  [[0.1, 0.1], 0.2], [[0.3, 0.5], 0.8],
+  [[-0.5, 0.5], 0.0], [[0.1, -0.3], -0.2]
 ])
 \end{lstlisting}
 
@@ -522,7 +555,8 @@ K zjištění uloženého typu vstupů, respektive výstupů je možné použít
 \texttt{\#input\_type} a \texttt{\#expected\_output\_type}.
 % RCR::Data::DatasetTest#test_basic
 \begin{lstlisting}
-dataset.input_type == Array && dataset.expected_output_type == Float # true
+dataset.input_type == Array &&
+  dataset.expected_output_type == Float # true
 \end{lstlisting}
 
 Předá-li se konstruktoru parametr typu \texttt{Hash}, jsou jeho
@@ -539,16 +573,19 @@ dataset2 = RCR::Data::Dataset.new({
 \end{lstlisting}
 
 Třída implementuje funkce \texttt{\#empty?}, \texttt{\#shuffle!} a
-\texttt{\#size} obdobným způsobem jako standartní třída \texttt{Array}
+\texttt{\#size} obdobným způsobem jako standardní třída \texttt{Array}
 (tedy dotaz na prázdnost, náhodné přeházení na místě a dotaz na počet párů
 vstup-výstup).
 
 Funkce \texttt{\#each} iteruje přes všechny páry klíč-hodnota:
 % TODO: test
 \begin{lstlisting}
-# [-0.1, 0.1] -> 0.0, [0.0, 0.0] -> 0.0, ...
 text = ""
-dataset2.each { |pair| text << "#{pair.first.inspect} -> #{pair.last}, " }
+dataset2.each { |pair|
+  text << "#{pair.first.inspect} -> #{pair.last}, "
+}
+
+# [-0.1, 0.1] -> 0.0, [0.0, 0.0] -> 0.0, ...
 puts text
 \end{lstlisting}
 
@@ -559,7 +596,7 @@ dataset.insert([0.7, 0.2], 0.9)
 \end{lstlisting}
 
 Funkce \texttt{\#split} s volitelným pojmenovaným parametrem \texttt{threshold}
-rozdělí instanci na dva kusy v poměru daném tímto parametrem. Jeho standartní
+rozdělí instanci na dva kusy v poměru daném tímto parametrem. Jeho standardní
 hodnota je \texttt{0.8}. Tato hodnota způsobí, že první vrácený poddataset bude
 přibližně $4\times$ větší než druhý.
 Tato funkce se dá použít například na pohodlné rozdělení na trénovací a
@@ -593,7 +630,10 @@ Varianty těchto metod s vykřičníkem (\texttt{\#transform\_inputs!} a
 dataset = RCR::Data::Dataset.new([[1, 5], [2, 10], [3, 15]])
 dataset2 = dataset.transform_inputs { |x| x * 5 }.
   transform_expected_outputs { |y| y / 5 }
-dataset2 == RCR::Data::Dataset.new([[5, 1], [10, 2], [15, 3]]) # true
+
+dataset2 == RCR::Data::Dataset.new(
+  [[5, 1], [10, 2], [15, 3]]
+) # true
 \end{lstlisting}
 
 Metoda \texttt{\#to\_fann\_dataset} vrací analogickou třídu typu
@@ -637,7 +677,9 @@ def xor_fn(a, b)
   boolean_a, boolean_b = a > 0.5, b > 0.5
 
   da, db = (a-0.5).abs, (b-0.5).abs
-  (boolean_a ^ boolean_b) ? (0.5 + (da + db) / 2) : (0.5 - (da + db) / 2)
+  (boolean_a ^ boolean_b) ?
+    (0.5 + (da + db) / 2) :
+    (0.5 - (da + db) / 2)
 end
 
 # vygeneruje dataset z nahodnych bodu
@@ -647,7 +689,9 @@ data = 1000.times.map {
 }
 
 dataset = RCR::Data::Dataset.new(data).
-  transform_inputs { |x| RCR::Data::NeuralNetInput.new(x.map(&:to_f)) }.
+  transform_inputs { |x|
+    RCR::Data::NeuralNetInput.new(x.map(&:to_f))
+  }.
   transform_expected_outputs { |y| [y.to_f] }
 
 net = RCR::NeuralNet.create(num_inputs: 2, num_outputs: 1,
@@ -690,9 +734,9 @@ aby byl zavolán konstruktorem odvozeného konkrétního klasifikátoru.
 Odvozený klasifikátor může vyžadovat další parametry.
 
 Tento seznam tříd je pak dostupný přes metodu \texttt{\#classes}.
-Klasifikátor dále musí implementovat metody \texttt{\#classify},
+Klasifikátor dále musí implementovat klasifikační metody \texttt{\#classify},
 \texttt{\#classify\_with\_score}, \texttt{\#classify\_with\_alternatives},
-\texttt{\#train} a \texttt{\#evaluate}.
+trénování přes \texttt{\#train} a spouštění pomocí \texttt{\#evaluate}.
 
 Klasifikátor očekává vstupy zformátované jako pole čísel.
 Metody \texttt{\#classify}, \texttt{\#classify\_with\_score} a
@@ -708,10 +752,10 @@ tuto podmínku také splňovat.
 
 Odvozené klasifikátory nemusí implementovat všechny tyto metody.
 Stačí doplnit \texttt{classify\_with\_alternatives} -- všechny ostatní
-klasifikační metody mají v \texttt{RCR::Classifier::Base} odvozenou
-standartní implementaci. Bylo-li by však určení skóre všech kategorií
-pomalé, může být užitečné poskytnout rychlejší implementaci v konkrétním
-klasifikátoru.
+klasifikační metody mají v \texttt{RCR::Classifier::Base} implementaci
+odvozenou od této metody. Bylo-li by však určení skóre všech kategorií
+pomalé, může být užitečné poskytnout rychlejší implementaci ostatních
+metod v konkrétním klasifikátoru.
 
 Metody \texttt{\#train} a \texttt{\#evaluate} přijímají \texttt{Dataset}.
 \texttt{\#train} natrénuje klasifikátor podle daných dat a \texttt{\#evaluate}
@@ -775,9 +819,10 @@ poměru stran a má-li být nakonec vykonána normalizace kontrastu.
 \subsection{\texttt{RCR::LetterClassifier}}
 Tento jmenný prostor obsahuje třídy, které obalují klasifikátory pro potřeby
 OCR jednotlivých písmen. Tyto třídy implementují API analogické k obecným
-klasifikátorům (tedy metody \texttt{\#train}, \texttt{\#evaluate}, \texttt{\#classify},
+klasifikátorům (metody \texttt{\#train}, \texttt{\#evaluate}, \texttt{\#classify},
 \texttt{\#classify\_with\_score} a \texttt{\#classify\_with\_alternatives}),
-ale očekávají jako své vstupy instance \texttt{RCR::Data::Image} (nebo línou
+ale narozdíl od obecných klasifikátorů očekávají jako své vstupy instance \texttt{RCR::Data::Image}
+(nebo línou
 reprezentaci obrazu), případně datasety obsahující tyto instance.
 
 Třída \texttt{RCR::LetterClassifier::Base} je předek všech ostatních tříd
@@ -796,20 +841,24 @@ na data (popsáno níže), množinu povolených znaků a velikosti skrytých
 vrstev neuronové sítě.
 
 Metoda \texttt{\#train} přijímá navíc parametr \texttt{generations},
-kterým je možné měnit dobu trénování neuronové sítě. Standartní hodnota
+kterým je možné měnit dobu trénování neuronové sítě. Standardní hodnota
 je 1000.
 
 Příklad použití včetně vyrobení převodníku obrazu na data:
 \begin{lstlisting}
 input_transformer = LetterClassifier::InputTransformer::Basic.new(
-	FeatureExtractor::RawImage.new(
-		8, 8, guillotine: true, forget_aspect_ratio: true, normalize_contrast: true
-	)
+  FeatureExtractor::RawImage.new(
+    8, 8,
+    guillotine: true, forget_aspect_ratio: true,
+    normalize_contrast: true
+  )
 )
 classifier = Neural.new
 # inputs = ...
 dataset = LetterClassifier.load_inputs(inputs)
-classifier.start_anew(transformer: input_transformer, allowed_chars: ('0'..'9'))
+classifier.start_anew(
+  transformer: input_transformer, allowed_chars: ('0'..'9')
+)
 classifier.train(dataset, generations: 20)
 classifier
 \end{lstlisting}
@@ -874,7 +923,9 @@ Druhý volitelný parametr je interní \texttt{Hash}. Je-li uveden, bude tento
 % TODO: test
 \begin{lstlisting}
 mc = MarkovChain.new(2)
-mc2 = MarkovChain.new(2, { "AB" => { "C" => 0.7, "A" => 0.3 }, ... })
+mc2 = MarkovChain.new(2, {
+  "AB" => { "C" => 0.7, "A" => 0.3 }, ...
+})
 \end{lstlisting}
 
 Metoda \texttt{\#train} zahodí obsah Markovského řetězce a natrénuje jej na
@@ -887,7 +938,7 @@ mc.train("ABC ABD ABA ABC ABC")
 Metoda \texttt{\#score} vrací relativní skóre (pravděpodobnost) daného
 pokračování dle kontextu, případně \texttt{nil} pokud tento Markovský řetězec
 na toto pokračování nebyl natrénován. První parametr je kontext a druhý parametr
-je pokračování k ohodnocení. Kontext může být jak pole, tak řetězec.
+je pokračování k ohodnocení. Kontext může být jak pole znaků, tak řetězec.
 % MarkovChainTest#test_docs
 \begin{lstlisting}
 mc.score("AB", "C") # 0.6
@@ -960,11 +1011,11 @@ konfiguraci RCR.
 \subsection{\texttt{rcr-train} - trénování knihovny}
 Tato utilita je určena ke trénování komponent knihovny.
 Jako svůj parametr přijímá seznam komponent k natrénování.
-Všechna data se ukládají a načítají ze standartních míst daných konfigurací
+Všechna data se ukládají a načítají ze standardních míst daných konfigurací
 knihovny.
 
 S parametrem \texttt{letter} se natrénuje klasifikátor
-písmen (typu \texttt{RCR::LetterClassifier::Neural}). Jako
+písmen. Jeho implementaci poskytne třída \texttt{RCR::LetterClassifier::Neural}. Jako
 vstup jeho neuronové sítě se použije jednak samotný vstupní obraz,
 který se ořízne na nejmenší oblast obsahující jiné než bílé pixely,
 zmenší na velikost $16\times 16$ pixelů a na němž se provede normalizace
@@ -978,9 +1029,9 @@ velikosti $14\times 14$ a $9\times 9$.
 Při budování klasifikátoru se předpokládádá, že vstup se skládá jenom
 z velkých písmen anglické abecedy.
 
-Parametr \texttt{markov\_chains} natrénuje standartní jazykový model --
+Parametr \texttt{language-model} natrénuje standardní jazykový model, konkrétně
 \texttt{RCR::LanguageModel::MarkovChains} s hloubkou 3. Jako korpus se použije
-standartní korpus. Z tohoto souboru se vyberou pouze písmena, která se pak změní
+standardní korpus. Z tohoto souboru se vyberou pouze písmena, která se pak změní
 na velká. Výsledný jazykový model tedy bude natrénován pouze na velkých
 písmenech.
 
@@ -989,21 +1040,21 @@ Tento program je určený ke klasifikaci obrázků obsahujících samostatná p�
 Tato písmena očekává v libovolném formátu přijímaném knihovnou ImageMagick,
 mimo jiné tedy akceptuje široce rozšířené formáty PNG a JPG.
 
-Syntaxe volání:
+Program \texttt{rcr-classify-letter} přijímá následující parametry:
 \begin{lstlisting}
-$ rcr-classify-letter [--show-alternatives] (filename1) (filename2) ...
+$ rcr-classify-letter [--show-alternatives] (file1) (file2) ...
 \end{lstlisting}
 
-Parametry \texttt{filenameX} jsou názvy souborů, ze kterých se mají přečíst
+Parametry \texttt{fileX} jsou názvy souborů, ze kterých se mají přečíst
 obrazová data. Je-li některý z názvů souborů pouze \uv{\texttt{-}}, pak se data
-pro toto písmeno přečtou ze standartního vstupu. Ze standartního vstupu
+pro toto písmeno přečtou ze standardního vstupu. Ze standardního vstupu
 není možné číst vstup více než jednou za spuštění.
 
 K předání názvů souborů začínajících pomlčkou je potřeba tyto názvy předat
-za standartním Unixovým oddělovačem argumentů a souborů: \texttt{--}.
+za standardním Unixovým oddělovačem argumentů a souborů: \texttt{--}.
 
 Parametr \texttt{--show-alternatives} způsobí, že pro vstupní soubory
-uvedené za tímto parametrem se na standartní výstup nevypíšou jenom
+uvedené za tímto parametrem se na standardní výstup nevypíšou jenom
 písmena, kterým přidělil klasifikátor nejvyšší skóre, ale vypíšou se
 všechny hypotézy klasifikátoru sestupně podle skóre. Každá hypotéza
 pro písmeno je uvedena na samostatné řádce ve formátu \texttt{(písmeno)
@@ -1033,10 +1084,10 @@ D
 E
 \end{lstlisting}
 
-\section{Příklady}
+\section{Příklady (adresář \texttt{examples}}
 Adresář \texttt{examples/} obsahuje několik praktických příkladů použití knihovny.
 
-\subsection{Tester klasifikátoru písmen (\texttt{examples/letter-classifier-gui})}
+\subsection{Tester klasifikátoru písmen (\texttt{letter-classifier-gui})}
 Tento příklad ukazuje použití klasifikátoru písmen a widgetu pro kreslení
 jednotlivých písmen. Umožňuje nakreslit písmeno, které se po kliknutí na
 tlačítko \textit{Classify} předá klasifikátoru. Nejlepších 5 vybraných kandidátů
@@ -1046,21 +1097,39 @@ kreslící oblasti.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{letter_classifier_gui}
-\caption{Příklad \texttt{examples/letter-classifier-gui}. Písmeno R může být také čteno jako A.}
+\caption{Příklad \texttt{examples/letter-classifier-gui}. Takto napsané písmeno R může být také čteno jako A.}
 \end{figure}
 
-\subsection{Hodnocení klasifikátoru písmen (\texttt{examples/evaluate-letter-classifier})}
+\subsection{Hodnocení klasifikátoru písmen (\texttt{evaluate-letter-classifier})}
 Tento krátký program pouze načte dataset s písmeny a klasifikátor písmen podle
 konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
 
-\subsection{Příklad použití pro vyplňování formulářů (\texttt{examples/form-filling})}
+\subsection{Příklad použití pro vyplňování formulářů (\texttt{form-filling})}
 Jedno z možných použití OCR knihoven spočívá ve čtení textu, který uživatel
 kreslí po písmenech. Tento příklad ilustruje použití GUI komponenty
 \texttt{RCR::GUI::LetterDrawingArea} k tomuto účelu. Také ukazuje, jak zlepšit
 úspěšnost klasifikace přes jazykový model.
 
-\subsection{Použití pro klasifikaci slov (\texttt{examples/best-country-match})}
-\begin{wrapfigure}{r}{0.4\textwidth}
+\subsection{Použití pro klasifikaci slov (\texttt{best-country-match})}
+
+Jak ilustruje tento příklad, za poměrně silných předpokladů je možné knihovnu
+použít i pro čtení celých slov. Konkrétně vybírají-li se slova pouze z
+malého slovníku, je možné pro každé slovo slovníku odhadnout pravděpodobnost,
+že se nachází na vstupu. Tento odhad pro celý slovník najednou provádí funkce
+\texttt{segment\_for\_words\_with\_scores} třídy
+\texttt{RCR::WordSegmentator::HeuristicOversegmentation}.
+Segmentace však provádí mnoho grafických operací, proto je to pomalý proces.
+
+Program \texttt{examples/best-country-match} načte soubor
+\texttt{examples/country\_list.txt}, který obsahuje 163 názvů zemí.
+Následně pro každý název země načte odpovídající vstupní obrázek z adresáře
+\texttt{examples/countries/} a pokusí se nezávisle odhadnout, co je v něm
+napsáno. Výstup pro každý název země zahrnuje, jestli se odhad povedl, a
+5 nejvýše oskórovaných hypotéz.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.6\textwidth}
 \begin{lstlisting}
 AFGANISTAN: ERR
             PAKISTAN: 0.04
@@ -1099,23 +1168,9 @@ AFGANISTAN: ERR
 
             .....
 \end{lstlisting}
+\end{subfigure}
 \caption{Výstup příkladu \texttt{examples/best-country-match}}
-\end{wrapfigure}
-
-Jak ilustruje tento příklad, za poměrně silných předpokladů je možné knihovnu
-použít i pro čtení celých slov. Konkrétně vybírají-li se slova pouze z
-malého slovníku, je možné pro každé slovo slovníku odhadnout pravděpodobnost,
-že se nachází na vstupu. Tento odhad pro celý slovník najednou provádí funkce
-\texttt{segment\_for\_words\_with\_scores} třídy
-\texttt{RCR::WordSegmentator::HeuristicOversegmentation}.
-Segmentace však provádí mnoho grafických operací, proto je to pomalý proces.
-
-Program \texttt{examples/best-country-match} načte soubor
-\texttt{examples/country\_list.txt}, který obsahuje 163 názvů zemí.
-Následně pro každý název země načte odpovídající vstupní obrázek z adresáře
-\texttt{examples/countries/} a pokusí se nezávisle odhadnout, co je v něm
-napsáno. Výstup pro každý název země zahrnuje, jestli se odhad povedl, a
-5 nejvýše oskórovaných hypotéz.
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{bibliography}
