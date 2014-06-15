@@ -23,7 +23,7 @@ module RCR
 				context = context.upcase.each_char.to_a
 				continuations = continuations.map(&:upcase)
 
-				# Find first chain that has an opinion about every letter in the 
+				# Find first chain that has an opinion about every continuation
 				@depth.downto(0) do |depth|
 					next if context.length < depth
 					scores = {}

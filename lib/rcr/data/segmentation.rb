@@ -87,7 +87,6 @@ module RCR
 				pixels
 			end
 
-			# TODO: mozna vratit zpatky. mozna to nebyl az tak dobry napad.
 			def difference_exact(other)
 				active = active_pixels
 				diff = 0
@@ -123,8 +122,7 @@ module RCR
 				diff = 0
 
 				# TODO: this is a slow thing to do. think of something better.
-				# TODO: 100 is too low.
-				100.times do
+				300.times do
 					p1 = active[rand(active.size)]
 					p2 = active[rand(active.size)]
 

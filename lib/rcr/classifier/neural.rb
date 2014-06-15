@@ -87,11 +87,16 @@ module RCR
 			public
 
 			# Hash: class => [inputs that have this class]
-			def train(dataset, generations: nil, dataset_split: 0.8, logging: false)
+			def train(dataset, generations: nil, dataset_split: 0.8, logging: false, training_log_file: "train.log")
 				raise "Wrong dataset type: #{dataset.class}" unless dataset.is_a? RCR::Data::Dataset
 
 				with_logging_set(logging) {
-					train_log = File.open "train.log", "w"
+					train_log =
+						if training_log_file
+							File.open training_log_file, "w"
+						else
+							nil
+						end
 
 					train, test = dataset.shuffle!.split(threshold: dataset_split)
 
@@ -108,11 +113,15 @@ module RCR
 
 						e = evaluate(test)
 						log "After round #{round + 1}/#{generations}: %.2f%% on test (%.2f%% on all inputs)" % [e, evaluate(dataset)]
-						train_log.puts("#{round + 1}\t%.2f" % e)
-						train_log.flush
+						if train_log
+							train_log.puts("#{round + 1}\t%.2f" % e)
+							train_log.flush
+						end
 					}
 
-					train_log.close
+					if train_log
+						train_log.close
+					end
 
 					log "Final score on whole dataset: %.2f%%" % evaluate(dataset)
 				}

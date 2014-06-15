@@ -12,9 +12,6 @@ module RCR
 			def most_likely_words(letter_hypotheses, want_words: 100)
 				last_most_likely_words = { 1.0 => "" }
 
-				# TODO: probably doesn't actually work all that well... !!!!!
-				# TODO: ALE TO BY ZNAMENALO ZE MAM BLBE VITERBIHO I JINDE!
-
 				letter_hypotheses.each do |letter_hypothesis|
 					# letter hypothesis: hash of letter => score
 					best_now = {}

@@ -122,36 +122,6 @@ stačí spustit \texttt{rake build} v libovolném podadresáři knihovny
 k zabalíčkování do adresáře \texttt{pkg}. Příkaz \texttt{rake install} pak
 umožňuje tento balík nainstalovat.
 
-\begin{lstlisting}
-~ $ git clone https://github.com/MichalPokorny/rcr.git
-Cloning into 'rcr'...
-remote: Counting objects: 1167, done.
-remote: Compressing objects: 100% (460/460), done.
-remote: Total 1167 (delta 621), reused 1144 (delta 602)
-Receiving objects: 100% (1167/1167), 190.61 KiB | 270.00 KiB/s, done.
-Resolving deltas: 100% (621/621), done.
-Checking connectivity... done.
-
-~ $ cd rcr
-
-~/rcr $ gem install rake bundler
-Fetching: rake-10.1.1.gem (100%)
-Successfully installed rake-10.1.1
-Parsing documentation for rake-10.1.1
-Installing ri documentation for rake-10.1.1
-Done installing documentation for rake after 5 seconds
-Fetching: bundler-1.5.3.gem (100%)
-Successfully installed bundler-1.5.3
-Parsing documentation for bundler-1.5.3
-Installing ri documentation for bundler-1.5.3
-Done installing documentation for bundler after 11 seconds
-2 gems installed
-
-~/rcr $ bundle install
-\end{lstlisting}
-\todo{otestovat ze to jde!!! (tady to v labu selhalo)}
-\todo{vypnout ruby syntaxi}
-
 \subsection{Instalace trénovacích dat}
 Knihovna ke své funkci potřebuje některé své komponenty natrénovat.
 Vstupní data nejsou kvůli své velikosti zahrnuta v knihovně samotné.
@@ -175,8 +145,9 @@ ke spuštění testů se nachází v adresáři \texttt{test-data}.
 \section{Konfigurace knihovny}
 Kvůli jednoduchému sdílení natrénovaných klasifikátorů, vstupních dat
 a jiných společných nastavení používá knihovna RCR globální soubor
-s konfigurací. Jeho formát je YAML a jeho umístění je \texttt{~/.rcr-config.yml}
-na Linuxu, případně obdobný soubor na jiných systémech.
+s konfigurací. Jeho formát je YAML a jeho umístění je
+\texttt{\textasciitilde/.rcr-config.yml}
+na Linuxu, případně obdobné na jiných systémech.
 Umožnuje nastavit následující vlastnosti:
 
 \begin{itemize}
@@ -712,8 +683,6 @@ output = net.run(RCR::Data::NeuralNetInput.new([0.1, 0.9]))
 output[0] > 0.7 # true; ocekavana hodnota: 0.9
 \end{lstlisting}
 
-\todo{image transformery}
-
 \subsection{\texttt{RCR::Classifier}: klasifikátory}
 
 Klasifikace je úloha předpovídání diskrétní kategorie daného vstupu na základě
@@ -787,8 +756,18 @@ classifier = RCR::Classifier::Neural.create(
 Metoda \texttt{\#train} kromě datasetu obsahuje přijímá také jako parametr
 \texttt{generations} počet iterací trénování (není-li uveden, použije se 1000).
 
-\texttt{dataset\_split}
-\todo{dopsat tenhle kus}
+Tato metoda umožňuje zároveň s trénováním také vypisovat chybu na testovacích
+datech. Parametr \texttt{dataset\_split} určuje poměr dat, která se použijí k
+trénování, a dat, na kterých se bude testovat výkon neuronové sítě -- například
+hodnota \texttt{0.8} udává, že 4/5 dat se mají použít k trénování a zbylá 1/5 k
+testování.
+Je-li parametr \texttt{training\_log\_file} nastaven na jinou hodnotu, než
+\texttt{nil}, interpretuje se jako jméno souboru, do kterého se bude zapisovat
+průběh tréningu po každé generaci. Každá řádka tohoto souboru
+obsahuje číslo generace a poměr správně klasifikovaných testovacích dat,
+oddělené tabulátorem. Soubory \texttt{utils/draw\_train\_log.sh} a
+\texttt{utils/draw\_train\_log.gnuplot} ukazují, jak je možné tyto výsledky
+vizualizovat programem \texttt{gnuplot}.
 
 \subsection{\texttt{RCR::FeatureExtractor}}
 Třídy ve jmenném prostoru \texttt{RCR::FeatureExtractor} převádí obraz (objekty
@@ -867,14 +846,40 @@ classifier
 Tento modul obsahuje dva jednoduché rozdělovače slov na písmena.
 Jejich základní API tvoří metoda \texttt{\#segment}, která přijímá obraz k
 rozdělení a vrací jeho segmentaci (instanci \texttt{RCR::Data::Segmentation}).
-\todo{zdokumentovat RCR::Data::Segmentation}
+
+Třída \texttt{RCR::Data::Segmentation} reprezentuje obraz rozdělený
+na boxy obsahující písmena (\texttt{RCR::Data::SegmentationBox}).
+Obsahuje metody pro:
+\begin{itemize}
+\item práci se segmentačními boxy:
+\texttt{\#merge\_boxes}, \texttt{\#remove\_box} a
+\texttt{\#split\_box\_along\_relative\_x}
+\item zjišťování míry
+podobnosti segmentací: \texttt{\#difference\_exact} a
+\texttt{\#difference\_approximate}
+\item práci se vztahem
+aktivních pixelů a segmentačních boxů: \texttt{\#pixel\_active?},
+\texttt{\#active\_pixels}, \texttt{\#active\_pixels\_in\_rect},
+\texttt{\#pixels\_in\_same\_box?}
+\end{itemize}
+
+Kromě toho je možné se segmentace zeptat na text, který obsahuje, je-li
+interpretována zadaným klasifikátorem písmen (\texttt{\#detected\_text}) a
+je možné také vykreslit segmentaci po obdélnících do předaného obrazu
+(\texttt{\#draw\_on\_image!}).
 
 \subsubsection{\texttt{RCR::WordSegmentator::SimpleContiguousParts}}
-Tato třída vstup rozděluje na souvislé komponenty.
-\todo{dopsat}
+Metoda \texttt{\#segment} tohoto segmentátoru provádí triviální segmentaci
+obrazu na části, které tvoří souvislé bloky aktivních (tmavých) pixelů.
 
 \subsubsection{\texttt{RCR::WordSegmentator::HeuristicOversegmentation}}
-\todo{dopsat}
+Tato třída používá k segmentaci obrazu variantu Viterbiho algoritmu.
+Konstruktor přijímá jako své parametry \textit{oversegmenter}, klasifikátor
+písmen a jazykový model. Kromě metody \texttt{\#segment} obsahuje také funkce
+\texttt{\#segment\_with\_lengths} (vrací nejpravděpodobnější segmentace pro
+různé délky výsledku), \texttt{\#segment\_for\_word} (vrátí nejpravděpodobnější
+segmentaci, která lze přečíst jako předané slovo) a varianty vracející několik
+nejpravděpodobnějších hypotéz.
 
 \subsection{\texttt{RCR::HeuristicOversegmenter}}
 Účelem tříd v modulu \texttt{RCR::HeuristicOversegmenter} je vytvářet z obrazu
@@ -953,11 +958,35 @@ model může vědět, že je nepravděpodobné, aby se v jednom slově mixovaly
 číslice a písmena (nebo může například udržovat množinu slov, která
 přijímá).
 
-\todo{definice spolecneho API}
+% TODO: definice spolecneho API?
 
-\subsubsection{\texttt{RCR::LanguageModel::MarkovChain}: jazykové modely
+\subsubsection{\texttt{RCR::LanguageModel::MarkovChains}: jazykové modely
 založené na Markovských řetězcích}
-\todo{napsat}
+Třída \texttt{RCR::LanguageModel::MarkovChains} předpovídá pravděpodobnosti
+následujících písmen pomocí Markovových řetězců natrénovaných na daném korpusu
+jazyka.
+
+Jeden samotný Markovský řetězec lze použít
+jako odhad pravděpodobností následujících písmen, ale pokud je naučený
+na příliš dlouhé prefixy, nezvládá pak generalizovat na slova, která nebyla
+nikdy v korpusu - kdyby například celý korpus nikde neobsahoval sekvenci
+\texttt{XYZ}, tak by Markovský řetězec s délkou prefixu 2 tvrdil, že po
+písmenech \texttt{XY} nemůže \texttt{Z} nikdy následovat.
+
+Kvůli tomu se řetězce vytvoří pro délku kontextu od 0 do limitu, který je daný
+jako parametr konstruktoru třídy. Pokud se ptáme například na pravděpodobnosti,
+že po písmenech \texttt{ABCD} budou následovat písmena \texttt{E}, \texttt{F}
+nebo \texttt{G}, použije se k jejich odhadu ten uložený řetězec, který má
+pro všechny tyto pravděpodobnosti nenulový odhad a zároveň používá co nejdelší
+kontext. Pokud žádný takový řetězec neexistuje, vrátí model uniformní
+distribuci.
+
+Metoda \texttt{\#train} přijímá jako vstup text, na kterém naučí všechny
+Markovské řetězce. \texttt{\#score\_prefix\_continuations} pak bere jako
+první parametr kontext, za nímž se odhaduje pravděpodobnost dalšího písmena,
+a jako druhý parametr písmena, jejichž pravděpodobnosti má odhadnout.
+Vrátí \texttt{Hash}, jehož klíče jsou tato písmena a hodnoty jsou odhady
+na pravděpodobnosti.
 
 \subsection{\texttt{RCR::GUI}: grafické komponenty}
 \subsubsection{\texttt{RCR::GUI::LetterDrawingArea}: komponenta pro vstup
@@ -1084,7 +1113,7 @@ D
 E
 \end{lstlisting}
 
-\section{Příklady (adresář \texttt{examples}}
+\section{Příklady (adresář \texttt{examples})}
 Adresář \texttt{examples/} obsahuje několik praktických příkladů použití knihovny.
 
 \subsection{Tester klasifikátoru písmen (\texttt{letter-classifier-gui})}
@@ -1106,7 +1135,7 @@ konfigurace knihovny a vypíše úspěšnost klasifikátoru na tomto datasetu.
 
 \subsection{Příklad použití pro vyplňování formulářů (\texttt{form-filling})}
 Jedno z možných použití OCR knihoven spočívá ve čtení textu, který uživatel
-kreslí po písmenech. Tento příklad ilustruje použití GUI komponenty
+kreslí po písmenech. Tento příklad ilustruje použití
 \texttt{RCR::GUI::LetterDrawingArea} k tomuto účelu. Také ukazuje, jak zlepšit
 úspěšnost klasifikace přes jazykový model.
 
@@ -1115,10 +1144,10 @@ kreslí po písmenech. Tento příklad ilustruje použití GUI komponenty
 Jak ilustruje tento příklad, za poměrně silných předpokladů je možné knihovnu
 použít i pro čtení celých slov. Konkrétně vybírají-li se slova pouze z
 malého slovníku, je možné pro každé slovo slovníku odhadnout pravděpodobnost,
-že se nachází na vstupu. Tento odhad pro celý slovník najednou provádí funkce
+že se nachází na vstupu. Tento odhad pro celý slovník provádí metoda
 \texttt{segment\_for\_words\_with\_scores} třídy
 \texttt{RCR::WordSegmentator::HeuristicOversegmentation}.
-Segmentace však provádí mnoho grafických operací, proto je to pomalý proces.
+Tento způsob segmentace však provádí mnoho grafických operací, proto je to pomalý proces.
 
 Program \texttt{examples/best-country-match} načte soubor
 \texttt{examples/country\_list.txt}, který obsahuje 163 názvů zemí.
